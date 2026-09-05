@@ -380,6 +380,18 @@ export async function listUserConnections(userId: string): Promise<User[]> {
   return dtos.map(mapUser)
 }
 
+/** Connection requests the current user has received and hasn't responded to yet. */
+export async function listIncomingConnectionRequests(): Promise<User[]> {
+  const dtos = await apiClient.get<UserDto[]>('/users/me/connections/incoming')
+  return dtos.map(mapUser)
+}
+
+/** Connection requests the current user sent that are still pending. */
+export async function listSentConnectionRequests(): Promise<User[]> {
+  const dtos = await apiClient.get<UserDto[]>('/users/me/connections/sent')
+  return dtos.map(mapUser)
+}
+
 export async function listSuggestedConnections(limit = 4): Promise<User[]> {
   const dtos = await apiClient.get<UserDto[]>(`/users/suggested?limit=${limit}`)
   return dtos.map(mapUser)
