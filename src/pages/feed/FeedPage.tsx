@@ -39,13 +39,23 @@ const FEED_TABS = [
  *  video-only/PDF-only posts and startup_update/idea/opportunity/event posts (those rely on the
  *  typeMeta chip instead of free-text content, exactly like the real PostCard already does). */
 function SavedPostThumbnail({ post }: { post: Post }) {
-  const image = post.attachments.find((a) => a.kind === 'image')
+  // A broken/expired image URL must fall through to the next tier rather than show a broken-image
+  // icon or nothing at all — this is the "failed media URL" case the fallback chain has to cover.
+  const [imageFailed, setImageFailed] = useState(false)
+  const image = imageFailed ? undefined : post.attachments.find((a) => a.kind === 'image')
   const video = post.attachments.find((a) => a.kind === 'video')
   const pdf = post.attachments.find((a) => a.kind === 'pdf')
   const meta = typeMeta[post.type]
 
   if (image) {
-    return <img src={image.url} alt="" className="size-full object-cover transition-transform group-hover:scale-105" />
+    return (
+      <img
+        src={image.url}
+        alt=""
+        onError={() => setImageFailed(true)}
+        className="size-full object-cover transition-transform group-hover:scale-105"
+      />
+    )
   }
   if (video) {
     return (
