@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { ResourceEditModal } from '@/components/domain/ResourceEditModal'
-import { cn } from '@/lib/utils'
+import { cn, resolveResourceHref } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { Resource } from '@/types'
 
@@ -76,6 +76,7 @@ export default function ResourceDetailPage() {
   }
 
   const Icon = typeIcon[resource.type]
+  const resolved = resolveResourceHref(resource.url)
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto">
@@ -137,9 +138,19 @@ export default function ResourceDetailPage() {
             )}
 
             <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border/60">
-              <a href={resource.url} target="_blank" rel="noreferrer">
-                <Button leftIcon={<ExternalLink className="size-4" />}>Open resource</Button>
-              </a>
+              {!resolved.href ? (
+                <Button leftIcon={<ExternalLink className="size-4" />} disabled>
+                  No destination set
+                </Button>
+              ) : resolved.external ? (
+                <a href={resolved.href} target="_blank" rel="noopener noreferrer">
+                  <Button leftIcon={<ExternalLink className="size-4" />}>Open resource</Button>
+                </a>
+              ) : (
+                <Link to={resolved.href}>
+                  <Button leftIcon={<ExternalLink className="size-4" />}>Open resource</Button>
+                </Link>
+              )}
               <Button
                 variant="secondary"
                 isLoading={saveMutation.isPending}

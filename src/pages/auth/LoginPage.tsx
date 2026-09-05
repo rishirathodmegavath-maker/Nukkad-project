@@ -15,12 +15,18 @@ export interface GoogleLoginNotice {
   action?: 'signup'
 }
 
+function isValidEmailFormat(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const login = useAuthStore((s) => s.login)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showResend, setShowResend] = useState(false)
@@ -38,9 +44,26 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setShowResend(false)
+
+    // Field-level checks before any API call — matches the pattern already used on Signup.
+    const trimmedEmail = email.trim()
+    let nextEmailError = ''
+    let nextPasswordError = ''
+    if (!trimmedEmail) {
+      nextEmailError = 'Email is required.'
+    } else if (!isValidEmailFormat(trimmedEmail)) {
+      nextEmailError = 'Enter a valid email address.'
+    }
+    if (!password) {
+      nextPasswordError = 'Password is required.'
+    }
+    setEmailError(nextEmailError)
+    setPasswordError(nextPasswordError)
+    if (nextEmailError || nextPasswordError) return
+
     setIsLoading(true)
     try {
-      await login({ email, password })
+      await login({ email: trimmedEmail, password })
       toast.success('Welcome back!')
       goHome()
     } catch (err) {
@@ -80,30 +103,42 @@ export default function LoginPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <Input
           label="Email"
           type="email"
           required
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value)
+            if (emailError) setEmailError('')
+          }}
           leftIcon={<Mail className="size-4" />}
           placeholder="you@example.com"
+          error={emailError || undefined}
         />
         <div className="flex flex-col gap-1.5">
           <PasswordInput
             label="Password"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              if (passwordError) setPasswordError('')
+            }}
             leftIcon={<Lock className="size-4" />}
             placeholder="Your password"
-            error={error || undefined}
+            error={passwordError || undefined}
           />
           <Link to="/forgot-password" className="self-end text-xs font-medium text-brand-600 hover:text-brand-700">
             Forgot password?
           </Link>
         </div>
+        {error && (
+          <p role="alert" className="text-sm text-danger-500 -mt-2">
+            {error}
+          </p>
+        )}
         {showResend && (
           <Button type="button" variant="secondary" size="sm" isLoading={isResending} onClick={handleResend}>
             Resend verification email

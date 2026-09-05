@@ -1,10 +1,11 @@
 import { useRef, useState, useMemo, type ChangeEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Send, Image, FileText, X, Video, Bookmark, Sparkles, Plus } from 'lucide-react'
+import { Send, Image, FileText, X, Video, Bookmark, Sparkles, Plus, FileType2 } from 'lucide-react'
 import { listFeed, createPost, uploadAttachment } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PostCard } from '@/components/domain/PostCard'
+import { typeMeta } from '@/lib/postTypeMeta'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
 import { PillTabs } from '@/components/ui/Tabs'
@@ -33,41 +34,96 @@ const FEED_TABS = [
   { key: 'saved', label: 'Saved Posts' },
 ]
 
+/** Blank-card guard: image → video frame → PDF tile → related-entity chip → text → generic fallback.
+ *  A saved post must never render with none of these, which is what happened before for
+ *  video-only/PDF-only posts and startup_update/idea/opportunity/event posts (those rely on the
+ *  typeMeta chip instead of free-text content, exactly like the real PostCard already does). */
+function SavedPostThumbnail({ post }: { post: Post }) {
+  const image = post.attachments.find((a) => a.kind === 'image')
+  const video = post.attachments.find((a) => a.kind === 'video')
+  const pdf = post.attachments.find((a) => a.kind === 'pdf')
+  const meta = typeMeta[post.type]
+
+  if (image) {
+    return <img src={image.url} alt="" className="size-full object-cover transition-transform group-hover:scale-105" />
+  }
+  if (video) {
+    return (
+      <div className="relative size-full bg-black">
+        <video src={video.url} muted preload="metadata" className="size-full object-cover" />
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="flex size-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-xs text-white">
+            <Video className="size-4" />
+          </span>
+        </span>
+      </div>
+    )
+  }
+  if (pdf) {
+    return (
+      <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-surface">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 border border-accent-500/20 shrink-0">
+          <FileType2 className="size-4.5" />
+        </span>
+        <p className="text-[11px] font-semibold text-fg-secondary truncate max-w-full">{pdf.fileName ?? 'Document.pdf'}</p>
+      </div>
+    )
+  }
+  if (meta) {
+    return (
+      <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-surface">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">
+          <meta.icon className="size-4.5" />
+        </span>
+        <p className="text-[11px] font-semibold text-fg-secondary">{meta.label}</p>
+      </div>
+    )
+  }
+  if (post.content) {
+    return (
+      <div className="flex size-full items-center justify-center p-3 text-center bg-surface">
+        <p className="text-xs text-fg-secondary line-clamp-5 leading-relaxed">{post.content}</p>
+      </div>
+    )
+  }
+  return (
+    <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-surface">
+      <span className="flex size-9 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">
+        <FileText className="size-4.5" />
+      </span>
+      <p className="text-[11px] font-semibold text-fg-secondary">View post</p>
+    </div>
+  )
+}
+
 function SavedPostsGrid({ posts }: { posts: Post[] }) {
   const postIds = posts.map((p) => p.id)
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-      {posts.map((post) => {
-        const image = post.attachments.find((a) => a.kind === 'image')
-        return (
-          <Link
-            key={post.id}
-            to={`/feed/${post.id}`}
-            state={{ from: '/feed?tab=saved', fromLabel: 'Back to saved posts', postIds }}
-            className="group relative aspect-square overflow-hidden rounded-xl bg-surface-sunken border border-border/80 hover:border-brand-500 transition-all"
-          >
-            {image ? (
-              <img src={image.url} alt="" className="size-full object-cover transition-transform group-hover:scale-105" />
-            ) : (
-              <div className="flex size-full items-center justify-center p-3 text-center bg-surface">
-                <p className="text-xs text-fg-secondary line-clamp-5 leading-relaxed">{post.content}</p>
-              </div>
-            )}
-            {post.attachments.length > 1 && (
-              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5">
-                +{post.attachments.length - 1}
-              </span>
-            )}
-            <span className="absolute top-2 left-2 flex size-6 items-center justify-center rounded-full bg-black/60 backdrop-blur-xs text-amber-400">
-              <Bookmark className="size-3.5 fill-current" />
+      {posts.map((post) => (
+        <Link
+          key={post.id}
+          to={`/feed/${post.id}`}
+          state={{ from: '/feed?tab=saved', fromLabel: 'Back to saved posts', postIds }}
+          className="group relative aspect-square overflow-hidden rounded-xl bg-surface-sunken border border-border/80 hover:border-brand-500 transition-all"
+        >
+          <SavedPostThumbnail post={post} />
+          {post.attachments.length > 1 && (
+            <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5">
+              +{post.attachments.length - 1}
             </span>
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <p className="text-[11px] font-semibold text-white truncate">{post.content || 'View post'}</p>
-            </div>
-          </Link>
-        )
-      })}
+          )}
+          <span className="absolute top-2 left-2 flex size-6 items-center justify-center rounded-full bg-black/60 backdrop-blur-xs text-amber-400">
+            <Bookmark className="size-3.5 fill-current" />
+          </span>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <p className="text-[11px] font-semibold text-white truncate">
+              {post.content || typeMeta[post.type]?.label || 'View post'}
+            </p>
+          </div>
+        </Link>
+      ))}
     </div>
   )
 }

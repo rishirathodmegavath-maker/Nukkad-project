@@ -4,10 +4,6 @@ import {
   Heart,
   MessageCircle,
   MessageCircleOff,
-  Rocket,
-  Lightbulb,
-  Briefcase,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -37,16 +33,9 @@ import { LikesModal } from '@/components/domain/LikesModal'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { formatRelativeTime, cn } from '@/lib/utils'
+import { typeMeta } from '@/lib/postTypeMeta'
 import { toast } from '@/store/toast.store'
 import * as feedService from '@/services/feed.service'
-
-const typeMeta: Record<Post['type'], { icon: typeof Rocket; label: string; to?: (id: string) => string } | null> = {
-  text: null,
-  startup_update: { icon: Rocket, label: 'Startup update', to: (id) => `/startups/${id}` },
-  idea: { icon: Lightbulb, label: 'New idea', to: (id) => `/ideas/${id}` },
-  opportunity: { icon: Briefcase, label: 'Opportunity', to: (id) => `/opportunities/${id}` },
-  event: { icon: CalendarDays, label: 'Event', to: (id) => `/events/${id}` },
-}
 
 const CONTENT_CLAMP_CHARS = 280
 

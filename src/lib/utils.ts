@@ -14,6 +14,21 @@ export function initials(name: string) {
     .join('')
 }
 
+/**
+ * Resolves a stored Resource URL to either an internal SPA route or a safe absolute external URL.
+ * Defensive at render time (not just at save time) so already-bad rows created before URL
+ * normalization existed still open correctly instead of falling through to the app root — a bare
+ * href like "notion.so/doc" is otherwise resolved by the browser as *relative to the current page*,
+ * not as an external destination.
+ */
+export function resolveResourceHref(url: string): { href: string; external: boolean } {
+  const trimmed = (url ?? '').trim()
+  if (!trimmed) return { href: '', external: false }
+  if (trimmed.startsWith('/')) return { href: trimmed, external: false }
+  if (/^https?:\/\//i.test(trimmed)) return { href: trimmed, external: true }
+  return { href: `https://${trimmed}`, external: true }
+}
+
 export function detectMeetingProvider(url: string): string {
   let host = ''
   try {

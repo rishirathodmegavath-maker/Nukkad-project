@@ -61,9 +61,14 @@ export default function ChapterDetailPage() {
   const joinMutation = useMutation({
     mutationFn: () => joinChapter(id!),
     onSuccess: () => {
+      // "Member" vs "Join" is derived from currentUser.chapterId (see isMember below), not from
+      // the chapter query — both must be invalidated or the button stays stuck on "Join" until a
+      // full page reload happens to refetch currentUser on its own.
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       toast.success(`Joined ${chapter?.name}`)
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not join this chapter'),
   })
 
   const [editOpen, setEditOpen] = useState(false)
