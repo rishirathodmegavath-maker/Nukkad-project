@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as messagesService from '@/services/messages.service'
 import { getCurrentUserId } from '@/services/users.service'
-import { subscribeToConversation, subscribeToConversationReads, subscribeToUserConversations } from '@/lib/socket-client'
+import { onSocketReconnect, subscribeToConversation, subscribeToConversationReads, subscribeToUserConversations } from '@/lib/socket-client'
 import type { Conversation, Message } from '@/types'
 import { mapConversation, mapMessage, type ConversationDto, type MessageDto } from '@/services/messages.service'
 
@@ -24,6 +24,15 @@ export function useConversations() {
       })
     })
   }, [myId, queryClient])
+
+  // A WebSocket drop-and-reconnect (network blip, laptop sleep/wake) loses nothing at the transport
+  // level, but any conversation update published while disconnected is gone — STOMP topics don't
+  // replay. Resync from the server once the socket is back instead of silently going stale.
+  useEffect(() => {
+    return onSocketReconnect(() => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] })
+    })
+  }, [queryClient])
 
   return useQuery({
     queryKey: ['conversations'],
@@ -50,9 +59,17 @@ export function useMessages(conversationId: string | undefined) {
         const idx = existing.findIndex((m) => m.id === incoming.id)
         // A known id is an in-place update (edit or unsend), not a duplicate to ignore — this is
         // what lets a live edit/unsend from the other participant update on screen without a refresh.
-        if (idx === -1) return [...existing, incoming]
-        const next = [...existing]
-        next[idx] = incoming
+        if (idx !== -1) {
+          const next = [...existing]
+          next[idx] = incoming
+          return next
+        }
+        // Sorted insert rather than a blind append: two participants sending near-simultaneously can
+        // have their broadcasts reach this client out of createdAt order (each send is its own HTTP
+        // request on its own server thread — nothing ties broadcast order to write order under
+        // concurrency, the same race the backend's own send-deadlock retry already accounts for).
+        const next = [...existing, incoming]
+        next.sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
         return next
       })
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
@@ -72,6 +89,16 @@ export function useMessages(conversationId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] })
     })
   }, [conversationId, myId, queryClient])
+
+  // Same resync-after-reconnect safety net as useConversations, scoped to whichever conversation is
+  // currently open — otherwise a message sent by the other participant during a network drop would
+  // never appear until the user manually reloads or navigates away and back.
+  useEffect(() => {
+    if (!conversationId) return
+    return onSocketReconnect(() => {
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] })
+    })
+  }, [conversationId, queryClient])
 
   return useQuery({
     queryKey: ['messages', conversationId],
