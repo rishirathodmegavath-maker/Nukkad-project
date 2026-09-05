@@ -90,7 +90,7 @@ function AvatarUpload({ user }: { user: User }) {
           doneLabel="Updated"
           onClick={() => fileInputRef.current?.click()}
         />
-        <p className="text-xs text-fg-muted mt-1">PNG, JPEG, WEBP or GIF. Max 5MB.</p>
+        <p className="text-xs text-fg-muted mt-1">PNG, JPEG, WEBP or GIF. Max 50MB.</p>
       </div>
       <input
         ref={fileInputRef}

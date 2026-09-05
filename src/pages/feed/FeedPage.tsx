@@ -190,7 +190,16 @@ export default function FeedPage() {
   }
 
   function addFiles(e: ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? []).filter((f) => pickKind(f) !== null)
+    const all = Array.from(e.target.files ?? [])
+    const selected = all.filter((f) => pickKind(f) !== null)
+    const rejected = all.length - selected.length
+    if (rejected > 0) {
+      toast.error(
+        rejected === 1
+          ? 'That file type is not supported. Attach an image, video, or PDF.'
+          : `${rejected} files were skipped — only images, videos, and PDFs are supported.`,
+      )
+    }
     setPendingFiles((prev) => {
       const combined = [
         ...prev,

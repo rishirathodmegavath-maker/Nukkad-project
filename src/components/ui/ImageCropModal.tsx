@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { ZoomIn } from 'lucide-react'
+import { ImageOff, ZoomIn } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -37,6 +37,7 @@ function ImageCropModalInner({
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null)
   const [viewportSize, setViewportSize] = useState<{ w: number; h: number } | null>(null)
+  const [loadError, setLoadError] = useState(false)
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 })
   const dragRef = useRef<{ startX: number; startY: number; startOffset: Offset } | null>(null)
@@ -150,18 +151,25 @@ function ImageCropModalInner({
           onPointerLeave={onPointerUp}
           className="relative w-full overflow-hidden rounded-lg bg-surface-sunken cursor-grab active:cursor-grabbing touch-none select-none"
         >
-          {objectUrl && (
+          {objectUrl && !loadError && (
             <img
               ref={imgRef}
               src={objectUrl}
               alt=""
               draggable={false}
               onLoad={(e) => setNaturalSize({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+              onError={() => setLoadError(true)}
               style={ready ? { width: dispW, height: dispH, transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-none pointer-events-none"
             />
           )}
-          {shape === 'circle' && (
+          {loadError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+              <ImageOff className="size-6 text-fg-muted" />
+              <p className="text-sm text-fg-secondary">This file couldn't be loaded as an image. Try a different file.</p>
+            </div>
+          )}
+          {shape === 'circle' && !loadError && (
             <div className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
           )}
         </div>

@@ -335,6 +335,7 @@ export function PostCard({ post }: { post: Post }) {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
       toast.success(post.isSaved ? 'Removed from saved posts' : 'Post saved')
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
   })
   const deleteMutation = useMutation({
     mutationFn: () => feedService.deletePost(post.id),
@@ -532,8 +533,9 @@ export function PostCard({ post }: { post: Post }) {
         <button
           type="button"
           onClick={() => saveMutation.mutate()}
+          disabled={saveMutation.isPending}
           className={cn(
-            'flex items-center cursor-pointer transition-all duration-150 active:scale-90 ml-auto',
+            'flex items-center cursor-pointer transition-all duration-150 active:scale-90 ml-auto disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
             post.isSaved ? 'text-amber-500' : 'text-fg-secondary hover:text-amber-500',
           )}
           aria-label={post.isSaved ? 'Remove from saved' : 'Save post'}

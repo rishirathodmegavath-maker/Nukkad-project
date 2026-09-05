@@ -54,6 +54,7 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['idea', ideaId] })
       queryClient.invalidateQueries({ queryKey: ['idea', ideaId, 'members'] })
+      queryClient.invalidateQueries({ queryKey: ['ideas'] })
       toast.success('You’re in! The creator has been notified.')
       onClose()
     },

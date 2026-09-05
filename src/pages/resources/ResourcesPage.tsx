@@ -13,7 +13,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { TagInput } from '@/components/ui/TagInput'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { toast } from '@/store/toast.store'
 import type { ResourceType } from '@/types'
 
@@ -165,7 +165,7 @@ export default function ResourcesPage() {
     [query, type],
   )
 
-  const { data: resources, isLoading } = useQuery({ queryKey: ['resources', filters], queryFn: () => listResources(filters) })
+  const { data: resources, isLoading, isError, refetch } = useQuery({ queryKey: ['resources', filters], queryFn: () => listResources(filters) })
 
   return (
     <div>
@@ -184,6 +184,8 @@ export default function ResourcesPage() {
 
       {isLoading ? (
         <CardSkeletonGrid count={6} />
+      ) : isError ? (
+        <ErrorState title="Couldn't load resources" onRetry={refetch} />
       ) : resources && resources.length > 0 ? (
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {resources.map((r) => (

@@ -43,7 +43,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
 import { PillTabs } from '@/components/ui/Tabs'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ReportModal } from '@/components/domain/ReportModal'
 import { CreateGroupModal } from '@/components/domain/CreateGroupModal'
@@ -1074,7 +1074,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
   const isGroup = currentConversation?.type === 'GROUP'
   const otherUserId = isGroup ? undefined : currentConversation?.participantIds.find((p) => p !== getCurrentUserId())
   const { data: otherUser } = useUser(otherUserId)
-  const { data: messages, isLoading } = useMessages(conversationId)
+  const { data: messages, isLoading, isError, refetch } = useMessages(conversationId)
   const sendMutation = useSendMessage(conversationId)
   const editMutation = useEditMessage(conversationId)
   const unsendMutation = useUnsendMessage(conversationId)
@@ -1331,6 +1331,15 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
           <div className="max-w-[900px] mx-auto flex flex-col w-full min-h-full justify-end">
             {isLoading ? (
               <Skeleton className="h-10 w-2/3 rounded-lg" />
+            ) : isError ? (
+              <ErrorState title="Couldn't load messages" onRetry={refetch} />
+            ) : groups.length === 0 ? (
+              <EmptyState
+                icon={<MessageSquare className="size-5" />}
+                title="No messages yet"
+                description="Send a message to start the conversation."
+                className="border-none py-10"
+              />
             ) : (
               groups.map((group, gi) => {
                 const groupIsOwn = group.senderId === myId
@@ -1478,7 +1487,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
 export default function MessagesPage() {
   const { conversationId } = useParams<{ conversationId?: string }>()
   const navigate = useNavigate()
-  const { data: conversations, isLoading, refetch } = useConversations()
+  const { data: conversations, isLoading, isError, refetch } = useConversations()
   const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [filter, setFilter] = useState<'all' | 'direct' | 'group'>('all')
 
@@ -1549,6 +1558,8 @@ export default function MessagesPage() {
             <Skeleton className="h-16 w-full rounded-xl" />
             <Skeleton className="h-16 w-full rounded-xl" />
           </div>
+        ) : isError ? (
+          <ErrorState title="Couldn't load conversations" onRetry={refetch} />
         ) : filteredConversations && filteredConversations.length > 0 ? (
           <div className="flex flex-col gap-2">
             {filteredConversations.map((c) => (
@@ -1562,7 +1573,12 @@ export default function MessagesPage() {
             className="border-none py-10"
           />
         ) : (
-          <EmptyState icon={<MessageSquare className="size-5" />} title="No conversations yet" className="border-none py-10" />
+          <EmptyState
+            icon={<MessageSquare className="size-5" />}
+            title="No conversations yet"
+            description="Start a conversation from a profile or connection."
+            className="border-none py-10"
+          />
         )}
       </div>
 

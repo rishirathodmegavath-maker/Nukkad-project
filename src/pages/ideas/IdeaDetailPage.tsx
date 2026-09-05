@@ -106,6 +106,9 @@ export default function IdeaDetailPage() {
   const invalidateIdea = () => {
     queryClient.invalidateQueries({ queryKey: ['idea', id] })
     queryClient.invalidateQueries({ queryKey: ['idea', id, 'members'] })
+    // Interest/team-size counts shown on IdeaCard (home, ideas list, chapter tab, profile) all read
+    // from this separate plural query — without it they go stale after any team action here.
+    queryClient.invalidateQueries({ queryKey: ['ideas'] })
   }
 
   const messageMutation = useMutation({

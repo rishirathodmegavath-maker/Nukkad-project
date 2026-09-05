@@ -59,16 +59,22 @@ export default function OpportunityDetailPage() {
     mutationFn: () => expressInterestInOpportunity(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', id] })
+      // applicantCount/interestCount shown on OpportunityCard (home, list, chapter tab, posted-by-me)
+      // reads from this separate plural query — without it those views go stale after this action.
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] })
       toast.success('You’re on the list — the poster has been notified.')
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not express interest'),
   })
 
   const withdrawMutation = useMutation({
     mutationFn: () => withdrawApplication(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', id] })
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] })
       toast.info('Application withdrawn')
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not withdraw application'),
   })
 
   const messageMutation = useMutation({

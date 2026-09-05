@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Users, Crown, Plus, ChevronRight, CheckCircle2, Camera, Trash2, Pencil, UserPlus, X } from 'lucide-react'
@@ -22,7 +22,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tabs } from '@/components/ui/Tabs'
-import { Skeleton } from '@/components/ui/Skeleton'
+import { Skeleton, CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { ErrorState, EmptyState } from '@/components/ui/EmptyState'
 import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
 import { ImageCropModal } from '@/components/ui/ImageCropModal'
@@ -39,6 +39,24 @@ import { ResourceCard } from '@/components/domain/ResourceCard'
 import { toast } from '@/store/toast.store'
 
 type TabKey = 'members' | 'ideas' | 'startups' | 'opportunities' | 'events' | 'resources'
+
+/** Shared loading/error/empty/data rendering for each of the 6 tab queries below — none of them
+ *  previously checked isLoading or isError at all, so a failed request silently rendered the
+ *  tab's "No X yet" empty copy as if the count were genuinely zero. */
+function TabSection<T>({
+  query,
+  emptyState,
+  children,
+}: {
+  query: { data?: T[]; isLoading: boolean; isError: boolean; refetch: () => void }
+  emptyState: ReactNode
+  children: (data: T[]) => ReactNode
+}) {
+  if (query.isLoading) return <CardSkeletonGrid count={3} />
+  if (query.isError) return <ErrorState title="Couldn't load this" onRetry={() => query.refetch()} />
+  if (!query.data || query.data.length === 0) return <>{emptyState}</>
+  return <>{children(query.data)}</>
+}
 
 export default function ChapterDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -66,6 +84,9 @@ export default function ChapterDetailPage() {
       // full page reload happens to refetch currentUser on its own.
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      // The member count shown on ChapterCard in the chapters grid comes from this separate
+      // plural query — without this it stays stale there until its own staleTime expires.
+      queryClient.invalidateQueries({ queryKey: ['chapters'] })
       toast.success(`Joined ${chapter?.name}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not join this chapter'),
@@ -79,6 +100,7 @@ export default function ChapterDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'chapter', id] })
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
+      queryClient.invalidateQueries({ queryKey: ['chapters'] })
       toast.success('Removed from chapter')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove member'),
@@ -308,85 +330,108 @@ export default function ChapterDetailPage() {
               </Button>
             </div>
           )}
-          {membersQuery.data && membersQuery.data.length > 0 ? (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {membersQuery.data.map((u) => (
-                <PersonCard
-                  key={u.id}
-                  user={u}
-                  topRightAction={
-                    isPresident && u.id !== chapter.presidentUserId ? (
-                      <button
-                        type="button"
-                        disabled={removeMemberMutation.isPending && removeMemberMutation.variables === u.id}
-                        onClick={() => removeMemberMutation.mutate(u.id)}
-                        title="Remove from chapter"
-                        className="shrink-0 rounded-full p-1.5 bg-surface/90 backdrop-blur-md border border-border/80 text-fg-muted hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50 cursor-pointer shadow-2xs"
-                      >
-                        <X className="size-3.5" />
-                      </button>
-                    ) : undefined
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No members joined this chapter yet"
-              description="Be among the first founders and builders to represent this local hub."
-            />
-          )}
+          <TabSection
+            query={membersQuery}
+            emptyState={
+              <EmptyState
+                title="No members joined this chapter yet"
+                description="Be among the first founders and builders to represent this local hub."
+              />
+            }
+          >
+            {(members) => (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {members.map((u) => (
+                  <PersonCard
+                    key={u.id}
+                    user={u}
+                    topRightAction={
+                      isPresident && u.id !== chapter.presidentUserId ? (
+                        <button
+                          type="button"
+                          disabled={removeMemberMutation.isPending && removeMemberMutation.variables === u.id}
+                          onClick={() => removeMemberMutation.mutate(u.id)}
+                          title="Remove from chapter"
+                          className="shrink-0 rounded-full p-1.5 bg-surface/90 backdrop-blur-md border border-border/80 text-fg-muted hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50 cursor-pointer shadow-2xs"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </TabSection>
         </div>
       )}
 
-      {tab === 'ideas' &&
-        (ideasQuery.data && ideasQuery.data.length > 0 ? (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {ideasQuery.data.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No ideas posted from this chapter yet"
-            description="Explore ideas from other chapters, or pitch an idea to find co-founders."
-            action={
-              <Link to="/ideas/new">
-                <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                  Pitch an Idea
-                </Button>
-              </Link>
-            }
-          />
-        ))}
+      {tab === 'ideas' && (
+        <TabSection
+          query={ideasQuery}
+          emptyState={
+            <EmptyState
+              title="No ideas posted from this chapter yet"
+              description="Explore ideas from other chapters, or pitch an idea to find co-founders."
+              action={
+                <Link to="/ideas/new">
+                  <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
+                    Pitch an Idea
+                  </Button>
+                </Link>
+              }
+            />
+          }
+        >
+          {(ideas) => (
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {ideas.map((idea) => (
+                <IdeaCard key={idea.id} idea={idea} />
+              ))}
+            </div>
+          )}
+        </TabSection>
+      )}
 
-      {tab === 'startups' &&
-        (startupsQuery.data && startupsQuery.data.length > 0 ? (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {startupsQuery.data.map((s) => (
-              <StartupCard key={s.id} startup={s} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No startups active in this chapter yet"
-            description="Ventures built by members of this chapter will be highlighted here."
-          />
-        ))}
+      {tab === 'startups' && (
+        <TabSection
+          query={startupsQuery}
+          emptyState={
+            <EmptyState
+              title="No startups active in this chapter yet"
+              description="Ventures built by members of this chapter will be highlighted here."
+            />
+          }
+        >
+          {(startups) => (
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {startups.map((s) => (
+                <StartupCard key={s.id} startup={s} />
+              ))}
+            </div>
+          )}
+        </TabSection>
+      )}
 
-      {tab === 'opportunities' &&
-        (opportunitiesQuery.data && opportunitiesQuery.data.length > 0 ? (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {opportunitiesQuery.data.map((o) => (
-              <OpportunityCard key={o.id} opportunity={o} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No open opportunities in this chapter right now"
-            description="Internships, co-founder roles, and founding positions posted here will show up."
-          />
-        ))}
+      {tab === 'opportunities' && (
+        <TabSection
+          query={opportunitiesQuery}
+          emptyState={
+            <EmptyState
+              title="No open opportunities in this chapter right now"
+              description="Internships, co-founder roles, and founding positions posted here will show up."
+            />
+          }
+        >
+          {(opportunities) => (
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {opportunities.map((o) => (
+                <OpportunityCard key={o.id} opportunity={o} />
+              ))}
+            </div>
+          )}
+        </TabSection>
+      )}
 
       {tab === 'events' && (
         <div>
@@ -399,43 +444,54 @@ export default function ChapterDetailPage() {
               </Link>
             </div>
           )}
-          {eventsQuery.data && eventsQuery.data.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-4">
-              {eventsQuery.data.map((e) => (
-                <EventCard key={e.id} event={e} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No events scheduled for this chapter"
-              description="Meetups, hackathons, and demo nights organized by this chapter will be shown here."
-              action={
-                canManageEvents ? (
-                  <Link to={`/events/new?chapterId=${chapter.id}`}>
-                    <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                      Create Chapter Event
-                    </Button>
-                  </Link>
-                ) : undefined
-              }
-            />
-          )}
+          <TabSection
+            query={eventsQuery}
+            emptyState={
+              <EmptyState
+                title="No events scheduled for this chapter"
+                description="Meetups, hackathons, and demo nights organized by this chapter will be shown here."
+                action={
+                  canManageEvents ? (
+                    <Link to={`/events/new?chapterId=${chapter.id}`}>
+                      <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
+                        Create Chapter Event
+                      </Button>
+                    </Link>
+                  ) : undefined
+                }
+              />
+            }
+          >
+            {(events) => (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {events.map((e) => (
+                  <EventCard key={e.id} event={e} />
+                ))}
+              </div>
+            )}
+          </TabSection>
         </div>
       )}
 
-      {tab === 'resources' &&
-        (resourcesQuery.data && resourcesQuery.data.length > 0 ? (
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {resourcesQuery.data.map((r) => (
-              <ResourceCard key={r.id} resource={r} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No resources shared with this chapter yet"
-            description="Templates, guides, and slide decks shared by members will appear here."
-          />
-        ))}
+      {tab === 'resources' && (
+        <TabSection
+          query={resourcesQuery}
+          emptyState={
+            <EmptyState
+              title="No resources shared with this chapter yet"
+              description="Templates, guides, and slide decks shared by members will appear here."
+            />
+          }
+        >
+          {(resources) => (
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {resources.map((r) => (
+                <ResourceCard key={r.id} resource={r} />
+              ))}
+            </div>
+          )}
+        </TabSection>
+      )}
 
       <input
         ref={coverInputRef}

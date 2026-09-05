@@ -147,6 +147,14 @@ export const apiClient = {
   delete: <T>(path: string, headers?: Record<string, string>) => request<T>(path, { method: 'DELETE', headers }),
 }
 
+/** Mirrors the backend's `spring.servlet.multipart.max-file-size` (application.yml) so oversized
+ * files are rejected instantly, client-side, instead of after a full upload only to hit a 400. */
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+
+function formatMb(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+}
+
 /**
  * Multipart upload (e.g. avatar images, resource files) — bypasses the JSON request() path since
  * FormData sets its own Content-Type. `extraFields` are appended alongside the file for endpoints
@@ -159,6 +167,10 @@ export async function uploadFile<T>(
   fieldName = 'file',
   extraFields?: Record<string, string | undefined>,
 ): Promise<T> {
+  if (file && file.size > MAX_UPLOAD_BYTES) {
+    throw new ApiError(`File is too large (${formatMb(file.size)}). Maximum allowed size is ${formatMb(MAX_UPLOAD_BYTES)}.`, 0, 'FILE_TOO_LARGE')
+  }
+
   const session = getStoredSession()
   const formData = new FormData()
   if (file) formData.append(fieldName, file)

@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/Button'
 
 export default function ChaptersListPage() {
@@ -22,7 +22,7 @@ export default function ChaptersListPage() {
     [query, mineOnly, currentUser?.id],
   )
 
-  const { data: chapters, isLoading } = useQuery({
+  const { data: chapters, isLoading, isError, refetch } = useQuery({
     queryKey: ['chapters', filters],
     queryFn: () => listChapters(filters),
     enabled: !mineOnly || !!currentUser,
@@ -53,6 +53,8 @@ export default function ChaptersListPage() {
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />
+      ) : isError ? (
+        <ErrorState title="Couldn't load chapters" onRetry={refetch} />
       ) : chapters && chapters.length > 0 ? (
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {chapters.map((chapter) => (
