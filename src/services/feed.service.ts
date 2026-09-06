@@ -1,5 +1,5 @@
 import { apiClient, getPage, uploadFile, type Page } from '@/lib/api-client'
-import type { AttachmentKind, Post, PostAttachment, PostComment, PostLiker, PostType } from '@/types'
+import type { AttachmentKind, Post, PostAttachment, PostComment, PostLiker, PostType, SavedPostsSort } from '@/types'
 
 interface AttachmentDto {
   id: string
@@ -22,6 +22,7 @@ export interface PostDto {
   commentsDisabled: boolean
   createdAt: string
   attachments: AttachmentDto[]
+  savedAt: string | null
 }
 
 /** Ref to an already-uploaded, not-yet-attached file — same shape the upload endpoint returns and create-post expects. */
@@ -50,12 +51,32 @@ export function mapPost(dto: PostDto): Post {
     commentsDisabled: dto.commentsDisabled,
     createdAt: dto.createdAt,
     attachments: dto.attachments.map(mapAttachment),
+    savedAt: dto.savedAt ?? undefined,
   }
 }
 
 export async function listFeed(authorId?: string, size?: number): Promise<Post[]> {
   const dtos = await getPage<PostDto>('/feed', { authorId, size })
   return dtos.map(mapPost)
+}
+
+export interface ListSavedPostsParams {
+  sort?: SavedPostsSort
+  type?: PostType
+  page?: number
+  size?: number
+}
+
+/** Dedicated saved-posts query — queries the user's saves directly rather than filtering a page of
+ * /feed, so a post saved long ago (long since scrolled past in the main feed) is still reachable. */
+export async function listSavedPosts(params: ListSavedPostsParams = {}): Promise<Page<Post>> {
+  const query = new URLSearchParams()
+  if (params.sort) query.set('sort', params.sort)
+  if (params.type) query.set('type', params.type)
+  query.set('page', String(params.page ?? 0))
+  query.set('size', String(params.size ?? 20))
+  const result = await apiClient.get<Page<PostDto>>(`/feed/saved?${query.toString()}`)
+  return { ...result, content: result.content.map(mapPost) }
 }
 
 export async function uploadAttachment(file: File): Promise<AttachmentRef> {

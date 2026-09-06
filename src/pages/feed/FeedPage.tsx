@@ -1,19 +1,21 @@
-import { useRef, useState, useMemo, type ChangeEvent } from 'react'
+import { useRef, useState, useEffect, type ChangeEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Send, Image, FileText, X, Video, Bookmark, Sparkles, Plus, FileType2 } from 'lucide-react'
-import { listFeed, createPost, uploadAttachment } from '@/services/feed.service'
+import { listFeed, listSavedPosts, createPost, uploadAttachment } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PostCard } from '@/components/domain/PostCard'
 import { typeMeta } from '@/lib/postTypeMeta'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
 import { PillTabs } from '@/components/ui/Tabs'
+import { Select } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 import { UploadButton, UploadSpinnerOverlay, type UploadPhase } from '@/components/ui/UploadButton'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { toast } from '@/store/toast.store'
-import type { Post } from '@/types'
+import type { Post, PostType, SavedPostsSort } from '@/types'
 
 const MAX_ATTACHMENTS = 10
 
@@ -138,6 +140,86 @@ function SavedPostsGrid({ posts }: { posts: Post[] }) {
   )
 }
 
+const SAVED_TYPE_FILTERS: { key: string; label: string }[] = [
+  { key: 'all', label: 'All types' },
+  { key: 'text', label: 'Text' },
+  { key: 'startup_update', label: 'Startup updates' },
+  { key: 'idea', label: 'Ideas' },
+  { key: 'opportunity', label: 'Opportunities' },
+  { key: 'event', label: 'Events' },
+]
+
+/** Dedicated saved-posts view: queries the user's saves directly (server-side paginated, sorted and
+ *  filtered) instead of filtering a single page of /feed, so older saves are always reachable. */
+function SavedPostsTab() {
+  const [sort, setSort] = useState<SavedPostsSort>('newestSaved')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [page, setPage] = useState(0)
+  const [posts, setPosts] = useState<Post[]>([])
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['savedPosts', sort, typeFilter, page],
+    queryFn: () => listSavedPosts({ sort, type: typeFilter === 'all' ? undefined : (typeFilter as PostType), page }),
+  })
+
+  // Sort/filter changes start a fresh accumulation at page 0 rather than mixing pages built under a
+  // different sort/filter — same idea as LikesModal resetting its own accumulated list.
+  useEffect(() => {
+    setPage(0)
+    setPosts([])
+  }, [sort, typeFilter])
+
+  useEffect(() => {
+    if (!data) return
+    setPosts((prev) => (page === 0 ? data.content : [...prev, ...data.content]))
+  }, [data, page])
+
+  const hasMore = data ? page + 1 < data.totalPages : false
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <div className="w-full sm:w-56">
+          <Select value={sort} onChange={(e) => setSort(e.target.value as SavedPostsSort)} aria-label="Sort saved posts">
+            <option value="newestSaved">Newest saved</option>
+            <option value="oldestSaved">Oldest saved</option>
+            <option value="newestPost">Newest post</option>
+            <option value="oldestPost">Oldest post</option>
+          </Select>
+        </div>
+        <PillTabs items={SAVED_TYPE_FILTERS} value={typeFilter} onChange={setTypeFilter} />
+      </div>
+
+      {isLoading && page === 0 ? (
+        <CardSkeletonGrid count={3} />
+      ) : isError ? (
+        <ErrorState title="Couldn't load saved posts" onRetry={() => refetch()} />
+      ) : posts.length > 0 ? (
+        <>
+          <SavedPostsGrid posts={posts} />
+          {hasMore && (
+            <div className="flex justify-center mt-4">
+              <Button variant="ghost" size="sm" isLoading={isLoading} onClick={() => setPage((p) => p + 1)}>
+                Load more
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <EmptyState
+          icon={<Bookmark className="size-6" />}
+          title={typeFilter === 'all' ? 'No saved posts yet' : 'No saved posts match this filter'}
+          description={
+            typeFilter === 'all'
+              ? 'Click the bookmark icon on any post in your feed to save it for later reference.'
+              : 'Try a different type filter, or switch back to All types.'
+          }
+        />
+      )}
+    </div>
+  )
+}
+
 export default function FeedPage() {
   const queryClient = useQueryClient()
   const { data: currentUser } = useCurrentUser()
@@ -154,15 +236,8 @@ export default function FeedPage() {
   const { data: posts, isLoading, isError, refetch } = useQuery({
     queryKey: ['feed'],
     queryFn: () => listFeed(),
+    enabled: tab === 'all',
   })
-
-  const filteredPosts = useMemo(() => {
-    if (!posts) return []
-    if (tab === 'saved') {
-      return posts.filter((p) => p.isSaved)
-    }
-    return posts
-  }, [posts, tab])
 
   const postMutation = useMutation({
     mutationFn: async () => {
@@ -359,7 +434,9 @@ export default function FeedPage() {
         </div>
       </Modal>
 
-      {isLoading ? (
+      {tab === 'saved' ? (
+        <SavedPostsTab />
+      ) : isLoading ? (
         <CardSkeletonGrid count={3} />
       ) : isError ? (
         <EmptyState
@@ -374,22 +451,12 @@ export default function FeedPage() {
             </button>
           }
         />
-      ) : filteredPosts && filteredPosts.length > 0 ? (
-        tab === 'saved' ? (
-          <SavedPostsGrid posts={filteredPosts} />
-        ) : (
-          <div className="flex flex-col gap-5">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        )
-      ) : tab === 'saved' ? (
-        <EmptyState
-          icon={<Bookmark className="size-6" />}
-          title="No saved posts yet"
-          description="Click the bookmark icon on any post in your feed to save it for later reference."
-        />
+      ) : posts && posts.length > 0 ? (
+        <div className="flex flex-col gap-5">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
       ) : (
         <EmptyState
           icon={<Sparkles className="size-6" />}

@@ -23,7 +23,11 @@ export interface Post {
   commentsDisabled?: boolean
   createdAt: string
   attachments: PostAttachment[]
+  /** Only set on results from the dedicated saved-posts listing — when this post was saved. */
+  savedAt?: string
 }
+
+export type SavedPostsSort = 'newestSaved' | 'oldestSaved' | 'newestPost' | 'oldestPost'
 
 export interface PostComment {
   id: string

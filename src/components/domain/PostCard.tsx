@@ -333,6 +333,7 @@ export function PostCard({ post }: { post: Post }) {
     mutationFn: () => feedService.toggleSave(post.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
+      queryClient.invalidateQueries({ queryKey: ['savedPosts'] })
       toast.success(post.isSaved ? 'Removed from saved posts' : 'Post saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
