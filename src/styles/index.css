@@ -155,3 +155,31 @@
 .animate-in {
   animation: fade-in-up 0.15s ease-out;
 }
+
+@keyframes heart-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  30% {
+    transform: scale(0.95);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.animate-heart-burst {
+  animation: heart-burst 0.8s ease-out forwards;
+}

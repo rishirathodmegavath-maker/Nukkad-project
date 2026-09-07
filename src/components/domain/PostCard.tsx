@@ -40,19 +40,42 @@ import * as feedService from '@/services/feed.service'
 
 const CONTENT_CLAMP_CHARS = 280
 
-function AttachmentCarousel({ attachments }: { attachments: PostAttachment[] }) {
+function AttachmentCarousel({
+  attachments,
+  isLiked,
+  onDoubleTapLike,
+}: {
+  attachments: PostAttachment[]
+  isLiked?: boolean
+  onDoubleTapLike?: () => void
+}) {
   const [index, setIndex] = useState(0)
+  const [burstId, setBurstId] = useState(0)
   const media = attachments.filter((a) => a.kind === 'image' || a.kind === 'video')
   const docs = attachments.filter((a) => a.kind === 'pdf')
+
+  function handleDoubleClick() {
+    setBurstId((n) => n + 1)
+    if (!isLiked) onDoubleTapLike?.()
+  }
 
   return (
     <div className="flex flex-col gap-2.5">
       {media.length > 0 && (
-        <div className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs">
+        <div
+          className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs select-none"
+          onDoubleClick={handleDoubleClick}
+        >
           {media[index].kind === 'video' ? (
             <video src={media[index].url} controls className="size-full object-contain bg-black" />
           ) : (
             <img src={media[index].url} alt="" className="size-full object-cover" loading="lazy" />
+          )}
+
+          {burstId > 0 && (
+            <div key={burstId} className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Heart className="size-20 text-white fill-white drop-shadow-lg animate-heart-burst" />
+            </div>
           )}
 
           {media.length > 1 && (
@@ -508,7 +531,13 @@ export function PostCard({ post }: { post: Post }) {
           </div>
         )}
 
-        {post.attachments.length > 0 && <AttachmentCarousel attachments={post.attachments} />}
+        {post.attachments.length > 0 && (
+          <AttachmentCarousel
+            attachments={post.attachments}
+            isLiked={post.isLiked}
+            onDoubleTapLike={() => likeMutation.mutate()}
+          />
+        )}
 
         {meta && post.relatedId && (
           <Link
