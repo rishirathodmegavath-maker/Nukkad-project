@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
+import type { Page } from '@/lib/api-client'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -324,10 +325,46 @@ export function PostCard({ post }: { post: Post }) {
   const [editContent, setEditContent] = useState(post.content)
   const [likesOpen, setLikesOpen] = useState(false)
 
+  // Optimistic like: the toggle should feel instant, not wait on a POST + a full feed refetch.
+  // Flip it locally the moment the click happens, then reconcile with whatever the server
+  // actually returns — rolling back only if the request itself fails.
   const likeMutation = useMutation({
     mutationFn: () => feedService.toggleLike(post.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['feed'] }),
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update like'),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['feed'] })
+      await queryClient.cancelQueries({ queryKey: ['savedPosts'], exact: false })
+
+      const wasLiked = post.isLiked
+      const flip = (p: Post): Post =>
+        p.id === post.id ? { ...p, isLiked: !wasLiked, likesCount: p.likesCount + (wasLiked ? -1 : 1) } : p
+
+      const prevFeed = queryClient.getQueryData<Post[]>(['feed'])
+      if (prevFeed) queryClient.setQueryData<Post[]>(['feed'], prevFeed.map(flip))
+
+      const prevDetail = queryClient.getQueryData<Post>(['feed', post.id, 'detail'])
+      if (prevDetail) queryClient.setQueryData<Post>(['feed', post.id, 'detail'], flip(prevDetail))
+
+      const prevSaved = queryClient.getQueriesData<Page<Post>>({ queryKey: ['savedPosts'], exact: false })
+      prevSaved.forEach(([key, data]) => {
+        if (data) queryClient.setQueryData(key, { ...data, content: data.content.map(flip) })
+      })
+
+      return { prevFeed, prevDetail, prevSaved }
+    },
+    onSuccess: (updated) => {
+      const reconcile = (p: Post) => (p.id === updated.id ? updated : p)
+      queryClient.setQueryData<Post[]>(['feed'], (prev) => prev?.map(reconcile))
+      queryClient.setQueryData<Post>(['feed', updated.id, 'detail'], (prev) => (prev ? updated : prev))
+      queryClient.setQueriesData<Page<Post>>({ queryKey: ['savedPosts'], exact: false }, (prev) =>
+        prev ? { ...prev, content: prev.content.map(reconcile) } : prev,
+      )
+    },
+    onError: (err, _vars, context) => {
+      if (context?.prevFeed) queryClient.setQueryData(['feed'], context.prevFeed)
+      if (context?.prevDetail) queryClient.setQueryData(['feed', post.id, 'detail'], context.prevDetail)
+      context?.prevSaved?.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      toast.error(err instanceof Error ? err.message : 'Could not update like')
+    },
   })
   const saveMutation = useMutation({
     mutationFn: () => feedService.toggleSave(post.id),
