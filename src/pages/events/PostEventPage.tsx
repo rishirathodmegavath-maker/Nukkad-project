@@ -38,6 +38,7 @@ export default function PostEventPage() {
   const [startAt, setStartAt] = useState(() => toLocalInputValue(new Date(Date.now() + 24 * 3600 * 1000)))
   const [endAt, setEndAt] = useState(() => toLocalInputValue(new Date(Date.now() + 26 * 3600 * 1000)))
   const [capacityInput, setCapacityInput] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState('')
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -51,6 +52,7 @@ export default function PostEventPage() {
         location: isOnline ? undefined : location,
         meetingUrl: isOnline ? meetingUrl : undefined,
         capacity: capacityInput ? Number(capacityInput) : undefined,
+        coverImageUrl: coverImageUrl.trim() || undefined,
       }),
     onSuccess: (event) => {
       queryClient.invalidateQueries({ queryKey: ['events'] })
@@ -141,6 +143,14 @@ export default function PostEventPage() {
             value={capacityInput}
             onChange={(e) => setCapacityInput(e.target.value)}
             placeholder="e.g. 50"
+          />
+
+          <Input
+            label="Cover image URL"
+            hint="Optional"
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
+            placeholder="https://…"
           />
 
           <div className="flex items-center justify-end gap-3 pt-2 mt-2 border-t border-border/60">

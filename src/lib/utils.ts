@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** "1 member" / "2 members" — never a bare, always-plural noun tacked onto a count. */
+export function pluralize(count: number, singular: string, plural: string = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 export function initials(name: string) {
   return name
     .split(' ')

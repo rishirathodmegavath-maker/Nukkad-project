@@ -1,3 +1,13 @@
+export interface ChapterActivity {
+  type: 'IDEA' | 'STARTUP' | 'OPPORTUNITY' | 'EVENT' | 'RESOURCE' | 'MEMBER_JOINED'
+  entityId: string
+  title: string | null
+  actorUserId: string | null
+  actorName: string | null
+  actorAvatarUrl: string | null
+  occurredAt: string
+}
+
 export interface Chapter {
   id: string
   name: string

@@ -23,6 +23,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
+import { CoverImage } from '@/components/ui/CoverImage'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
@@ -147,7 +148,12 @@ export default function EventDetailPage() {
           <Card padding="none" className="overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
             {event.coverImageUrl && (
               <div className="h-56 sm:h-72 w-full bg-surface-sunken overflow-hidden">
-                <img src={event.coverImageUrl} alt={event.title} className="size-full object-cover" />
+                <CoverImage
+                  src={event.coverImageUrl}
+                  alt={event.title}
+                  className="size-full object-cover"
+                  fallback={<div className="size-full bg-gradient-to-br from-brand-500/10 via-surface-sunken to-accent-500/10" />}
+                />
               </div>
             )}
 

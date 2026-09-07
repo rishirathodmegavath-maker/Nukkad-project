@@ -72,7 +72,7 @@ export function EventCard({ event }: { event: NukkadEvent }) {
               <span>{formatTimeOnly(event.startAt)}</span>
             </span>
 
-            <span className="flex items-center gap-1.5 truncate">
+            <span className="flex items-center gap-1.5 min-w-0">
               {event.isOnline ? (
                 <Video className="size-3.5 text-fg-muted shrink-0" />
               ) : (

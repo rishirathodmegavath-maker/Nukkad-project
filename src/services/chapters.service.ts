@@ -1,6 +1,6 @@
 import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
-import type { Chapter, User } from '@/types'
+import type { Chapter, ChapterActivity, User } from '@/types'
 
 interface ChapterDto {
   id: string
@@ -113,4 +113,8 @@ export async function uploadChapterCover(id: string, file: File): Promise<Chapte
 
 export async function removeChapterCover(id: string): Promise<Chapter> {
   return mapChapter(await apiClient.delete<ChapterDto>(`/chapters/${id}/cover`))
+}
+
+export async function listChapterActivity(id: string, limit = 10): Promise<ChapterActivity[]> {
+  return apiClient.get<ChapterActivity[]>(`/chapters/${id}/activity?limit=${limit}`)
 }

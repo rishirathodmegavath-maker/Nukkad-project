@@ -48,7 +48,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { ReportModal } from '@/components/domain/ReportModal'
 import { CreateGroupModal } from '@/components/domain/CreateGroupModal'
 import { toast } from '@/store/toast.store'
-import { cn, formatRelativeTime, formatDateTime, formatSeenTime } from '@/lib/utils'
+import { cn, formatRelativeTime, formatDateTime, formatSeenTime, pluralize } from '@/lib/utils'
 import type { Conversation, Message, User } from '@/types'
 
 function groupDisplayName(conversation: Conversation): string {
@@ -635,7 +635,7 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
               {iAmAdmin && <Pencil className="size-3.5 text-fg-muted" />}
             </button>
           )}
-          <p className="text-xs text-fg-muted">{group.participants.length} members</p>
+          <p className="text-xs text-fg-muted">{pluralize(group.participants.length, 'member')}</p>
         </div>
 
         <div className="px-4 py-3.5 border-b border-border-subtle">

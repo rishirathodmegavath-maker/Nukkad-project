@@ -23,6 +23,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
   const [startAt, setStartAt] = useState(toLocalInputValue(event.startAt))
   const [endAt, setEndAt] = useState(toLocalInputValue(event.endAt))
   const [capacityInput, setCapacityInput] = useState(event.capacity ? String(event.capacity) : '')
+  const [coverImageUrl, setCoverImageUrl] = useState(event.coverImageUrl ?? '')
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -35,6 +36,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
         location: isOnline ? undefined : location,
         meetingUrl: isOnline ? meetingUrl : undefined,
         capacity: capacityInput ? Number(capacityInput) : undefined,
+        coverImageUrl: coverImageUrl.trim() || undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event', event.id] })
@@ -75,6 +77,14 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
           value={capacityInput}
           onChange={(e) => setCapacityInput(e.target.value)}
           placeholder="e.g. 50"
+        />
+
+        <Input
+          label="Cover image URL"
+          hint="Optional"
+          value={coverImageUrl}
+          onChange={(e) => setCoverImageUrl(e.target.value)}
+          placeholder="https://…"
         />
 
         <div className="flex justify-end gap-2 -mx-5 -mb-5 border-t border-border-subtle px-5 pt-4 pb-5">

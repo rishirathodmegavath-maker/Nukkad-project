@@ -1,7 +1,25 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Users, Crown, Plus, ChevronRight, CheckCircle2, Camera, Trash2, Pencil, UserPlus, X } from 'lucide-react'
+import {
+  Users,
+  Crown,
+  Plus,
+  ChevronRight,
+  CheckCircle2,
+  Camera,
+  Trash2,
+  Pencil,
+  UserPlus,
+  X,
+  Activity,
+  Lightbulb,
+  Rocket,
+  Briefcase,
+  Calendar,
+  FolderOpen,
+  FolderPlus,
+} from 'lucide-react'
 import {
   getChapter,
   joinChapter,
@@ -10,6 +28,7 @@ import {
   removeChapterCover,
   removeChapterMember,
   deleteChapter,
+  listChapterActivity,
 } from '@/services/chapters.service'
 import { listUsers } from '@/services/users.service'
 import { listIdeas } from '@/services/ideas.service'
@@ -22,6 +41,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
+import { CoverImage } from '@/components/ui/CoverImage'
 import { Tabs } from '@/components/ui/Tabs'
 import { Skeleton, CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { ErrorState, EmptyState } from '@/components/ui/EmptyState'
@@ -32,12 +52,15 @@ import { Modal } from '@/components/ui/Modal'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { ChapterEditModal } from '@/components/domain/ChapterEditModal'
 import { AddChapterMemberModal } from '@/components/domain/AddChapterMemberModal'
+import { ShareResourceModal } from '@/components/domain/ShareResourceModal'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { EventCard } from '@/components/domain/EventCard'
 import { ResourceCard } from '@/components/domain/ResourceCard'
 import { toast } from '@/store/toast.store'
+import { pluralize, formatRelativeTime } from '@/lib/utils'
+import type { ChapterActivity } from '@/types'
 
 type TabKey = 'members' | 'ideas' | 'startups' | 'opportunities' | 'events' | 'resources'
 
@@ -57,6 +80,50 @@ function TabSection<T>({
   if (query.isError) return <ErrorState title="Couldn't load this" onRetry={() => query.refetch()} />
   if (!query.data || query.data.length === 0) return <>{emptyState}</>
   return <>{children(query.data)}</>
+}
+
+const ACTIVITY_ICON: Record<ChapterActivity['type'], ReactNode> = {
+  IDEA: <Lightbulb className="size-3.5" />,
+  STARTUP: <Rocket className="size-3.5" />,
+  OPPORTUNITY: <Briefcase className="size-3.5" />,
+  EVENT: <Calendar className="size-3.5" />,
+  RESOURCE: <FolderOpen className="size-3.5" />,
+  MEMBER_JOINED: <UserPlus className="size-3.5" />,
+}
+
+function activityText(item: ChapterActivity): string {
+  const name = item.actorName ?? 'Someone'
+  switch (item.type) {
+    case 'IDEA':
+      return `${name} posted an idea — ${item.title}`
+    case 'STARTUP':
+      return `${item.title} was added`
+    case 'OPPORTUNITY':
+      return `${name} posted an opportunity — ${item.title}`
+    case 'EVENT':
+      return `${item.title} was created`
+    case 'RESOURCE':
+      return `${name} added a resource — ${item.title}`
+    case 'MEMBER_JOINED':
+      return `${name} joined the chapter`
+  }
+}
+
+function activityHref(item: ChapterActivity): string {
+  switch (item.type) {
+    case 'IDEA':
+      return `/ideas/${item.entityId}`
+    case 'STARTUP':
+      return `/startups/${item.entityId}`
+    case 'OPPORTUNITY':
+      return `/opportunities/${item.entityId}`
+    case 'EVENT':
+      return `/events/${item.entityId}`
+    case 'RESOURCE':
+      return `/resources/${item.entityId}`
+    case 'MEMBER_JOINED':
+      return `/people/${item.entityId}`
+  }
 }
 
 export default function ChapterDetailPage() {
@@ -106,6 +173,7 @@ export default function ChapterDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false)
   const [addMemberOpen, setAddMemberOpen] = useState(false)
+  const [addResourceOpen, setAddResourceOpen] = useState(false)
 
   const removeMemberMutation = useMutation({
     mutationFn: (userId: string) => removeChapterMember(id!, userId),
@@ -195,6 +263,11 @@ export default function ChapterDetailPage() {
     queryFn: () => listResources({ chapterId: id }),
     enabled: tab === 'resources' && !!id,
   })
+  const activityQuery = useQuery({
+    queryKey: ['chapter', id, 'activity'],
+    queryFn: () => listChapterActivity(id!),
+    enabled: !!id,
+  })
 
   if (isLoading) {
     return (
@@ -224,18 +297,23 @@ export default function ChapterDetailPage() {
 
       <Card padding="none" className="overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
         <div className="relative h-44 sm:h-56 w-full bg-surface-sunken overflow-hidden group">
-          {chapter.coverImageUrl ? (
-            <img src={chapter.coverImageUrl} alt={chapter.name} className="size-full object-cover" />
-          ) : isPresident ? (
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 size-full text-xs font-semibold text-fg-muted hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors"
-            >
-              <Camera className="size-4" /> Add a cover photo
-            </button>
-          ) : (
-            <div className="size-full bg-gradient-to-br from-brand-500/10 via-surface-sunken to-accent-500/10" />
-          )}
+          <CoverImage
+            src={chapter.coverImageUrl}
+            alt={chapter.name}
+            className="size-full object-cover"
+            fallback={
+              isPresident ? (
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 size-full text-xs font-semibold text-fg-muted hover:text-fg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors"
+                >
+                  <Camera className="size-4" /> Add a cover photo
+                </button>
+              ) : (
+                <div className="size-full bg-gradient-to-br from-brand-500/10 via-surface-sunken to-accent-500/10" />
+              )
+            }
+          />
 
           <UploadSpinnerOverlay phase={isPresident ? coverPhase : 'idle'} />
 
@@ -280,7 +358,7 @@ export default function ChapterDetailPage() {
             <p className="text-sm text-fg-muted leading-relaxed max-w-xl">{chapter.description}</p>
             <div className="flex flex-wrap items-center gap-4 mt-4 text-xs sm:text-sm text-fg-muted font-medium">
               <span className="flex items-center gap-1.5">
-                <Users className="size-4 text-fg-muted" /> {chapter.memberCount ?? 0} members
+                <Users className="size-4 text-fg-muted" /> {pluralize(chapter.memberCount ?? 0, 'member')}
               </span>
               {president && (
                 <Link to={`/people/${president.id}`} className="flex items-center gap-1.5 text-fg hover:underline group">
@@ -333,6 +411,29 @@ export default function ChapterDetailPage() {
           </div>
         </div>
       </Card>
+
+      {(activityQuery.data?.length ?? 0) > 0 && (
+        <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-fg mb-3">
+            <Activity className="size-4 text-brand-600" /> Recent Activity
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {activityQuery.data!.map((item) => (
+              <li key={`${item.type}-${item.entityId}`} className="flex items-start gap-3 text-sm">
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-fg-muted mt-0.5">
+                  {ACTIVITY_ICON[item.type]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link to={activityHref(item)} className="text-fg hover:underline">
+                    {activityText(item)}
+                  </Link>
+                  <p className="text-xs text-fg-muted mt-0.5">{formatRelativeTime(item.occurredAt)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <Tabs
         value={tab}
@@ -500,23 +601,39 @@ export default function ChapterDetailPage() {
       )}
 
       {tab === 'resources' && (
-        <TabSection
-          query={resourcesQuery}
-          emptyState={
-            <EmptyState
-              title="No resources shared with this chapter yet"
-              description="Templates, guides, and slide decks shared by members will appear here."
-            />
-          }
-        >
-          {(resources) => (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {resources.map((r) => (
-                <ResourceCard key={r.id} resource={r} />
-              ))}
+        <div>
+          {isPresident && (
+            <div className="flex justify-end mb-4">
+              <Button size="sm" leftIcon={<FolderPlus className="size-3.5" />} onClick={() => setAddResourceOpen(true)}>
+                Add resource
+              </Button>
             </div>
           )}
-        </TabSection>
+          <TabSection
+            query={resourcesQuery}
+            emptyState={
+              <EmptyState
+                title="No resources shared with this chapter yet"
+                description="Templates, guides, and slide decks shared by members will appear here."
+                action={
+                  isPresident ? (
+                    <Button size="sm" leftIcon={<FolderPlus className="size-3.5" />} onClick={() => setAddResourceOpen(true)}>
+                      Add resource
+                    </Button>
+                  ) : undefined
+                }
+              />
+            }
+          >
+            {(resources) => (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {resources.map((r) => (
+                  <ResourceCard key={r.id} resource={r} />
+                ))}
+              </div>
+            )}
+          </TabSection>
+        </div>
       )}
 
       <input
@@ -562,6 +679,12 @@ export default function ChapterDetailPage() {
         existingMemberIds={(membersQuery.data ?? []).map((u) => u.id)}
         open={addMemberOpen}
         onClose={() => setAddMemberOpen(false)}
+      />
+      <ShareResourceModal
+        open={addResourceOpen}
+        onClose={() => setAddResourceOpen(false)}
+        lockedChapterId={chapter.id}
+        lockedChapterName={chapter.name}
       />
       <Modal
         open={confirmDeleteOpen}
