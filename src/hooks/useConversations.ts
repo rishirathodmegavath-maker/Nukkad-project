@@ -73,8 +73,16 @@ export function useMessages(conversationId: string | undefined) {
         return next
       })
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
+      // The other participant is looking at this exact conversation right now (this subscription
+      // only exists while it's open) — tell the server immediately so their "Sent" flips to "Seen"
+      // live, instead of only on this client's next mount (the on-mount markRead in MessagesPage).
+      if (incoming.senderId !== myId) {
+        messagesService.markConversationRead(conversationId).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['conversations'] })
+        })
+      }
     })
-  }, [conversationId, queryClient])
+  }, [conversationId, queryClient, myId])
 
   // Real read receipts, not a faked status: this event fires for GROUP conversations too, but the
   // backend only ever flips the per-message is_read/read_at columns for DIRECT ones (group read

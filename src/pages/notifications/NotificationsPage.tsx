@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { cn, formatRelativeTime } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { NotificationType, NukkadNotification } from '@/types'
@@ -168,7 +168,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState('all')
-  const { data: notifications, isLoading } = useNotifications()
+  const { data: notifications, isLoading, isError, refetch } = useNotifications()
   const markAllRead = useMarkAllNotificationsRead()
 
   const tabs = useMemo(() => {
@@ -229,6 +229,8 @@ export default function NotificationsPage() {
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />
+      ) : isError ? (
+        <ErrorState title="Couldn't load notifications" onRetry={refetch} />
       ) : filteredNotifications && filteredNotifications.length > 0 ? (
         <Card padding="none" className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
           {filteredNotifications.map((notif) => (

@@ -5,6 +5,7 @@ import { Users, Crown, Plus, ChevronRight, CheckCircle2, Camera, Trash2, Pencil,
 import {
   getChapter,
   joinChapter,
+  leaveChapter,
   uploadChapterCover,
   removeChapterCover,
   removeChapterMember,
@@ -90,6 +91,17 @@ export default function ChapterDetailPage() {
       toast.success(`Joined ${chapter?.name}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not join this chapter'),
+  })
+
+  const leaveMutation = useMutation({
+    mutationFn: () => leaveChapter(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chapter', id] })
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      queryClient.invalidateQueries({ queryKey: ['chapters'] })
+      toast.success(`Left ${chapter?.name}`)
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not leave this chapter'),
   })
 
   const [editOpen, setEditOpen] = useState(false)
@@ -295,10 +307,24 @@ export default function ChapterDetailPage() {
                 </Button>
               </div>
             )}
-            {isMember ? (
+            {isMember && isPresident ? (
               <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
                 <CheckCircle2 className="size-4" /> Member
               </span>
+            ) : isMember ? (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
+                  <CheckCircle2 className="size-4" /> Member
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  isLoading={leaveMutation.isPending}
+                  onClick={() => leaveMutation.mutate()}
+                >
+                  Leave chapter
+                </Button>
+              </div>
             ) : (
               <Button isLoading={joinMutation.isPending} onClick={() => joinMutation.mutate()}>
                 Join chapter

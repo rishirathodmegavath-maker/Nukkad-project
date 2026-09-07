@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 
 export default function EventsListPage() {
   const navigate = useNavigate()
@@ -17,7 +17,7 @@ export default function EventsListPage() {
   const [mineOnly, setMineOnly] = useState(false)
   const { data: currentUser } = useCurrentUser()
 
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading, isError, refetch } = useQuery({
     queryKey: ['events', upcomingOnly, mineOnly, currentUser?.id],
     queryFn: () => listEvents({ upcoming: upcomingOnly, organizerUserId: mineOnly ? currentUser?.id : undefined }),
     enabled: !mineOnly || !!currentUser,
@@ -55,6 +55,8 @@ export default function EventsListPage() {
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />
+      ) : isError ? (
+        <ErrorState title="Couldn't load events" onRetry={refetch} />
       ) : events && events.length > 0 ? (
         <div className="grid sm:grid-cols-2 gap-4">
           {events.map((event) => (
