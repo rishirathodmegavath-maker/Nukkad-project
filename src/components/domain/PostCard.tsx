@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Heart,
@@ -51,26 +51,41 @@ function AttachmentCarousel({
 }) {
   const [index, setIndex] = useState(0)
   const [burstId, setBurstId] = useState(0)
+  const lastTapRef = useRef(0)
   const media = attachments.filter((a) => a.kind === 'image' || a.kind === 'video')
   const docs = attachments.filter((a) => a.kind === 'pdf')
 
-  function handleDoubleClick() {
-    setBurstId((n) => n + 1)
-    if (!isLiked) onDoubleTapLike?.()
+  // `dblclick` doesn't reliably synthesize from two quick taps on touch devices, so this is a
+  // manual double-tap detector on plain `onClick` (which fires for both mouse and touch) instead.
+  function handleMediaTap() {
+    const now = Date.now()
+    if (now - lastTapRef.current < 300) {
+      lastTapRef.current = 0
+      setBurstId((n) => n + 1)
+      if (!isLiked) onDoubleTapLike?.()
+    } else {
+      lastTapRef.current = now
+    }
   }
 
   return (
     <div className="flex flex-col gap-2.5">
       {media.length > 0 && (
-        <div
-          className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs select-none"
-          onDoubleClick={handleDoubleClick}
-        >
+        <div className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs select-none">
           {media[index].kind === 'video' ? (
             <video src={media[index].url} controls className="size-full object-contain bg-black" />
           ) : (
             <img src={media[index].url} alt="" className="size-full object-cover" loading="lazy" />
           )}
+
+          {/* Transparent tap-catcher, sitting in front of the media rather than handling taps on
+              the media itself — a double-click landing directly on a <video> element triggers the
+              browser's own native fullscreen toggle, which this avoids entirely. Left clear of the
+              video's native controls strip at the bottom so play/seek/volume/fullscreen still work. */}
+          <div
+            className={cn('absolute inset-x-0 top-0 cursor-default', media[index].kind === 'video' ? 'bottom-9' : 'bottom-0')}
+            onClick={handleMediaTap}
+          />
 
           {burstId > 0 && (
             <div key={burstId} className="absolute inset-0 flex items-center justify-center pointer-events-none">
