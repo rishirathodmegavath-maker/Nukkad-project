@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Heart,
@@ -20,6 +21,8 @@ import {
   X,
   Volume2,
   VolumeX,
+  RectangleVertical,
+  RectangleHorizontal,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
@@ -42,6 +45,94 @@ import * as feedService from '@/services/feed.service'
 
 const CONTENT_CLAMP_CHARS = 280
 
+/** A tap on a feed video opens this instead of the browser's native fullscreen — defaults to a
+ *  portrait frame regardless of the source video's own aspect ratio (letterboxed via
+ *  object-contain), with a toggle to switch to a landscape frame. No native controls anywhere
+ *  (no fullscreen/overflow-menu/volume-slider clutter) — just tap-to-play and a mute button. */
+function ExpandedVideoViewer({ open, onClose, url }: { open: boolean; onClose: () => void; url: string }) {
+  const [orientation, setOrientation] = useState<'vertical' | 'horizontal'>('vertical')
+  const [muted, setMuted] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [open, onClose])
+
+  if (!open) return null
+
+  function togglePlay() {
+    const el = videoRef.current
+    if (!el) return
+    if (el.paused) el.play().catch(() => {})
+    else el.pause()
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-60 bg-black flex flex-col items-center justify-center animate-in">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close video"
+        className="absolute top-4 left-4 z-10 flex size-9 items-center justify-center rounded-full bg-white/10 text-white shadow-md backdrop-blur-xs hover:bg-white/20 transition-colors cursor-pointer"
+      >
+        <X className="size-5" />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setMuted((m) => !m)}
+        aria-label={muted ? 'Unmute video' : 'Mute video'}
+        className="absolute top-4 right-4 z-10 flex size-9 items-center justify-center rounded-full bg-white/10 text-white shadow-md backdrop-blur-xs hover:bg-white/20 transition-colors cursor-pointer"
+      >
+        {muted ? <VolumeX className="size-4.5" /> : <Volume2 className="size-4.5" />}
+      </button>
+
+      <div
+        className={cn(
+          'relative mx-auto flex items-center justify-center cursor-pointer touch-manipulation',
+          orientation === 'vertical' ? 'h-[80vh] max-h-[80vh] aspect-[9/16]' : 'w-[92vw] max-w-4xl aspect-video',
+        )}
+        onClick={togglePlay}
+      >
+        <video ref={videoRef} src={url} muted={muted} playsInline autoPlay className="size-full object-contain" />
+      </div>
+
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-xs p-1 shadow-md">
+        <button
+          type="button"
+          onClick={() => setOrientation('vertical')}
+          className={cn(
+            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
+            orientation === 'vertical' ? 'bg-white text-neutral-900' : 'text-white/80 hover:text-white',
+          )}
+        >
+          <RectangleVertical className="size-3.5" /> Vertical
+        </button>
+        <button
+          type="button"
+          onClick={() => setOrientation('horizontal')}
+          className={cn(
+            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
+            orientation === 'horizontal' ? 'bg-white text-neutral-900' : 'text-white/80 hover:text-white',
+          )}
+        >
+          <RectangleHorizontal className="size-3.5" /> Horizontal
+        </button>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 function AttachmentCarousel({
   attachments,
   isLiked,
@@ -54,6 +145,7 @@ function AttachmentCarousel({
   const [index, setIndex] = useState(0)
   const [burstId, setBurstId] = useState(0)
   const [muted, setMuted] = useState(true)
+  const [expandedOpen, setExpandedOpen] = useState(false)
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const media = attachments.filter((a) => a.kind === 'image' || a.kind === 'video')
@@ -67,18 +159,18 @@ function AttachmentCarousel({
     if (!el || current?.kind !== 'video') return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.intersectionRatio >= 0.5) el.play().catch(() => {})
+        if (entry.intersectionRatio >= 0.5 && !expandedOpen) el.play().catch(() => {})
         else el.pause()
       },
       { threshold: [0, 0.5, 1] },
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [current?.url, current?.kind])
+  }, [current?.url, current?.kind, expandedOpen])
 
   // `dblclick` doesn't reliably synthesize from two quick taps on touch devices, so single vs.
   // double tap is disambiguated by hand: the first tap waits briefly to see if a second one
-  // follows before acting, matching how every feed app treats tap-to-play vs. double-tap-to-like.
+  // follows before acting, matching how every feed app treats tap-to-open vs. double-tap-to-like.
   function handleMediaTap() {
     if (clickTimerRef.current) {
       clearTimeout(clickTimerRef.current)
@@ -89,10 +181,10 @@ function AttachmentCarousel({
     }
     clickTimerRef.current = setTimeout(() => {
       clickTimerRef.current = null
-      const el = videoRef.current
-      if (!el) return
-      if (el.paused) el.play().catch(() => {})
-      else el.pause()
+      if (current?.kind === 'video') {
+        videoRef.current?.pause()
+        setExpandedOpen(true)
+      }
     }, 280)
   }
 
@@ -101,32 +193,28 @@ function AttachmentCarousel({
       {media.length > 0 && (
         <div className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs select-none">
           {current.kind === 'video' ? (
-            <video ref={videoRef} src={current.url} muted={muted} playsInline controls className="size-full object-contain bg-black" />
+            <video ref={videoRef} src={current.url} muted={muted} playsInline className="size-full object-contain bg-black" />
           ) : (
             <img src={current.url} alt="" className="size-full object-cover" loading="lazy" />
           )}
 
           {/* Transparent tap-catcher, sitting in front of the media rather than handling taps on
-              the media itself — a double-click landing directly on a <video> element triggers the
-              browser's own native fullscreen toggle, which this avoids entirely. Left clear of the
-              video's native controls strip at the bottom so play/seek/volume/fullscreen still work.
-              touch-action: manipulation stops mobile browsers from treating the second tap as a
-              double-tap-to-zoom gesture instead of letting our own handler see it. */}
-          <div
-            className={cn('absolute inset-x-0 top-0 cursor-pointer touch-manipulation', current.kind === 'video' ? 'bottom-9' : 'bottom-0')}
-            onClick={handleMediaTap}
-          />
+              the media itself. touch-action: manipulation stops mobile browsers from treating the
+              second tap as a double-tap-to-zoom gesture instead of letting our own handler see it. */}
+          <div className="absolute inset-0 cursor-pointer touch-manipulation" onClick={handleMediaTap} />
 
           {current.kind === 'video' && (
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              className="absolute top-3 left-3 flex size-8.5 items-center justify-center rounded-full bg-neutral-900/75 text-white shadow-md backdrop-blur-xs hover:bg-neutral-900/90 transition-all cursor-pointer"
+              className="absolute top-3 right-3 flex size-8.5 items-center justify-center rounded-full bg-neutral-900/75 text-white shadow-md backdrop-blur-xs hover:bg-neutral-900/90 transition-all cursor-pointer"
               aria-label={muted ? 'Unmute video' : 'Mute video'}
             >
               {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
             </button>
           )}
+
+          <ExpandedVideoViewer open={expandedOpen && current.kind === 'video'} onClose={() => setExpandedOpen(false)} url={current.url} />
 
           {burstId > 0 && (
             <div key={burstId} className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -136,7 +224,7 @@ function AttachmentCarousel({
 
           {media.length > 1 && (
             <>
-              <span className="absolute top-3 right-3 rounded-full bg-neutral-900/75 backdrop-blur-xs text-white text-xs font-semibold px-2.5 py-1 shadow-xs">
+              <span className="absolute top-3 left-3 rounded-full bg-neutral-900/75 backdrop-blur-xs text-white text-xs font-semibold px-2.5 py-1 shadow-xs">
                 {index + 1}/{media.length}
               </span>
               {index > 0 && (
