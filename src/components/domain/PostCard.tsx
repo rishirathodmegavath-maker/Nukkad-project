@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Heart,
@@ -18,6 +18,8 @@ import {
   Send,
   Bookmark,
   X,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
@@ -51,41 +53,80 @@ function AttachmentCarousel({
 }) {
   const [index, setIndex] = useState(0)
   const [burstId, setBurstId] = useState(0)
-  const lastTapRef = useRef(0)
+  const [muted, setMuted] = useState(true)
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const media = attachments.filter((a) => a.kind === 'image' || a.kind === 'video')
   const docs = attachments.filter((a) => a.kind === 'pdf')
+  const current = media[index]
 
-  // `dblclick` doesn't reliably synthesize from two quick taps on touch devices, so this is a
-  // manual double-tap detector on plain `onClick` (which fires for both mouse and touch) instead.
+  // Autoplay (muted, as browsers require) once at least half the video is actually on screen
+  // while scrolling the feed, and pause again once it drops back below that.
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || current?.kind !== 'video') return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio >= 0.5) el.play().catch(() => {})
+        else el.pause()
+      },
+      { threshold: [0, 0.5, 1] },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [current?.url, current?.kind])
+
+  // `dblclick` doesn't reliably synthesize from two quick taps on touch devices, so single vs.
+  // double tap is disambiguated by hand: the first tap waits briefly to see if a second one
+  // follows before acting, matching how every feed app treats tap-to-play vs. double-tap-to-like.
   function handleMediaTap() {
-    const now = Date.now()
-    if (now - lastTapRef.current < 300) {
-      lastTapRef.current = 0
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = null
       setBurstId((n) => n + 1)
       if (!isLiked) onDoubleTapLike?.()
-    } else {
-      lastTapRef.current = now
+      return
     }
+    clickTimerRef.current = setTimeout(() => {
+      clickTimerRef.current = null
+      const el = videoRef.current
+      if (!el) return
+      if (el.paused) el.play().catch(() => {})
+      else el.pause()
+    }, 280)
   }
 
   return (
     <div className="flex flex-col gap-2.5">
       {media.length > 0 && (
         <div className="relative w-full aspect-[16/10] sm:aspect-video bg-surface-sunken rounded-xl overflow-hidden group shadow-2xs select-none">
-          {media[index].kind === 'video' ? (
-            <video src={media[index].url} controls className="size-full object-contain bg-black" />
+          {current.kind === 'video' ? (
+            <video ref={videoRef} src={current.url} muted={muted} playsInline controls className="size-full object-contain bg-black" />
           ) : (
-            <img src={media[index].url} alt="" className="size-full object-cover" loading="lazy" />
+            <img src={current.url} alt="" className="size-full object-cover" loading="lazy" />
           )}
 
           {/* Transparent tap-catcher, sitting in front of the media rather than handling taps on
               the media itself — a double-click landing directly on a <video> element triggers the
               browser's own native fullscreen toggle, which this avoids entirely. Left clear of the
-              video's native controls strip at the bottom so play/seek/volume/fullscreen still work. */}
+              video's native controls strip at the bottom so play/seek/volume/fullscreen still work.
+              touch-action: manipulation stops mobile browsers from treating the second tap as a
+              double-tap-to-zoom gesture instead of letting our own handler see it. */}
           <div
-            className={cn('absolute inset-x-0 top-0 cursor-default', media[index].kind === 'video' ? 'bottom-9' : 'bottom-0')}
+            className={cn('absolute inset-x-0 top-0 cursor-pointer touch-manipulation', current.kind === 'video' ? 'bottom-9' : 'bottom-0')}
             onClick={handleMediaTap}
           />
+
+          {current.kind === 'video' && (
+            <button
+              type="button"
+              onClick={() => setMuted((m) => !m)}
+              className="absolute top-3 left-3 flex size-8.5 items-center justify-center rounded-full bg-neutral-900/75 text-white shadow-md backdrop-blur-xs hover:bg-neutral-900/90 transition-all cursor-pointer"
+              aria-label={muted ? 'Unmute video' : 'Mute video'}
+            >
+              {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+            </button>
+          )}
 
           {burstId > 0 && (
             <div key={burstId} className="absolute inset-0 flex items-center justify-center pointer-events-none">
