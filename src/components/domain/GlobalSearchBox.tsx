@@ -155,6 +155,8 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" />
         <input
           ref={inputRef}
+          id={`global-search-${variant}`}
+          name={`global-search-${variant}`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
