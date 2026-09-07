@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import * as authService from '@/services/auth.service'
+import { persistSession } from '@/lib/session'
 import { queryClient } from '@/lib/query-client'
 import type { LoginCredentials, Session, SignupPayload } from '@/types'
 
@@ -11,10 +12,11 @@ interface AuthState {
   login: (credentials: LoginCredentials) => Promise<void>
   signup: (payload: SignupPayload) => Promise<{ email: string; message: string; verified: boolean }>
   completeGoogleLogin: (code: string, redirectUri: string) => Promise<void>
+  markOnboardingComplete: () => void
   logout: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   status: 'idle',
   isAuthenticated: false,
@@ -33,6 +35,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     const session = await authService.exchangeGoogleCode(code, redirectUri)
     queryClient.clear()
     set({ session, isAuthenticated: true })
+  },
+  markOnboardingComplete: () => {
+    const { session } = get()
+    if (!session) return
+    const updated: Session = { ...session, onboardingCompleted: true }
+    persistSession(updated)
+    set({ session: updated })
   },
   logout: async () => {
     await authService.logout()

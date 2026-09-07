@@ -64,7 +64,11 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       await login({ email: trimmedEmail, password })
-      toast.success('Welcome back!')
+      const session = useAuthStore.getState().session
+      if (session?.onboardingCompleted !== false) {
+        const firstName = session?.name?.trim().split(/\s+/)[0]
+        toast.success(firstName ? `Welcome back, ${firstName}!` : 'Welcome back!')
+      }
       goHome()
     } catch (err) {
       if (err instanceof ApiError && err.errorCode === 'EMAIL_NOT_VERIFIED') {

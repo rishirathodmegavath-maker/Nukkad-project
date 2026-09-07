@@ -60,6 +60,11 @@ export default function GoogleCallbackPage() {
 
       try {
         await completeGoogleLogin(code, googleRedirectUri())
+        const session = useAuthStore.getState().session
+        if (session?.onboardingCompleted !== false) {
+          const firstName = session?.name?.trim().split(/\s+/)[0]
+          toast.success(firstName ? `Welcome back, ${firstName}!` : 'Welcome back!')
+        }
         navigate('/', { replace: true })
       } catch (err) {
         if (err instanceof ApiError && err.errorCode === 'GOOGLE_NO_ACCOUNT') {

@@ -5,7 +5,7 @@ import type { DeviceSession, LoginCredentials, Session, SignupPayload } from '@/
 export { getStoredSession } from '@/lib/session'
 
 interface AuthResponseDto {
-  user: { id: string }
+  user: { id: string; name: string; onboardingCompleted: boolean }
   accessToken: string
   refreshToken: string
   expiresIn: number
@@ -20,6 +20,8 @@ interface RegisterResponseDto {
 function toSession(dto: AuthResponseDto): Session {
   return {
     userId: dto.user.id,
+    name: dto.user.name,
+    onboardingCompleted: dto.user.onboardingCompleted,
     token: dto.accessToken,
     refreshToken: dto.refreshToken,
     expiresAt: new Date(Date.now() + dto.expiresIn * 1000).toISOString(),

@@ -70,6 +70,8 @@ async function refreshAccessToken(currentRefreshToken: string): Promise<Session>
       const previous = getStoredSession()
       const session: Session = {
         userId: previous?.userId ?? '',
+        name: previous?.name ?? '',
+        onboardingCompleted: previous?.onboardingCompleted ?? true,
         token: body.data.accessToken,
         refreshToken: body.data.refreshToken,
         expiresAt: new Date(Date.now() + body.data.expiresIn * 1000).toISOString(),

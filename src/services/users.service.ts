@@ -338,6 +338,11 @@ export async function updateCurrentUser(patch: Partial<User>): Promise<User> {
   return mapUser(dto)
 }
 
+export async function completeOnboarding(): Promise<User> {
+  const dto = await apiClient.post<UserDto>('/users/me/onboarding/complete')
+  return mapUser(dto)
+}
+
 export async function uploadAvatar(file: File): Promise<User> {
   return mapUser(await uploadFile<UserDto>('/users/me/avatar', file))
 }
