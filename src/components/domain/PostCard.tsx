@@ -21,8 +21,7 @@ import {
   X,
   Volume2,
   VolumeX,
-  RectangleVertical,
-  RectangleHorizontal,
+  RotateCw,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
@@ -106,28 +105,16 @@ function ExpandedVideoViewer({ open, onClose, url }: { open: boolean; onClose: (
         <video ref={videoRef} src={url} muted={muted} playsInline autoPlay className="size-full object-contain" />
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-xs p-1 shadow-md">
-        <button
-          type="button"
-          onClick={() => setOrientation('vertical')}
-          className={cn(
-            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
-            orientation === 'vertical' ? 'bg-white text-neutral-900' : 'text-white/80 hover:text-white',
-          )}
-        >
-          <RectangleVertical className="size-3.5" /> Vertical
-        </button>
-        <button
-          type="button"
-          onClick={() => setOrientation('horizontal')}
-          className={cn(
-            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
-            orientation === 'horizontal' ? 'bg-white text-neutral-900' : 'text-white/80 hover:text-white',
-          )}
-        >
-          <RectangleHorizontal className="size-3.5" /> Horizontal
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setOrientation((o) => (o === 'vertical' ? 'horizontal' : 'vertical'))}
+        aria-label={orientation === 'vertical' ? 'Rotate to horizontal view' : 'Rotate to vertical view'}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex size-11 items-center justify-center rounded-full bg-white/10 text-white shadow-md backdrop-blur-xs hover:bg-white/20 transition-colors cursor-pointer"
+      >
+        <RotateCw
+          className={cn('size-5 transition-transform duration-300', orientation === 'horizontal' && 'rotate-90')}
+        />
+      </button>
     </div>,
     document.body,
   )
