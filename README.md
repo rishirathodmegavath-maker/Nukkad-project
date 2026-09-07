@@ -84,5 +84,26 @@ change, since components only ever import from `services/`, never from
 
 Not built, by design — see `Nukkad_V1_Refined_Scope.pdf`: full Academy/LMS, advanced AI
 matching (rules-based only for now), investment execution (introductions only, no money
-movement), video calling, group/team chat, advanced chapter analytics, full college
-management, complex payments, advanced feed ranking, complex mentorship platform.
+movement), video calling, advanced chapter analytics, full college management, complex
+payments, advanced feed ranking, complex mentorship platform.
+
+## Release notes
+
+### v1.0.0
+
+First production-verified release. A real Spring Boot/MySQL backend has since replaced
+the mock service layer this doc describes above (the service-layer contract stayed
+stable, per the "Backend integration" section) — that background is kept here as
+project history, not current architecture.
+
+Areas covered by end-to-end production verification: security hardening (CSP,
+authorization, IDOR/CORS/actuator regression checks), Networks (connections, requests,
+blocking), Feed, Ideas, Startups, Opportunities, Chapters, Events, Resources, Messaging
+(direct + group chat, WebSocket reconnect resync), Notifications, upload reliability
+(avatar/cover/resource, crop flow), Saved Posts (dedicated server-side query, sorting,
+filters), deep links, and responsive layout (desktop/laptop/mobile).
+
+Known, deliberately deferred issues at this release — see the Final E2E report for
+detail: a chapter cover-image URL field that accepts hosts the CSP doesn't allow-list,
+event attendee visibility being open to any authenticated user (matches current backend
+design), and a few unconfirmed/low-severity UI timing observations.
