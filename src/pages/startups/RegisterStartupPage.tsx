@@ -41,7 +41,7 @@ export default function RegisterStartupPage() {
         chapterId: chapterId || undefined,
       }),
     onSuccess: (startup) => {
-      toast.success('Startup added to Nukkad')
+      toast.success('Startup created — add more details any time from its profile')
       navigate(`/startups/${startup.id}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not register your startup'),
@@ -120,7 +120,7 @@ export default function RegisterStartupPage() {
               Cancel
             </Button>
             <Button type="submit" size="lg" isLoading={mutation.isPending}>
-              Add my startup
+              Create Startup
             </Button>
           </div>
         </form>

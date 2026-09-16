@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, Users, TrendingUp, Briefcase, Pencil, Check, X, UserPlus, Camera, Trash2, ChevronRight } from 'lucide-react'
+import { Heart, Users, TrendingUp, Briefcase, Pencil, Check, X, UserPlus, Camera, Trash2, ChevronRight, MapPin, Globe, Lock, Sparkles } from 'lucide-react'
 import {
   getStartup,
   toggleFollowStartup,
@@ -20,6 +20,7 @@ import {
   getStartupRoles,
 } from '@/services/startups.service'
 import { getFundraiseByStartup } from '@/services/investors.service'
+import { listOpportunities } from '@/services/opportunities.service'
 import { useUser } from '@/hooks/useUser'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
@@ -35,6 +36,7 @@ import { JoinStartupModal } from '@/components/domain/JoinStartupModal'
 import { StartupEditModal } from '@/components/domain/StartupEditModal'
 import { AddTeammateModal } from '@/components/domain/AddTeammateModal'
 import { FundraiseCreateModal } from '@/components/domain/FundraiseCreateModal'
+import { StartupMaterialsSection } from '@/components/domain/StartupMaterialsSection'
 import { formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { Startup, StartupMembershipStatus } from '@/types'
@@ -142,6 +144,15 @@ export default function StartupDetailPage() {
   const rolesQuery = useQuery({
     queryKey: ['startup', id, 'roles'],
     queryFn: () => getStartupRoles(id!),
+    enabled: !!id,
+  })
+
+  // Real, applyable opportunities attributed to this startup — the actual hiring system, unlike
+  // the legacy `startup_roles` teaser above (kept only because JoinStartupModal's role picker
+  // still reads it; nothing ever writes to it, so it never has anything to show here anyway).
+  const opportunitiesQuery = useQuery({
+    queryKey: ['startup', id, 'opportunities'],
+    queryFn: () => listOpportunities({ startupId: id }),
     enabled: !!id,
   })
 
@@ -314,11 +325,35 @@ export default function StartupDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-xl font-bold text-fg">{startup.name}</h1>
                   {startup.isRaising && <Badge tone="accent">Raising</Badge>}
+                  {startup.visibility === 'Nukkad Members' && (
+                    <Badge tone="neutral" className="flex items-center gap-1">
+                      <Lock className="size-3" /> Members only
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm text-fg-muted mt-0.5">{startup.tagline}</p>
+                {(startup.location || startup.website) && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-fg-muted">
+                    {startup.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="size-3" /> {startup.location}
+                      </span>
+                    )}
+                    {startup.website && (
+                      <a
+                        href={startup.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 hover:text-fg hover:underline"
+                      >
+                        <Globe className="size-3" /> {startup.website.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {isFounder && (
@@ -412,21 +447,102 @@ export default function StartupDetailPage() {
           </Card>
         )}
 
-        <Card>
-          <div className="grid sm:grid-cols-2 gap-5">
-            <div>
-              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Problem</p>
-              <p className="text-sm text-fg-secondary leading-relaxed">{startup.problem}</p>
+        {isFounder && startup.profileCompletionPercent < 100 && (
+          <Card className="flex items-center justify-between gap-3 border-brand-200 dark:border-brand-900 bg-brand-50/40 dark:bg-brand-950/20">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex items-center justify-center size-9 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-300 shrink-0">
+                <Sparkles className="size-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-fg">Your profile is {startup.profileCompletionPercent}% complete</p>
+                <p className="text-xs text-fg-muted">Add more details so founders, investors and teammates get the full picture.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Solution</p>
-              <p className="text-sm text-fg-secondary leading-relaxed">{startup.solution}</p>
+            <Button size="sm" onClick={() => setEditModalOpen(true)} className="shrink-0">
+              Complete profile
+            </Button>
+          </Card>
+        )}
+
+        {(startup.problem || startup.solution) && (
+          <Card>
+            <div className="grid sm:grid-cols-2 gap-5">
+              {startup.problem && (
+                <div>
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Problem</p>
+                  <p className="text-sm text-fg-secondary leading-relaxed">{startup.problem}</p>
+                </div>
+              )}
+              {startup.solution && (
+                <div>
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Solution</p>
+                  <p className="text-sm text-fg-secondary leading-relaxed">{startup.solution}</p>
+                </div>
+              )}
             </div>
-          </div>
-          <div className="mt-5 pt-5 border-t border-border-subtle flex items-center gap-2 text-sm text-fg-secondary">
-            <TrendingUp className="size-4 text-success-500" /> {startup.traction}
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {(startup.targetCustomer || startup.businessModel || startup.whatBuilding) && (
+          <Card>
+            <h2 className="font-semibold text-fg mb-3">Startup details</h2>
+            <div className="grid sm:grid-cols-2 gap-5">
+              {startup.targetCustomer && (
+                <div>
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Target customer</p>
+                  <p className="text-sm text-fg-secondary leading-relaxed">{startup.targetCustomer}</p>
+                </div>
+              )}
+              {startup.businessModel && (
+                <div>
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">Business model</p>
+                  <p className="text-sm text-fg-secondary leading-relaxed">{startup.businessModel}</p>
+                </div>
+              )}
+              {startup.whatBuilding && (
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">What we're building</p>
+                  <p className="text-sm text-fg-secondary leading-relaxed">{startup.whatBuilding}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {(startup.revenue || startup.customers || startup.users || startup.growth || startup.otherTraction) && (
+          <Card>
+            <h2 className="font-semibold text-fg mb-3 flex items-center gap-2">
+              <TrendingUp className="size-4 text-success-500" /> Traction
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              {startup.revenue && (
+                <div className="rounded-lg border border-border-subtle p-2.5">
+                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Revenue</p>
+                  <p className="text-sm font-semibold text-fg truncate">{startup.revenue}</p>
+                </div>
+              )}
+              {startup.customers && (
+                <div className="rounded-lg border border-border-subtle p-2.5">
+                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Customers</p>
+                  <p className="text-sm font-semibold text-fg truncate">{startup.customers}</p>
+                </div>
+              )}
+              {startup.users && (
+                <div className="rounded-lg border border-border-subtle p-2.5">
+                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Users</p>
+                  <p className="text-sm font-semibold text-fg truncate">{startup.users}</p>
+                </div>
+              )}
+              {startup.growth && (
+                <div className="rounded-lg border border-border-subtle p-2.5">
+                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Growth</p>
+                  <p className="text-sm font-semibold text-fg truncate">{startup.growth}</p>
+                </div>
+              )}
+            </div>
+            {startup.otherTraction && <p className="text-sm text-fg-secondary leading-relaxed">{startup.otherTraction}</p>}
+          </Card>
+        )}
 
         <Card>
           <h2 className="font-semibold text-fg mb-3">Updates</h2>
@@ -446,33 +562,43 @@ export default function StartupDetailPage() {
 
         <Card>
           <h2 className="font-semibold text-fg mb-3 flex items-center gap-2">
-            <Briefcase className="size-4" /> Open roles
+            <Briefcase className="size-4" /> Open Positions
           </h2>
-          {rolesQuery.data && rolesQuery.data.length > 0 ? (
+          {opportunitiesQuery.isLoading ? (
             <div className="flex flex-col gap-2.5">
-              {rolesQuery.data.map((role) => (
-                <div key={role.id} className="flex items-center justify-between border border-border-subtle rounded-lg p-3">
-                  <div>
-                    <p className="text-sm font-medium text-fg">{role.title}</p>
-                    <p className="text-xs text-fg-muted mt-0.5">
-                      {role.type} · {role.location} {role.remote && '· Remote friendly'}
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+            </div>
+          ) : opportunitiesQuery.data && opportunitiesQuery.data.length > 0 ? (
+            <div className="flex flex-col gap-2.5">
+              {opportunitiesQuery.data.map((opp) => (
+                <div key={opp.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-lg p-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">{opp.title}</p>
+                    <p className="text-xs text-fg-muted mt-0.5 truncate">
+                      {opp.type} {opp.location && `· ${opp.location}`} {opp.remote && '· Remote friendly'}
                     </p>
                   </div>
-                  {!isFounder && !isActiveMember && !isPending && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      isLoading={quickJoinMutation.isPending}
-                      onClick={() => quickJoinMutation.mutate(role.id)}
-                    >
-                      Apply
+                  <Link to={`/opportunities/${opp.id}`} className="shrink-0">
+                    <Button size="sm" variant="secondary">
+                      Apply Now
                     </Button>
-                  )}
+                  </Link>
                 </div>
               ))}
             </div>
+          ) : isFounder ? (
+            <EmptyState
+              title="No open positions yet"
+              description="Post an opportunity to start hiring through this startup."
+              action={
+                <Link to={`/opportunities/new?startupId=${id}`}>
+                  <Button size="sm">Post an opportunity</Button>
+                </Link>
+              }
+            />
           ) : (
-            <EmptyState title="No open roles right now" description="Follow this startup to hear when they’re hiring." />
+            <EmptyState title="No open positions right now" description="Follow this startup to hear when they’re hiring." />
           )}
         </Card>
       </div>
@@ -530,16 +656,20 @@ export default function StartupDetailPage() {
           </div>
         </Card>
 
-        <Card>
-          <h2 className="font-semibold text-fg mb-3">What they need</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {startup.needs.map((need) => (
-              <Badge key={need} tone="neutral">
-                {need}
-              </Badge>
-            ))}
-          </div>
-        </Card>
+        {startup.needs.length > 0 && (
+          <Card>
+            <h2 className="font-semibold text-fg mb-3">What they need</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {startup.needs.map((need) => (
+                <Badge key={need} tone="neutral">
+                  {need}
+                </Badge>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        <StartupMaterialsSection startupId={startup.id} canManage={isFounder} />
 
         {startup.isRaising && fundraise && (
           <Card>

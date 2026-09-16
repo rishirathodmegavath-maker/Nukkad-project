@@ -168,6 +168,7 @@ export async function uploadFile<T>(
   file: File | null,
   fieldName = 'file',
   extraFields?: Record<string, string | undefined>,
+  method: 'POST' | 'PUT' = 'POST',
 ): Promise<T> {
   if (file && file.size > MAX_UPLOAD_BYTES) {
     throw new ApiError(`File is too large (${formatMb(file.size)}). Maximum allowed size is ${formatMb(MAX_UPLOAD_BYTES)}.`, 0, 'FILE_TOO_LARGE')
@@ -187,7 +188,7 @@ export async function uploadFile<T>(
 
   let response: Response
   try {
-    response = await fetch(`${BASE_URL}${path}`, { method: 'POST', headers, body: formData })
+    response = await fetch(`${BASE_URL}${path}`, { method, headers, body: formData })
   } catch {
     throw new ApiError('Network error — is the backend running?', 0)
   }
@@ -203,7 +204,7 @@ export async function uploadFile<T>(
       if (typeof window !== 'undefined') window.location.assign('/login')
       throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
     }
-    return uploadFile<T>(path, file, fieldName, extraFields)
+    return uploadFile<T>(path, file, fieldName, extraFields, method)
   }
 
   const body = (await response.json().catch(() => null)) as Envelope<T> | ErrorEnvelope | null

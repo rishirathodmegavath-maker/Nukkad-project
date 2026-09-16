@@ -16,6 +16,8 @@ export interface OpportunityFilters {
   type?: OpportunityType
   remote?: boolean
   chapterId?: string
+  startupId?: string
+  postedByUserId?: string
   size?: number
 }
 
@@ -30,6 +32,9 @@ interface OpportunityDto {
   remote: boolean
   description: string
   compensation: string | null
+  equity: string | null
+  experienceLevel: string | null
+  applicationDeadline: string | null
   postedByUserId: string
   chapterId: string | null
   requirements: string[]
@@ -38,6 +43,7 @@ interface OpportunityDto {
   applicationStatus: string | null
   applicantCount: number
   interestCount: number
+  appliedAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -55,10 +61,14 @@ function mapOpportunity(dto: OpportunityDto): Opportunity {
     description: dto.description,
     requirements: dto.requirements,
     compensation: dto.compensation ?? undefined,
+    equity: dto.equity ?? undefined,
+    experienceLevel: dto.experienceLevel ?? undefined,
+    applicationDeadline: dto.applicationDeadline ?? undefined,
     postedByUserId: dto.postedByUserId,
     hasApplied: dto.hasApplied,
     hasExpressedInterest: dto.hasExpressedInterest,
     applicationStatus: (dto.applicationStatus as ApplicationStatus | null) ?? undefined,
+    appliedAt: dto.appliedAt ?? undefined,
     applicantCount: dto.applicantCount,
     interestCount: dto.interestCount,
     chapterId: dto.chapterId ?? undefined,
@@ -72,6 +82,8 @@ export async function listOpportunities(filters: OpportunityFilters = {}): Promi
     type: filters.type,
     remote: filters.remote,
     chapterId: filters.chapterId,
+    startupId: filters.startupId,
+    postedByUserId: filters.postedByUserId,
     size: filters.size,
   })
   return dtos.map(mapOpportunity)
@@ -97,6 +109,9 @@ export async function postOpportunity(input: PostOpportunityInput): Promise<Oppo
       description: input.description,
       requirements: input.requirements ?? [],
       compensation: input.compensation || undefined,
+      equity: input.equity || undefined,
+      experienceLevel: input.experienceLevel || undefined,
+      applicationDeadline: input.applicationDeadline || undefined,
     }),
   )
 }
@@ -113,6 +128,9 @@ export async function updateOpportunity(id: string, input: PostOpportunityInput)
       description: input.description,
       requirements: input.requirements ?? [],
       compensation: input.compensation || undefined,
+      equity: input.equity || undefined,
+      experienceLevel: input.experienceLevel || undefined,
+      applicationDeadline: input.applicationDeadline || undefined,
     }),
   )
 }

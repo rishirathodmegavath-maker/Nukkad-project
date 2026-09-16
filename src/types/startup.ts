@@ -4,6 +4,30 @@ export type StartupStage = 'Idea' | 'MVP' | 'Early Traction' | 'Growth' | 'Scali
 
 export type StartupMembershipStatus = 'ACTIVE' | 'PENDING' | 'REJECTED'
 
+export type StartupVisibility = 'Public' | 'Nukkad Members'
+
+export type StartupMaterialType =
+  | 'Website'
+  | 'Pitch Deck'
+  | 'Product Demo'
+  | 'Screenshots'
+  | 'LinkedIn'
+  | 'X'
+  | 'Other Document'
+
+export interface StartupMaterial {
+  id: string
+  startupId: string
+  materialType: StartupMaterialType
+  title?: string
+  url: string
+  originalFileName?: string
+  contentType?: string
+  sortOrder: number
+  canManage: boolean
+  createdAt: string
+}
+
 export interface StartupTeamMember {
   id: string
   userId: string
@@ -30,12 +54,25 @@ export interface StartupJoinRequest {
 export interface UpdateStartupInput {
   name?: string
   logoUrl?: string
+  location?: string
+  website?: string
   tagline?: string
   sector?: string
   problem?: string
   solution?: string
+  targetCustomer?: string
+  businessModel?: string
+  whatBuilding?: string
   stage?: StartupStage
   traction?: string
+  revenue?: string
+  customers?: string
+  users?: string
+  growth?: string
+  otherTraction?: string
+  keywords?: string
+  visibility?: StartupVisibility
+  fundraisingVisible?: boolean
   isRaising?: boolean
   needs?: string[]
 }
@@ -58,12 +95,25 @@ export interface Startup {
   id: string
   name: string
   logoUrl: string
+  location: string
+  website: string
   tagline: string
   sector: string
   problem: string
   solution: string
+  targetCustomer: string
+  businessModel: string
+  whatBuilding: string
   stage: StartupStage
   traction: string
+  revenue: string
+  customers: string
+  users: string
+  growth: string
+  otherTraction: string
+  keywords: string
+  visibility: StartupVisibility
+  fundraisingVisible: boolean
   needs: string[]
   /** Embedded (mock era). The real backend exposes these via separate endpoints:
    *  getStartupMembers/getStartupUpdates/getStartupRoles. */
@@ -75,5 +125,9 @@ export interface Startup {
   followerIds?: string[]
   isFollowing?: boolean
   isRaising: boolean
+  /** True only for an active founder of this startup — drives edit/delete/manage-material UI. */
+  canManage: boolean
+  /** Real percentage of optional profile fields actually filled in, computed server-side. */
+  profileCompletionPercent: number
   createdAt: string
 }

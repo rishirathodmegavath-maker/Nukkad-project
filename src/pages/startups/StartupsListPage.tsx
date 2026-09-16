@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Rocket } from 'lucide-react'
+import { Rocket, Plus } from 'lucide-react'
 import { listStartups } from '@/services/startups.service'
 import { StartupCard } from '@/components/domain/StartupCard'
 import type { Startup, StartupStage } from '@/types'
@@ -75,14 +75,19 @@ export default function StartupsListPage() {
         title="Startups"
         description="See what’s being built across the Nukkad network."
         action={
-          <Button
-            variant="secondary"
-            leftIcon={<Rocket className="size-4" />}
-            isLoading={isCheckingExistingStartup}
-            onClick={handleExistingStartupClick}
-          >
-            Existing Startup
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              leftIcon={<Rocket className="size-4" />}
+              isLoading={isCheckingExistingStartup}
+              onClick={handleExistingStartupClick}
+            >
+              My Startup
+            </Button>
+            <Link to="/startups/new">
+              <Button leftIcon={<Plus className="size-4" />}>Create Startup</Button>
+            </Link>
+          </div>
         }
       />
       <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search startups by name or sector…">
@@ -136,7 +141,7 @@ export default function StartupsListPage() {
             action={
               <div className="flex flex-col items-center gap-2">
                 <Link to="/startups/new" onClick={() => setExistingStartupOpen(false)}>
-                  <Button size="sm">Register your startup</Button>
+                  <Button size="sm">Create Startup</Button>
                 </Link>
                 <Link
                   to="/ideas/new"

@@ -23,6 +23,11 @@ export interface Opportunity {
   description: string
   requirements: string[]
   compensation?: string
+  equity?: string
+  experienceLevel?: string
+  /** ISO datetime. Applications aren't blocked automatically once this passes — closing the
+   *  opportunity is still the explicit action that does that — it's informational for candidates. */
+  applicationDeadline?: string
   postedByUserId: string
   /** Embedded (mock era). The real backend exposes viewer-relative state/counts instead. */
   applicantIds?: string[]
@@ -31,6 +36,8 @@ export interface Opportunity {
   hasExpressedInterest?: boolean
   /** The viewer's own application status for this opportunity, if they've applied. */
   applicationStatus?: ApplicationStatus
+  /** ISO datetime the viewer applied, if they've applied — distinct from the opportunity's own createdAt. */
+  appliedAt?: string
   applicantCount?: number
   interestCount?: number
   chapterId?: string
@@ -47,6 +54,9 @@ export interface PostOpportunityInput {
   description: string
   requirements?: string[]
   compensation?: string
+  equity?: string
+  experienceLevel?: string
+  applicationDeadline?: string
 }
 
 export interface ApplyToOpportunityInput {

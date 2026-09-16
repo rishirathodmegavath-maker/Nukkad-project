@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { TrendingUp, ArrowRight } from 'lucide-react'
+import { TrendingUp, ArrowRight, Lock } from 'lucide-react'
 import type { Startup } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
@@ -46,11 +46,18 @@ export function StartupCard({ startup }: { startup: Startup }) {
               <h3 className="font-bold text-fg truncate text-base">
                 {startup.name}
               </h3>
-              {startup.isRaising && (
-                <Badge tone="accent" dot className="shrink-0 font-semibold shadow-2xs">
-                  Raising
-                </Badge>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {startup.visibility === 'Nukkad Members' && (
+                  <span title="Members only" className="text-fg-muted">
+                    <Lock className="size-3.5" />
+                  </span>
+                )}
+                {startup.isRaising && (
+                  <Badge tone="accent" dot className="font-semibold shadow-2xs">
+                    Raising
+                  </Badge>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
@@ -72,10 +79,10 @@ export function StartupCard({ startup }: { startup: Startup }) {
         </p>
 
         {/* Traction Highlight if available */}
-        {startup.traction && (
+        {(startup.revenue || startup.users || startup.otherTraction || startup.traction) && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-sunken border border-border/60 text-xs font-semibold text-fg mb-3.5 min-w-0">
             <TrendingUp className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="truncate">{startup.traction}</span>
+            <span className="truncate">{startup.revenue || startup.users || startup.otherTraction || startup.traction}</span>
           </div>
         )}
 

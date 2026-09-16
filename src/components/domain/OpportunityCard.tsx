@@ -11,7 +11,10 @@ export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportu
     <Card interactive className="flex flex-col gap-3 rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
       <Link to={`/opportunities/${opportunity.id}`} className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-2">
-          <Badge tone="neutral">{opportunity.type}</Badge>
+          <div className="flex items-center gap-1.5">
+            <Badge tone="neutral">{opportunity.type}</Badge>
+            {opportunity.closed && <Badge tone="danger">Closed</Badge>}
+          </div>
           <span className="text-xs text-fg-muted font-medium">{formatRelativeTime(opportunity.createdAt)}</span>
         </div>
         <div>

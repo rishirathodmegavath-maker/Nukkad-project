@@ -56,10 +56,23 @@ const typeColor: Record<NotificationType, string> = {
   investor: 'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/40',
 }
 
-const typeLink: Record<NotificationType, (relatedId?: string) => string | undefined> = {
+// These titles are only ever sent to the opportunity's own poster (see OpportunityService),
+// so routing them straight to the applications page is always an authorized destination.
+const FOUNDER_FACING_OPPORTUNITY_TITLES = new Set([
+  'New application',
+  'Application withdrawn',
+  'New interest in your opportunity',
+])
+
+const typeLink: Record<NotificationType, (relatedId?: string, title?: string) => string | undefined> = {
   connection: (id) => (id ? `/people/${id}` : undefined),
   idea_interest: (id) => (id ? `/ideas/${id}` : undefined),
-  opportunity: (id) => (id ? `/opportunities/${id}` : undefined),
+  opportunity: (id, title) =>
+    id
+      ? title && FOUNDER_FACING_OPPORTUNITY_TITLES.has(title)
+        ? `/opportunities/${id}/applications`
+        : `/opportunities/${id}`
+      : undefined,
   event: (id) => (id ? `/events/${id}` : undefined),
   reply: () => '/messages',
   endorsement: (id) => (id ? `/people/${id}` : undefined),
@@ -74,7 +87,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
   const markRead = useMarkNotificationRead()
   const queryClient = useQueryClient()
   const Icon = typeIcon[notif.type]
-  const link = typeLink[notif.type](notif.relatedId)
+  const link = typeLink[notif.type](notif.relatedId, notif.title)
   const isPendingRequest = notif.type === 'connection' && actor?.connectionStatus === 'PENDING_INCOMING'
 
   const acceptMutation = useMutation({

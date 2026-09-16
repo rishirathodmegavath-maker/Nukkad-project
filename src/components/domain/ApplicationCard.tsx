@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Check, X, Star, MessageSquare } from 'lucide-react'
+import { MapPin, Check, X, Star, MessageSquare, Clock } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Application, ApplicationStatus } from '@/types'
 import { Card } from '@/components/ui/Card'
@@ -8,7 +8,9 @@ import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import * as opportunitiesService from '@/services/opportunities.service'
+import { ConnectAction } from '@/components/domain/ConnectAction'
 import { toast } from '@/store/toast.store'
+import { formatRelativeTime } from '@/lib/utils'
 
 const STATUS_TONE: Record<ApplicationStatus, BadgeTone> = {
   Pending: 'info',
@@ -75,9 +77,12 @@ export function ApplicationCard({ application, onView }: ApplicationCardProps) {
             </p>
           </div>
         </Link>
-        <Badge tone={STATUS_TONE[application.status]} className="shrink-0">
-          {application.status}
-        </Badge>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <Badge tone={STATUS_TONE[application.status]}>{application.status}</Badge>
+          <span className="text-xs text-fg-muted flex items-center gap-1">
+            <Clock className="size-3" /> {formatRelativeTime(application.createdAt)}
+          </span>
+        </div>
       </div>
 
       {application.relevantSkills.length > 0 && (
@@ -138,6 +143,7 @@ export function ApplicationCard({ application, onView }: ApplicationCardProps) {
             Message
           </Button>
         )}
+        <ConnectAction user={application.applicant} />
       </div>
     </Card>
   )

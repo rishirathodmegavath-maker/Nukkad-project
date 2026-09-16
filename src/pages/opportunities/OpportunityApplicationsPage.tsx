@@ -66,7 +66,11 @@ export default function OpportunityApplicationsPage() {
     <div>
       <PageHeader
         title={opp.title}
-        description={`${opp.applicantCount ?? 0} application${(opp.applicantCount ?? 0) === 1 ? '' : 's'}`}
+        description={
+          opp.closed
+            ? `Closed · ${opp.applicantCount ?? 0} application${(opp.applicantCount ?? 0) === 1 ? '' : 's'} on file`
+            : `${opp.applicantCount ?? 0} application${(opp.applicantCount ?? 0) === 1 ? '' : 's'}`
+        }
         action={
           <Link to={`/opportunities/${opp.id}`} className="text-sm font-semibold text-fg hover:underline">
             View opportunity

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Briefcase, Plus, Inbox, ListChecks } from 'lucide-react'
 import { listOpportunities, listRecommendedOpportunities } from '@/services/opportunities.service'
+import { listMyFoundedStartups } from '@/services/startups.service'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
@@ -59,6 +60,15 @@ export default function OpportunitiesListPage() {
     queryFn: () => listOpportunities(filters),
   })
 
+  // Only needed to decide the empty-state CTA below, so it's fine to fetch quietly in the
+  // background rather than blocking the page — a founder deserves a "post one" nudge only when
+  // there's truly nothing to show them yet.
+  const { data: foundedStartups } = useQuery({
+    queryKey: ['startups', 'me', 'founding'],
+    queryFn: listMyFoundedStartups,
+  })
+  const canPost = !!foundedStartups && foundedStartups.length > 0
+
   return (
     <div>
       <PageHeader
@@ -104,8 +114,43 @@ export default function OpportunitiesListPage() {
             <OpportunityCard key={opp.id} opportunity={opp} />
           ))}
         </div>
+      ) : isFiltering ? (
+        <EmptyState
+          icon={<Briefcase className="size-5" />}
+          title="No opportunities match yet"
+          description="Try a different search or filter."
+          action={
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setQuery('')
+                setType('all')
+              }}
+            >
+              Clear filters
+            </Button>
+          }
+        />
+      ) : canPost ? (
+        <EmptyState
+          icon={<Briefcase className="size-5" />}
+          title="No opportunities posted yet"
+          description="Be the first to post a job, internship, or founding role for the Nukkad community."
+          action={
+            <Link to="/opportunities/new">
+              <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
+                Post an opportunity
+              </Button>
+            </Link>
+          }
+        />
       ) : (
-        <EmptyState icon={<Briefcase className="size-5" />} title="No opportunities match yet" description="Try a different search or filter." />
+        <EmptyState
+          icon={<Briefcase className="size-5" />}
+          title="No opportunities posted yet"
+          description="Check back soon, or register a startup to post one yourself."
+        />
       )}
     </div>
   )

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Inbox, MapPin, Briefcase } from 'lucide-react'
+import { Inbox, MapPin, Briefcase, Clock } from 'lucide-react'
 import { listMyApplications, withdrawApplication } from '@/services/opportunities.service'
+import { formatRelativeTime } from '@/lib/utils'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
@@ -60,7 +61,7 @@ export default function MyApplicationsPage() {
             const status = opp.applicationStatus
             const canWithdraw = status === 'Pending' || status === 'Shortlisted'
             return (
-              <Card key={opp.id} className="flex flex-col gap-3">
+              <Card key={opp.id} className="flex flex-col gap-3 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <h3 className="font-bold text-fg text-base leading-snug truncate">{opp.title}</h3>
@@ -72,16 +73,20 @@ export default function MyApplicationsPage() {
                         <MapPin className="size-3.5 shrink-0" /> {opp.location}
                       </p>
                     )}
+                    {opp.appliedAt && (
+                      <p className="text-xs text-fg-muted flex items-center gap-1.5 mt-1 truncate">
+                        <Clock className="size-3.5 shrink-0" /> Applied {formatRelativeTime(opp.appliedAt)}
+                      </p>
+                    )}
                   </div>
-                  {status ? (
-                    <Badge tone={STATUS_TONE[status]} className="shrink-0">
-                      {status}
-                    </Badge>
-                  ) : (
-                    <Badge tone="neutral" className="shrink-0">
-                      Interested
-                    </Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {status ? (
+                      <Badge tone={STATUS_TONE[status]}>{status}</Badge>
+                    ) : (
+                      <Badge tone="neutral">Interested</Badge>
+                    )}
+                    {opp.closed && <Badge tone="danger">Closed</Badge>}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 pt-2 border-t border-border-subtle">
                   <Link to={`/opportunities/${opp.id}`}>

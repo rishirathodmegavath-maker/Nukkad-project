@@ -8,7 +8,9 @@ import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import * as opportunitiesService from '@/services/opportunities.service'
+import { ConnectAction } from '@/components/domain/ConnectAction'
 import { toast } from '@/store/toast.store'
+import { formatRelativeTime } from '@/lib/utils'
 
 const STATUS_TONE: Record<ApplicationStatus, BadgeTone> = {
   Pending: 'info',
@@ -136,9 +138,11 @@ export function ApplicationDetailModal({ application, onClose }: ApplicationDeta
               <p className="text-xs text-fg-muted mt-0.5">{application.applicant.location}</p>
             </div>
           </Link>
-          <Badge tone={STATUS_TONE[application.status]} className="shrink-0">
-            {application.status}
-          </Badge>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <Badge tone={STATUS_TONE[application.status]}>{application.status}</Badge>
+            <span className="text-xs text-fg-muted">Applied {formatRelativeTime(application.createdAt)}</span>
+            <ConnectAction user={application.applicant} />
+          </div>
         </div>
 
         {(application.applicant.socialLinks?.linkedin || application.applicant.socialLinks?.github || application.applicant.socialLinks?.portfolio) && (

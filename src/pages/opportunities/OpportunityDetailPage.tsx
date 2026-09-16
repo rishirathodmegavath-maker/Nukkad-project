@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { MapPin, Briefcase, IndianRupee, Users, MessageSquare, ListChecks, ChevronRight, Lock, LockOpen, Pencil, Trash2 } from 'lucide-react'
+import { MapPin, Briefcase, IndianRupee, Users, MessageSquare, ListChecks, ChevronRight, Lock, LockOpen, Pencil, Trash2, PieChart, GraduationCap, CalendarClock } from 'lucide-react'
 import { getOpportunity, expressInterestInOpportunity, withdrawApplication, closeOpportunity, reopenOpportunity, deleteOpportunity } from '@/services/opportunities.service'
+import { getStartup } from '@/services/startups.service'
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { ApplyToOpportunityModal } from '@/components/domain/ApplyToOpportunityModal'
+import { ConnectAction } from '@/components/domain/ConnectAction'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -16,7 +18,7 @@ import { ErrorState } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
 import { formatRelativeTime } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
-import type { ApplicationStatus } from '@/types'
+import type { ApplicationStatus, Startup } from '@/types'
 
 const CTA_LABEL: Record<string, string> = {
   'Full-time': 'Apply',
@@ -36,6 +38,15 @@ const STATUS_TONE: Record<ApplicationStatus, BadgeTone> = {
   Withdrawn: 'neutral',
 }
 
+// Matches StartupCard's stage color convention, kept local since it's a small presentational map.
+const STARTUP_STAGE_TONE: Record<Startup['stage'], BadgeTone> = {
+  Idea: 'neutral',
+  MVP: 'info',
+  'Early Traction': 'brand',
+  Growth: 'success',
+  Scaling: 'success',
+}
+
 export default function OpportunityDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -51,6 +62,13 @@ export default function OpportunityDetailPage() {
 
   const { data: poster } = useUser(opp?.postedByUserId)
   const { data: currentUser } = useCurrentUser()
+
+  const { data: startup } = useQuery({
+    queryKey: ['startup', opp?.startupId],
+    queryFn: () => getStartup(opp!.startupId!),
+    enabled: !!opp?.startupId,
+  })
+  const startupPitch = startup?.tagline?.trim() || startup?.problem?.trim() || startup?.solution?.trim() || undefined
 
   const usesInterest = opp && ['Founding Role', 'Co-founder', 'Campus'].includes(opp.type)
   const isOwner = !!currentUser && !!opp && opp.postedByUserId === currentUser.id
@@ -156,13 +174,32 @@ export default function OpportunityDetailPage() {
             <span className="flex items-center gap-1.5">
               <Briefcase className="size-3.5" /> {opp.organizationName}
             </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="size-3.5" /> {opp.location}
-              {opp.remote && ' · Remote friendly'}
-            </span>
+            {(opp.location || opp.remote) && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-3.5" />
+                {opp.location}
+                {opp.location && opp.remote && ' · '}
+                {opp.remote && 'Remote friendly'}
+              </span>
+            )}
             {opp.compensation && (
               <span className="flex items-center gap-1.5">
                 <IndianRupee className="size-3.5" /> {opp.compensation}
+              </span>
+            )}
+            {opp.equity && (
+              <span className="flex items-center gap-1.5">
+                <PieChart className="size-3.5" /> {opp.equity} equity
+              </span>
+            )}
+            {opp.experienceLevel && (
+              <span className="flex items-center gap-1.5">
+                <GraduationCap className="size-3.5" /> {opp.experienceLevel}
+              </span>
+            )}
+            {opp.applicationDeadline && (
+              <span className="flex items-center gap-1.5">
+                <CalendarClock className="size-3.5" /> Apply by {new Date(opp.applicationDeadline).toLocaleDateString()}
               </span>
             )}
           </div>
@@ -172,14 +209,16 @@ export default function OpportunityDetailPage() {
             <p className="text-sm text-fg-secondary leading-relaxed">{opp.description}</p>
           </div>
 
-          <div className="mt-5">
-            <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Requirements</p>
-            <ul className="list-disc list-inside text-sm text-fg-secondary space-y-1">
-              {opp.requirements.map((req) => (
-                <li key={req}>{req}</li>
-              ))}
-            </ul>
-          </div>
+          {opp.requirements.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Requirements</p>
+              <ul className="list-disc list-inside text-sm text-fg-secondary space-y-1">
+                {opp.requirements.map((req) => (
+                  <li key={req}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Card>
       </div>
 
@@ -279,22 +318,58 @@ export default function OpportunityDetailPage() {
         {poster && (
           <Card>
             <h2 className="font-semibold text-fg mb-3">Posted by</h2>
-            <Link to={`/people/${poster.id}`} className="flex items-center gap-2.5">
-              <Avatar src={poster.avatarUrl} name={poster.name} size="md" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-fg truncate">{poster.name}</p>
-                <p className="text-xs text-fg-muted truncate">{poster.headline}</p>
+            <div className="flex items-center justify-between gap-2.5">
+              <Link to={`/people/${poster.id}`} className="flex items-center gap-2.5 min-w-0">
+                <Avatar src={poster.avatarUrl} name={poster.name} size="md" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-fg truncate">{poster.name}</p>
+                  <p className="text-xs text-fg-muted truncate">{poster.headline}</p>
+                </div>
+              </Link>
+              <div className="shrink-0">
+                <ConnectAction user={poster} />
               </div>
-            </Link>
+            </div>
           </Card>
         )}
 
-        {opp.startupId && (
-          <Link to={`/startups/${opp.startupId}`}>
-            <Button variant="secondary" className="w-full">
-              View startup profile
-            </Button>
-          </Link>
+        {opp.startupId && startup && (
+          <Card>
+            <h2 className="font-semibold text-fg mb-3">About the startup</h2>
+            <Link to={`/startups/${startup.id}`} className="flex items-center gap-2.5 min-w-0">
+              <Avatar src={startup.logoUrl} name={startup.name} size="md" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-fg truncate">{startup.name}</p>
+                  {startup.isRaising && (
+                    <Badge tone="accent" dot size="sm" className="shrink-0">
+                      Raising
+                    </Badge>
+                  )}
+                </div>
+                {startup.location && <p className="text-xs text-fg-muted truncate">{startup.location}</p>}
+              </div>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+              <Badge tone={STARTUP_STAGE_TONE[startup.stage] ?? 'neutral'} size="sm">
+                {startup.stage}
+              </Badge>
+              {startup.sector && (
+                <Badge tone="neutral" size="sm">
+                  {startup.sector}
+                </Badge>
+              )}
+            </div>
+
+            {startupPitch && <p className="text-sm text-fg-secondary leading-relaxed line-clamp-2 mt-2.5">{startupPitch}</p>}
+
+            <Link to={`/startups/${startup.id}`}>
+              <Button variant="secondary" className="w-full mt-3">
+                View startup profile
+              </Button>
+            </Link>
+          </Card>
         )}
       </div>
     </div>

@@ -3,11 +3,14 @@ import { mapUser, type UserDto } from '@/services/users.service'
 import type {
   Startup,
   StartupJoinRequest,
+  StartupMaterial,
+  StartupMaterialType,
   StartupMembershipStatus,
   StartupRole,
   StartupStage,
   StartupTeamMember,
   StartupUpdate,
+  StartupVisibility,
   UpdateStartupInput,
 } from '@/types'
 
@@ -25,17 +28,32 @@ interface StartupDto {
   id: string
   name: string
   logoUrl: string | null
+  location: string | null
+  website: string | null
   tagline: string | null
   sector: string | null
   problem: string | null
   solution: string | null
+  targetCustomer: string | null
+  businessModel: string | null
+  whatBuilding: string | null
   stage: string
   traction: string | null
+  revenue: string | null
+  customers: string | null
+  users: string | null
+  growth: string | null
+  otherTraction: string | null
+  keywords: string | null
+  visibility: string
+  fundraisingVisible: boolean
   ideaId: string | null
   chapterId: string | null
   isRaising: boolean
   needs: string[]
   isFollowing: boolean
+  canManage: boolean
+  profileCompletionPercent: number
   createdAt: string
   updatedAt: string
 }
@@ -45,17 +63,32 @@ function mapStartup(dto: StartupDto): Startup {
     id: dto.id,
     name: dto.name,
     logoUrl: dto.logoUrl ?? '',
+    location: dto.location ?? '',
+    website: dto.website ?? '',
     tagline: dto.tagline ?? '',
     sector: dto.sector ?? '',
     problem: dto.problem ?? '',
     solution: dto.solution ?? '',
+    targetCustomer: dto.targetCustomer ?? '',
+    businessModel: dto.businessModel ?? '',
+    whatBuilding: dto.whatBuilding ?? '',
     stage: dto.stage as StartupStage,
     traction: dto.traction ?? '',
+    revenue: dto.revenue ?? '',
+    customers: dto.customers ?? '',
+    users: dto.users ?? '',
+    growth: dto.growth ?? '',
+    otherTraction: dto.otherTraction ?? '',
+    keywords: dto.keywords ?? '',
+    visibility: dto.visibility as StartupVisibility,
+    fundraisingVisible: dto.fundraisingVisible,
     needs: dto.needs,
     ideaId: dto.ideaId ?? undefined,
     chapterId: dto.chapterId ?? undefined,
     isFollowing: dto.isFollowing,
     isRaising: dto.isRaising,
+    canManage: dto.canManage,
+    profileCompletionPercent: dto.profileCompletionPercent,
     createdAt: dto.createdAt,
   }
 }
@@ -113,7 +146,33 @@ export async function getStartup(id: string): Promise<Startup | undefined> {
 }
 
 export async function updateStartup(id: string, input: UpdateStartupInput): Promise<Startup> {
-  return mapStartup(await apiClient.put<StartupDto>(`/startups/${id}`, input))
+  return mapStartup(
+    await apiClient.put<StartupDto>(`/startups/${id}`, {
+      name: input.name,
+      logoUrl: input.logoUrl,
+      location: input.location,
+      website: input.website,
+      tagline: input.tagline,
+      sector: input.sector,
+      problem: input.problem,
+      solution: input.solution,
+      targetCustomer: input.targetCustomer,
+      businessModel: input.businessModel,
+      whatBuilding: input.whatBuilding,
+      stage: input.stage,
+      traction: input.traction,
+      revenue: input.revenue,
+      customers: input.customers,
+      users: input.users,
+      growth: input.growth,
+      otherTraction: input.otherTraction,
+      keywords: input.keywords,
+      visibility: input.visibility,
+      fundraisingVisible: input.fundraisingVisible,
+      isRaising: input.isRaising,
+      needs: input.needs,
+    }),
+  )
 }
 
 export async function deleteStartup(id: string): Promise<void> {
@@ -261,4 +320,70 @@ interface StartupRoleDto {
 export async function getStartupRoles(startupId: string): Promise<StartupRole[]> {
   const dtos = await apiClient.get<StartupRoleDto[]>(`/startups/${startupId}/roles`)
   return dtos.map((r) => ({ id: r.id, title: r.title, type: r.type as StartupRole['type'], location: r.location ?? '', remote: r.remote }))
+}
+
+interface StartupMaterialDto {
+  id: string
+  startupId: string
+  materialType: string
+  title: string | null
+  url: string
+  originalFileName: string | null
+  contentType: string | null
+  sortOrder: number
+  canManage: boolean
+  createdAt: string
+}
+
+function mapMaterial(dto: StartupMaterialDto): StartupMaterial {
+  return {
+    id: dto.id,
+    startupId: dto.startupId,
+    materialType: dto.materialType as StartupMaterialType,
+    title: dto.title ?? undefined,
+    url: dto.url,
+    originalFileName: dto.originalFileName ?? undefined,
+    contentType: dto.contentType ?? undefined,
+    sortOrder: dto.sortOrder,
+    canManage: dto.canManage,
+    createdAt: dto.createdAt,
+  }
+}
+
+export async function getStartupMaterials(startupId: string): Promise<StartupMaterial[]> {
+  const dtos = await apiClient.get<StartupMaterialDto[]>(`/startups/${startupId}/materials`)
+  return dtos.map(mapMaterial)
+}
+
+/** Website/LinkedIn/X take a `url`; Pitch Deck/Product Demo/Screenshots/Other Document take a `file` — never both. */
+export async function addStartupMaterial(
+  startupId: string,
+  materialType: StartupMaterialType,
+  options: { title?: string; url?: string; file?: File },
+): Promise<StartupMaterial> {
+  const dto = await uploadFile<StartupMaterialDto>(`/startups/${startupId}/materials`, options.file ?? null, 'file', {
+    materialType,
+    title: options.title,
+    url: options.url,
+  })
+  return mapMaterial(dto)
+}
+
+export async function updateStartupMaterial(
+  startupId: string,
+  materialId: string,
+  options: { title?: string; url?: string; file?: File },
+): Promise<StartupMaterial> {
+  const dto = await uploadFile<StartupMaterialDto>(
+    `/startups/${startupId}/materials/${materialId}`,
+    options.file ?? null,
+    'file',
+    { title: options.title, url: options.url },
+    'PUT',
+  )
+  return mapMaterial(dto)
+}
+
+export async function deleteStartupMaterial(startupId: string, materialId: string): Promise<void> {
+  await apiClient.delete(`/startups/${startupId}/materials/${materialId}`)
 }

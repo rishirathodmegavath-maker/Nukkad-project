@@ -1,0 +1,101 @@
+import { useEffect, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { UserPlus, UserCheck, Clock, X } from 'lucide-react'
+import type { ConnectionStatus } from '@/types'
+import { Button } from '@/components/ui/Button'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+import * as usersService from '@/services/users.service'
+import { toast } from '@/store/toast.store'
+
+interface ConnectActionProps {
+  user: { id: string; name: string; connectionStatus?: ConnectionStatus }
+  size?: 'sm' | 'md'
+}
+
+/**
+ * Same connect/decline/unfriend toggle as PersonCard, factored out so opportunity
+ * pages (founder card, applicant cards) can reuse the real connection system
+ * instead of a third copy-pasted inline mutation. Keeps its own optimistic status
+ * so it renders correctly regardless of which query cache the `user` prop came from.
+ */
+export function ConnectAction({ user, size = 'sm' }: ConnectActionProps) {
+  const { data: currentUser } = useCurrentUser()
+  const queryClient = useQueryClient()
+  const [status, setStatus] = useState(user.connectionStatus)
+
+  useEffect(() => setStatus(user.connectionStatus), [user.connectionStatus])
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['user', user.id] })
+    queryClient.invalidateQueries({ queryKey: ['users'] })
+  }
+
+  const connectMutation = useMutation({
+    mutationFn: () => usersService.toggleConnect(user.id),
+    onSuccess: (updated) => {
+      setStatus(updated.connectionStatus)
+      invalidate()
+      const messages: Record<string, string> = {
+        PENDING_OUTGOING: `Connection request sent to ${user.name}`,
+        CONNECTED: `You're now connected with ${user.name}`,
+        NONE: 'Removed connection',
+      }
+      toast.success(messages[updated.connectionStatus ?? 'NONE'])
+    },
+  })
+
+  const declineMutation = useMutation({
+    mutationFn: () => usersService.declineConnection(user.id),
+    onSuccess: (updated) => {
+      setStatus(updated.connectionStatus)
+      invalidate()
+      toast.info(`Declined ${user.name}'s request`)
+    },
+  })
+
+  if (!currentUser || currentUser.id === user.id) return null
+
+  if (status === 'PENDING_INCOMING') {
+    return (
+      <div className="flex items-center gap-1.5">
+        <Button
+          size={size}
+          variant="secondary"
+          isLoading={declineMutation.isPending}
+          onClick={() => declineMutation.mutate()}
+          aria-label={`Decline connection request from ${user.name}`}
+        >
+          <X className="size-3.5" />
+        </Button>
+        <Button
+          size={size}
+          isLoading={connectMutation.isPending}
+          leftIcon={<UserCheck className="size-3.5" />}
+          onClick={() => connectMutation.mutate()}
+        >
+          Accept
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <Button
+      size={size}
+      variant={status === 'NONE' || !status ? 'primary' : 'secondary'}
+      isLoading={connectMutation.isPending}
+      leftIcon={
+        status === 'CONNECTED' ? (
+          <UserCheck className="size-3.5" />
+        ) : status === 'PENDING_OUTGOING' ? (
+          <Clock className="size-3.5" />
+        ) : (
+          <UserPlus className="size-3.5" />
+        )
+      }
+      onClick={() => connectMutation.mutate()}
+    >
+      {status === 'CONNECTED' ? 'Connected' : status === 'PENDING_OUTGOING' ? 'Requested' : 'Connect'}
+    </Button>
+  )
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Briefcase, MapPin, IndianRupee, CheckCircle2 } from 'lucide-react'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { TagInput } from '@/components/ui/TagInput'
@@ -31,18 +31,23 @@ export default function PostOpportunityPage() {
   const { id } = useParams<{ id?: string }>()
   const isEdit = !!id
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
   const { data: currentUser } = useCurrentUser()
 
   const [step, setStep] = useState<Step>('form')
   const [title, setTitle] = useState('')
   const [type, setType] = useState<OpportunityType>('Internship')
   const [organizationName, setOrganizationName] = useState('')
-  const [startupId, setStartupId] = useState('')
+  const [startupId, setStartupId] = useState(() => searchParams.get('startupId') ?? '')
   const [location, setLocation] = useState('')
   const [remote, setRemote] = useState(false)
   const [description, setDescription] = useState('')
   const [requirements, setRequirements] = useState<string[]>([])
   const [compensation, setCompensation] = useState('')
+  const [equity, setEquity] = useState('')
+  const [experienceLevel, setExperienceLevel] = useState('')
+  const [applicationDeadline, setApplicationDeadline] = useState('')
   const [published, setPublished] = useState<Opportunity | null>(null)
   const [prefilled, setPrefilled] = useState(!isEdit)
 
@@ -50,6 +55,12 @@ export default function PostOpportunityPage() {
     queryKey: ['startups', 'me', 'founding'],
     queryFn: listMyFoundedStartups,
   })
+
+  useEffect(() => {
+    if (isEdit || !startupId || organizationName) return
+    const startup = foundedStartups?.find((s) => s.id === startupId)
+    if (startup) setOrganizationName(startup.name)
+  }, [isEdit, startupId, organizationName, foundedStartups])
 
   const { data: existing, isLoading: existingLoading } = useQuery({
     queryKey: ['opportunity', id],
@@ -73,6 +84,9 @@ export default function PostOpportunityPage() {
     setDescription(existing.description)
     setRequirements(existing.requirements)
     setCompensation(existing.compensation ?? '')
+    setEquity(existing.equity ?? '')
+    setExperienceLevel(existing.experienceLevel ?? '')
+    setApplicationDeadline(existing.applicationDeadline ? existing.applicationDeadline.slice(0, 10) : '')
     setPrefilled(true)
   }, [isEdit, existing, prefilled, currentUser, navigate, id])
 
@@ -99,6 +113,9 @@ export default function PostOpportunityPage() {
     description: description.trim(),
     requirements,
     compensation: compensation.trim() || undefined,
+    equity: equity.trim() || undefined,
+    experienceLevel: experienceLevel.trim() || undefined,
+    applicationDeadline: applicationDeadline ? new Date(applicationDeadline).toISOString() : undefined,
   })
 
   const createMutation = useMutation({
@@ -113,6 +130,10 @@ export default function PostOpportunityPage() {
   const updateMutation = useMutation({
     mutationFn: () => updateOpportunity(id!, currentInput()),
     onSuccess: (opp) => {
+      // Seed the detail page's cache directly (same key it reads) so it shows the fresh
+      // data immediately instead of the pre-edit snapshot for the rest of its staleTime.
+      queryClient.setQueryData(['opportunity', opp.id], opp)
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] })
       toast.success('Opportunity updated')
       navigate(`/opportunities/${opp.id}`)
     },
@@ -132,7 +153,7 @@ export default function PostOpportunityPage() {
     }
   }
 
-  if ((isEdit && (existingLoading || !prefilled)) || (!isEdit && startupsLoading)) {
+  if ((isEdit && (existingLoading || !prefilled)) || startupsLoading) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Skeleton className="h-10 w-2/3 rounded-lg" />
@@ -186,10 +207,23 @@ export default function PostOpportunityPage() {
               ))}
             </ul>
           )}
-          {preview.compensation && (
-            <p className="text-xs font-semibold text-fg-secondary flex items-center gap-1.5 pt-3 border-t border-border/60">
-              <IndianRupee className="size-3.5" /> {preview.compensation}
-            </p>
+          {(preview.compensation || preview.equity || preview.experienceLevel || preview.applicationDeadline) && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-3 border-t border-border/60">
+              {preview.compensation && (
+                <p className="text-xs font-semibold text-fg-secondary flex items-center gap-1.5">
+                  <IndianRupee className="size-3.5" /> {preview.compensation}
+                </p>
+              )}
+              {preview.equity && <p className="text-xs font-semibold text-fg-secondary">Equity: {preview.equity}</p>}
+              {preview.experienceLevel && (
+                <p className="text-xs font-semibold text-fg-secondary">Experience: {preview.experienceLevel}</p>
+              )}
+              {preview.applicationDeadline && (
+                <p className="text-xs font-semibold text-fg-secondary">
+                  Apply by {new Date(preview.applicationDeadline).toLocaleDateString()}
+                </p>
+              )}
+            </div>
           )}
         </Card>
         <div className="flex items-center justify-end gap-3 pt-5">
@@ -280,13 +314,39 @@ export default function PostOpportunityPage() {
             <TagInput value={requirements} onChange={setRequirements} placeholder="Add a requirement and press Enter…" />
           </div>
 
-          <Input
-            label="Compensation"
-            hint="Optional"
-            value={compensation}
-            onChange={(e) => setCompensation(e.target.value)}
-            placeholder="e.g. ₹20,000 – ₹30,000/month"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Compensation"
+              hint="Optional"
+              value={compensation}
+              onChange={(e) => setCompensation(e.target.value)}
+              placeholder="e.g. ₹20,000 – ₹30,000/month"
+            />
+            <Input
+              label="Equity"
+              hint="Optional"
+              value={equity}
+              onChange={(e) => setEquity(e.target.value)}
+              placeholder="e.g. 0.25% – 1%"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Experience required"
+              hint="Optional"
+              value={experienceLevel}
+              onChange={(e) => setExperienceLevel(e.target.value)}
+              placeholder="e.g. 2-4 years"
+            />
+            <Input
+              label="Application deadline"
+              hint="Optional"
+              type="date"
+              value={applicationDeadline}
+              onChange={(e) => setApplicationDeadline(e.target.value)}
+            />
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-2 mt-2 border-t border-border/60">
             <Button variant="ghost" type="button" onClick={() => navigate(isEdit ? `/opportunities/${id}` : '/opportunities')}>

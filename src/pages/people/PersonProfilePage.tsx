@@ -45,6 +45,7 @@ import {
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import { listStartups } from '@/services/startups.service'
 import { listIdeas } from '@/services/ideas.service'
+import { listOpportunities } from '@/services/opportunities.service'
 import { listFeed } from '@/services/feed.service'
 import * as profileSections from '@/services/profile-sections.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
@@ -1402,6 +1403,47 @@ function StartupsSection({ userId }: { userId: string }) {
   )
 }
 
+function OpportunitiesPostedSection({ userId }: { userId: string }) {
+  // Uses the same open-listing endpoint as the public Opportunities browse page, so a viewer only
+  // ever sees this person's currently-open postings here — never a stranger's closed history.
+  const { data: opportunities } = useQuery({
+    queryKey: ['opportunities', { postedByUserId: userId }],
+    queryFn: () => listOpportunities({ postedByUserId: userId }),
+  })
+  if (!opportunities || opportunities.length === 0) return null
+
+  return (
+    <Card className="rounded-2xl border border-border/80 shadow-xs">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+          <Briefcase className="size-4" />
+        </div>
+        <h2 className="font-bold text-base text-fg">Open Positions Posted</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {opportunities.map((opp) => (
+          <Link
+            key={opp.id}
+            to={`/opportunities/${opp.id}`}
+            className="flex flex-col justify-between p-3.5 rounded-xl border border-border/80 bg-surface-sunken/40 hover:bg-surface-sunken hover:border-border transition-all"
+          >
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <Badge tone="neutral" className="text-[10px]">
+                  {opp.type}
+                </Badge>
+                {opp.remote && <span className="text-[11px] text-fg-muted">Remote</span>}
+              </div>
+              <p className="font-bold text-sm text-fg leading-snug">{opp.title}</p>
+              <p className="text-xs text-fg-muted line-clamp-2 mt-1">{opp.organizationName}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
 function ActivitySection({ userId }: { userId: string }) {
   const { data: posts } = useQuery({ queryKey: ['feed', { authorId: userId }], queryFn: () => listFeed(userId) })
   if (!posts || posts.length === 0) return null
@@ -2407,6 +2449,7 @@ export default function PersonProfilePage() {
           {activeTab === 'ventures' && (
             <>
               <StartupsSection userId={user.id} />
+              <OpportunitiesPostedSection userId={user.id} />
               <IdeasSection userId={user.id} />
               <div id="profile-section-projects">
                 <ProjectsSection user={user} isSelf={isSelf} />
