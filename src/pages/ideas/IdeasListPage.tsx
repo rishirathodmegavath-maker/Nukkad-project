@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Lightbulb, Plus } from 'lucide-react'
-import { listIdeas } from '@/services/ideas.service'
+import { listIdeas, listRecommendedIdeas } from '@/services/ideas.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { PageHeader } from '@/components/domain/PageHeader'
@@ -21,12 +21,34 @@ const STAGE_FILTERS: { key: string; label: string }[] = [
   { key: 'Launched', label: 'Launched' },
 ]
 
+function RecommendedIdeas() {
+  const { data: matches, isLoading } = useQuery({
+    queryKey: ['ideas', 'recommended'],
+    queryFn: () => listRecommendedIdeas(6),
+  })
+
+  if (isLoading) return <CardSkeletonGrid count={3} />
+  if (!matches || matches.length === 0) return null
+
+  return (
+    <div className="mb-6">
+      <h2 className="text-sm font-semibold text-fg-secondary mb-3">Recommended for you</h2>
+      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {matches.map((match) => (
+          <IdeaCard key={match.idea.id} idea={match.idea} reasons={match.reasons} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function IdeasListPage() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [stage, setStage] = useState('all')
   const [mineOnly, setMineOnly] = useState(false)
   const { data: currentUser } = useCurrentUser()
+  const isFiltering = mineOnly || stage !== 'all' || query.trim().length > 0
 
   const filters = useMemo(
     () => ({
@@ -65,6 +87,10 @@ export default function IdeasListPage() {
           onChange={(k) => setMineOnly(k === 'mine')}
         />
       </SearchFilterBar>
+
+      {/* Recommendations ignore the search/stage/mine filters by design — hide them once the
+          user has expressed a specific intent, so they don't look like unfiltered results. */}
+      {!isFiltering && <RecommendedIdeas />}
 
       {isLoading ? (
         <CardSkeletonGrid count={6} />

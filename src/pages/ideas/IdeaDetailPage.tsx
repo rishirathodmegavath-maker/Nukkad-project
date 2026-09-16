@@ -370,14 +370,16 @@ export default function IdeaDetailPage() {
       </div>
 
       <div className="flex flex-col gap-6">
-        {!isCreator && !isOnTeam && <IdeaMatchCard ideaId={idea.id} />}
+        {!isCreator && !isOnTeam && !idea.startupId && <IdeaMatchCard ideaId={idea.id} />}
 
         <Card>
           {isCreator ? (
             idea.startupId ? (
-              <Button variant="secondary" className="w-full" disabled>
-                Already a startup
-              </Button>
+              <Link to={`/startups/${idea.startupId}`}>
+                <Button variant="secondary" className="w-full">
+                  View startup
+                </Button>
+              </Link>
             ) : (
               <Button
                 className="w-full"
@@ -418,6 +420,12 @@ export default function IdeaDetailPage() {
                 </Button>
               )}
             </div>
+          ) : idea.startupId ? (
+            <Link to={`/startups/${idea.startupId}`}>
+              <Button variant="secondary" className="w-full">
+                This idea is now a startup — view it
+              </Button>
+            </Link>
           ) : (
             <Button className="w-full" rightIcon={<ArrowRight className="size-4" />} onClick={() => setModalOpen(true)}>
               I want to build this

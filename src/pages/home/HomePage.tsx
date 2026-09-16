@@ -16,7 +16,7 @@ import {
   Rss,
 } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { listIdeas } from '@/services/ideas.service'
+import { listIdeas, listRecommendedIdeas } from '@/services/ideas.service'
 import { listStartups } from '@/services/startups.service'
 import { listOpportunities, listRecommendedOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
@@ -111,6 +111,10 @@ export default function HomePage() {
 
   // Real Queries
   const ideasQuery = useQuery({ queryKey: ['ideas', 'home'], queryFn: () => listIdeas() })
+  const recommendedIdeasQuery = useQuery({
+    queryKey: ['ideas', 'recommended-home'],
+    queryFn: () => listRecommendedIdeas(3),
+  })
   const startupsQuery = useQuery({ queryKey: ['startups', 'home'], queryFn: () => listStartups() })
   const recommendedOppsQuery = useQuery({
     queryKey: ['opportunities', 'recommended-home'],
@@ -129,18 +133,15 @@ export default function HomePage() {
     enabled: !!currentUser?.chapterId,
   })
 
-  // Skill-matched or curated ideas
+  // Recommended ideas (real TF-IDF matching — same engine as the Ideas page), falling back to a
+  // plain recent slice only when there's nothing to recommend yet.
   const matchedIdeas = useMemo(() => {
+    if (recommendedIdeasQuery.data && recommendedIdeasQuery.data.length > 0) {
+      return recommendedIdeasQuery.data.map((match) => ({ idea: match.idea, reasons: match.reasons }))
+    }
     if (!ideasQuery.data) return []
-    if (!currentUser?.skills || currentUser.skills.length === 0) return ideasQuery.data.slice(0, 3)
-    const skills = currentUser.skills
-    const matched = ideasQuery.data.filter((idea) =>
-      skills.some((skill) =>
-        idea.helpNeeded?.some((h) => h.toLowerCase().includes(skill.toLowerCase())),
-      ),
-    )
-    return (matched.length > 0 ? matched : ideasQuery.data).slice(0, 3)
-  }, [ideasQuery.data, currentUser])
+    return ideasQuery.data.slice(0, 3).map((idea) => ({ idea, reasons: [] as string[] }))
+  }, [recommendedIdeasQuery.data, ideasQuery.data])
 
   // Featured startups (raising first, then early traction)
   const featuredStartups = useMemo(() => {
@@ -300,8 +301,8 @@ export default function HomePage() {
                   <CardSkeletonGrid count={3} />
                 ) : matchedIdeas.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {matchedIdeas.map((idea) => (
-                      <IdeaCard key={idea.id} idea={idea} />
+                    {matchedIdeas.map((match) => (
+                      <IdeaCard key={match.idea.id} idea={match.idea} reasons={match.reasons} />
                     ))}
                   </div>
                 ) : (

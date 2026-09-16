@@ -3,6 +3,7 @@ import { Users, ArrowRight } from 'lucide-react'
 import type { Idea } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { MatchReasons } from '@/components/domain/MatchReasons'
 import { formatRelativeTime } from '@/lib/utils'
 
 const stageTone: Record<Idea['stage'], BadgeTone> = {
@@ -12,7 +13,7 @@ const stageTone: Record<Idea['stage'], BadgeTone> = {
   Launched: 'success',
 }
 
-export function IdeaCard({ idea }: { idea: Idea }) {
+export function IdeaCard({ idea, reasons }: { idea: Idea; reasons?: string[] }) {
   return (
     <Card
       interactive
@@ -51,6 +52,8 @@ export function IdeaCard({ idea }: { idea: Idea }) {
             ))}
           </div>
         )}
+
+        {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} className="mb-4" />}
 
         {/* Footer Meta */}
         <div className="flex items-center justify-between pt-3.5 mt-auto border-t border-border/60 text-xs text-fg-muted font-medium">
