@@ -1,13 +1,17 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Search as SearchIcon, Users, Lightbulb, Rocket, ArrowRight } from 'lucide-react'
+import { Search as SearchIcon, Users, Lightbulb, Rocket, Briefcase, CalendarDays, ArrowRight } from 'lucide-react'
 import { listUsers } from '@/services/users.service'
 import { listIdeas } from '@/services/ideas.service'
 import { listStartups } from '@/services/startups.service'
+import { listOpportunities } from '@/services/opportunities.service'
+import { listEvents } from '@/services/events.service'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
+import { OpportunityCard } from '@/components/domain/OpportunityCard'
+import { EventCard } from '@/components/domain/EventCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -73,16 +77,32 @@ export default function SearchResultsPage() {
     queryFn: () => listStartups(filters),
     enabled: !!trimmed,
   })
+  const opportunitiesQuery = useQuery({
+    queryKey: ['search', 'opportunities', trimmed],
+    queryFn: () => listOpportunities(filters),
+    enabled: !!trimmed,
+  })
+  const eventsQuery = useQuery({
+    queryKey: ['search', 'events', trimmed],
+    queryFn: () => listEvents(filters),
+    enabled: !!trimmed,
+  })
 
-  const isLoading = peopleQuery.isLoading || ideasQuery.isLoading || startupsQuery.isLoading
-  const totalCount = (peopleQuery.data?.length ?? 0) + (ideasQuery.data?.length ?? 0) + (startupsQuery.data?.length ?? 0)
+  const isLoading =
+    peopleQuery.isLoading || ideasQuery.isLoading || startupsQuery.isLoading || opportunitiesQuery.isLoading || eventsQuery.isLoading
+  const totalCount =
+    (peopleQuery.data?.length ?? 0) +
+    (ideasQuery.data?.length ?? 0) +
+    (startupsQuery.data?.length ?? 0) +
+    (opportunitiesQuery.data?.length ?? 0) +
+    (eventsQuery.data?.length ?? 0)
   const encodedQuery = encodeURIComponent(trimmed)
 
   return (
     <div>
       <PageHeader
         title={trimmed ? `Search results for "${trimmed}"` : 'Search'}
-        description="Use the search bar at the top of the page to search across people, ideas and startups."
+        description="Use the search bar at the top of the page to search across people, ideas, startups, opportunities and events."
       />
 
       {!trimmed ? (
@@ -117,6 +137,26 @@ export default function SearchResultsPage() {
             viewAllHref={`/startups?q=${encodedQuery}`}
           >
             {startupsQuery.data?.slice(0, PREVIEW_COUNT).map((startup) => <StartupCard key={startup.id} startup={startup} />)}
+          </ResultSection>
+
+          <ResultSection
+            title="Opportunities"
+            icon={<Briefcase className="size-4 text-fg-secondary" />}
+            count={opportunitiesQuery.data?.length ?? 0}
+            isLoading={opportunitiesQuery.isLoading}
+            viewAllHref={`/opportunities?q=${encodedQuery}`}
+          >
+            {opportunitiesQuery.data?.slice(0, PREVIEW_COUNT).map((opp) => <OpportunityCard key={opp.id} opportunity={opp} />)}
+          </ResultSection>
+
+          <ResultSection
+            title="Events"
+            icon={<CalendarDays className="size-4 text-fg-secondary" />}
+            count={eventsQuery.data?.length ?? 0}
+            isLoading={eventsQuery.isLoading}
+            viewAllHref={`/events?q=${encodedQuery}`}
+          >
+            {eventsQuery.data?.slice(0, PREVIEW_COUNT).map((event) => <EventCard key={event.id} event={event} />)}
           </ResultSection>
 
           {!isLoading && totalCount === 0 && (

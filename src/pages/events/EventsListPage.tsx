@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, Plus } from 'lucide-react'
 import { listEvents } from '@/services/events.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { EventCard } from '@/components/domain/EventCard'
 import { PageHeader } from '@/components/domain/PageHeader'
+import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
@@ -13,13 +14,21 @@ import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 
 export default function EventsListPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [upcomingOnly, setUpcomingOnly] = useState(true)
   const [mineOnly, setMineOnly] = useState(false)
   const { data: currentUser } = useCurrentUser()
+  const isFiltering = query.trim().length > 0
 
   const { data: events, isLoading, isError, refetch } = useQuery({
-    queryKey: ['events', upcomingOnly, mineOnly, currentUser?.id],
-    queryFn: () => listEvents({ upcoming: upcomingOnly, organizerUserId: mineOnly ? currentUser?.id : undefined }),
+    queryKey: ['events', upcomingOnly, mineOnly, query, currentUser?.id],
+    queryFn: () =>
+      listEvents({
+        upcoming: upcomingOnly,
+        organizerUserId: mineOnly ? currentUser?.id : undefined,
+        query: query || undefined,
+      }),
     enabled: !mineOnly || !!currentUser,
   })
 
@@ -34,24 +43,26 @@ export default function EventsListPage() {
           </Button>
         }
       />
-      <div className="mb-6 flex flex-wrap items-center gap-4">
-        <PillTabs
-          items={[
-            { key: 'upcoming', label: 'Upcoming' },
-            { key: 'all', label: 'All events' },
-          ]}
-          value={upcomingOnly ? 'upcoming' : 'all'}
-          onChange={(k) => setUpcomingOnly(k === 'upcoming')}
-        />
-        <PillTabs
-          items={[
-            { key: 'all', label: 'All organizers' },
-            { key: 'mine', label: 'Hosted by me' },
-          ]}
-          value={mineOnly ? 'mine' : 'all'}
-          onChange={(k) => setMineOnly(k === 'mine')}
-        />
-      </div>
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search events by title…">
+        <div className="flex flex-wrap items-center gap-4">
+          <PillTabs
+            items={[
+              { key: 'upcoming', label: 'Upcoming' },
+              { key: 'all', label: 'All events' },
+            ]}
+            value={upcomingOnly ? 'upcoming' : 'all'}
+            onChange={(k) => setUpcomingOnly(k === 'upcoming')}
+          />
+          <PillTabs
+            items={[
+              { key: 'all', label: 'All organizers' },
+              { key: 'mine', label: 'Hosted by me' },
+            ]}
+            value={mineOnly ? 'mine' : 'all'}
+            onChange={(k) => setMineOnly(k === 'mine')}
+          />
+        </div>
+      </SearchFilterBar>
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />
@@ -63,6 +74,17 @@ export default function EventsListPage() {
             <EventCard key={event.id} event={event} />
           ))}
         </div>
+      ) : isFiltering ? (
+        <EmptyState
+          icon={<CalendarDays className="size-5" />}
+          title="No events match your search"
+          description="Try a different search term, or clear it to browse all events."
+          action={
+            <Button size="sm" variant="secondary" onClick={() => setQuery('')}>
+              Clear search
+            </Button>
+          }
+        />
       ) : mineOnly ? (
         <EmptyState
           icon={<CalendarDays className="size-5" />}

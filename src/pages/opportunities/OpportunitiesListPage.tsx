@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Briefcase, Plus, Inbox, ListChecks } from 'lucide-react'
 import { listOpportunities, listRecommendedOpportunities } from '@/services/opportunities.service'
@@ -46,7 +46,8 @@ const TYPE_FILTERS: { key: string; label: string }[] = [
 ]
 
 export default function OpportunitiesListPage() {
-  const [query, setQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [type, setType] = useState('all')
   const isFiltering = type !== 'all' || query.trim().length > 0
 
