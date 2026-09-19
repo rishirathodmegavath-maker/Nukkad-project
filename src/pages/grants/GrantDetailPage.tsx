@@ -165,7 +165,7 @@ export default function GrantDetailPage() {
               <a href={grant.applicationUrl} target="_blank" rel="noopener noreferrer">
                 <Button leftIcon={<ExternalLink className="size-4" />}>Apply on {grant.provider}'s site</Button>
               </a>
-              <p className="text-xs text-fg-muted mt-2">Applications are handled entirely by {grant.provider} — Nukkad just points you there.</p>
+              <p className="text-xs text-fg-muted mt-2">Applications are handled entirely by {grant.provider} — Buildadda just points you there.</p>
             </div>
           </Card>
         </div>

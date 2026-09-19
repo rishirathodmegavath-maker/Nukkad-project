@@ -89,7 +89,7 @@ export default function InvestorProfileFormPage() {
     <div className="max-w-2xl mx-auto">
       <PageHeader
         title="Activate your investor profile"
-        description="Your name, photo and headline come from your Nukkad profile — this just adds your investing details. An admin reviews every application before it goes live."
+        description="Your name, photo and headline come from your Buildadda profile — this just adds your investing details. An admin reviews every application before it goes live."
       />
 
       {latest?.status === 'REJECTED' && (

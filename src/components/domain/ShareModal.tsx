@@ -71,7 +71,7 @@ export function ShareModal({ open, onClose, post }: ShareModalProps) {
   }, [users, query])
 
   const shareUrl = `${window.location.origin}/feed/${post.id}`
-  const shareSnippet = post.content ? post.content.slice(0, 140) : 'Check out this post on Nukkad'
+  const shareSnippet = post.content ? post.content.slice(0, 140) : 'Check out this post on Buildadda'
   const shareText = `${shareSnippet}\n${shareUrl}`
 
   function toggleSelected(userId: string) {
@@ -184,7 +184,7 @@ export function ShareModal({ open, onClose, post }: ShareModalProps) {
             <span className="text-[11px] text-fg-secondary">WhatsApp</span>
           </button>
           <button
-            onClick={() => openExternal(`mailto:?subject=${encodeURIComponent('Check this out on Nukkad')}&body=${encodeURIComponent(shareText)}`)}
+            onClick={() => openExternal(`mailto:?subject=${encodeURIComponent('Check this out on Buildadda')}&body=${encodeURIComponent(shareText)}`)}
             className="group flex shrink-0 flex-col items-center gap-1.5 cursor-pointer"
           >
             <span className="flex size-11 items-center justify-center rounded-full bg-surface-sunken text-fg transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">

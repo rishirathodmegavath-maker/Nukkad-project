@@ -138,7 +138,7 @@ export default function FundraiseDetailPage() {
           </Card>
         )}
         <p className="text-xs text-fg-muted px-1">
-          Nukkad only facilitates discovery and introductions here — no funds move through the platform.
+          Buildadda only facilitates discovery and introductions here — no funds move through the platform.
         </p>
       </div>
     </div>

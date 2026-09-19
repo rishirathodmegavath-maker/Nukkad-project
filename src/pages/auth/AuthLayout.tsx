@@ -21,7 +21,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
         />
         <div className="relative flex items-center gap-2">
           <Logo size="md" />
-          <span className="text-xl font-bold tracking-tight">Nukkad</span>
+          <span className="text-xl font-bold tracking-tight">Buildadda</span>
         </div>
         <div className="relative">
           <p className="text-3xl font-bold leading-tight tracking-tight">
@@ -32,14 +32,14 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
             opportunities to take it further.
           </p>
         </div>
-        <p className="relative text-xs text-neutral-500">© {new Date().getFullYear()} Nukkad. All rights reserved.</p>
+        <p className="relative text-xs text-neutral-500">© {new Date().getFullYear()} Buildadda. All rights reserved.</p>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
             <Logo />
-            <span className="text-lg font-bold tracking-tight text-fg">Nukkad</span>
+            <span className="text-lg font-bold tracking-tight text-fg">Buildadda</span>
           </div>
           <h1 className="text-2xl font-bold text-fg tracking-tight">{title}</h1>
           <p className="text-sm text-fg-muted mt-1.5 mb-8">{subtitle}</p>

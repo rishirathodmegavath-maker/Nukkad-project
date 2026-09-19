@@ -77,7 +77,7 @@ const DERIVED_VARS = ['--surface-selected', '--text-brand', '--nav-text-active',
 /**
  * Applies a custom brand colour app-wide by writing inline CSS custom properties on <html>,
  * which outrank tokens.css's `:root`/`[data-theme]` rules. Pass `null` to clear all overrides
- * and fall back to the shipped Nukkad Indigo default.
+ * and fall back to the shipped Buildadda Indigo default.
  */
 export function applyBrandOverride(baseHex: string | null, mode: ThemeMode): void {
   const root = document.documentElement.style

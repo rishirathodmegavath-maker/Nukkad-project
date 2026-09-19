@@ -39,7 +39,7 @@ export default function VerifyEmailPage() {
   return (
     <AuthLayout
       title="Verify your email"
-      subtitle="Confirming your Nukkad account."
+      subtitle="Confirming your Buildadda account."
       footer={
         <Link to="/login" className="font-medium text-brand-600 hover:text-brand-700">
           Back to log in
@@ -51,7 +51,7 @@ export default function VerifyEmailPage() {
       {status === 'success' && (
         <div className="flex flex-col items-center text-center gap-3 py-6">
           <CheckCircle2 className="size-10 text-success-500" />
-          <p className="text-sm text-fg">Your email is verified. You can now log in to Nukkad.</p>
+          <p className="text-sm text-fg">Your email is verified. You can now log in to Buildadda.</p>
           <Link to="/login">
             <Button size="sm">Go to log in</Button>
           </Link>

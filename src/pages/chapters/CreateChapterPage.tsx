@@ -80,7 +80,7 @@ export default function CreateChapterPage() {
               setName(e.target.value)
               if (nameError) setNameError('')
             }}
-            placeholder="e.g. Nukkad Bengaluru"
+            placeholder="e.g. Buildadda Bengaluru"
             required
             maxLength={NAME_MAX_LENGTH}
             error={nameError || undefined}

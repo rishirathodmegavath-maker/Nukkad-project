@@ -14,7 +14,7 @@ interface LogoProps {
 export function Logo({ size = 'sm', className }: LogoProps) {
   return (
     <span className={cn('flex items-center justify-center rounded-lg bg-white shrink-0', sizeClasses[size], className)}>
-      <img src="/logo.png" alt="Nukkad" className="size-full object-contain" />
+      <img src="/logo.png" alt="Buildadda" className="size-full object-contain" />
     </span>
   )
 }

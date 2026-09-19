@@ -97,7 +97,7 @@ export function DesktopSidebar() {
           <Logo size="sm" />
           {!collapsed && (
             <span className="flex items-center gap-1.5 min-w-0">
-              <span className="text-lg font-bold text-fg tracking-tight truncate">Nukkad</span>
+              <span className="text-lg font-bold text-fg tracking-tight truncate">Buildadda</span>
             </span>
           )}
         </Link>
@@ -148,7 +148,7 @@ export function MobileDrawer() {
             aria-label="Go to home"
           >
             <Logo size="sm" />
-            <span className="text-lg font-bold text-fg tracking-tight">Nukkad</span>
+            <span className="text-lg font-bold text-fg tracking-tight">Buildadda</span>
           </Link>
           <button
             onClick={() => setOpen(false)}

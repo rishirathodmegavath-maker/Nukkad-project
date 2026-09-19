@@ -177,7 +177,7 @@ export default function PostOpportunityPage() {
           <CheckCircle2 className="size-7" />
         </div>
         <h1 className="text-xl font-bold text-fg">Opportunity published</h1>
-        <p className="text-sm text-fg-muted">Your opportunity is now visible to people on Nukkad.</p>
+        <p className="text-sm text-fg-muted">Your opportunity is now visible to people on Buildadda.</p>
         <div className="flex gap-3 mt-2">
           <Button variant="secondary" onClick={() => navigate('/opportunities')}>
             Back to Opportunities
@@ -275,7 +275,7 @@ export default function PostOpportunityPage() {
         description={
           isEdit
             ? 'Update the details below.'
-            : 'Share a job, internship, founding role, or co-founder opening with the Nukkad community.'
+            : 'Share a job, internship, founding role, or co-founder opening with the Buildadda community.'
         }
       />
       <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">

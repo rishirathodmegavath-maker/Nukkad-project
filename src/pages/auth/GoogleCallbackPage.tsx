@@ -68,11 +68,11 @@ export default function GoogleCallbackPage() {
         navigate('/', { replace: true })
       } catch (err) {
         if (err instanceof ApiError && err.errorCode === 'GOOGLE_NO_ACCOUNT') {
-          setGoogleNotice({ message: "Your Google account isn't connected to a Nukkad account yet.", action: 'signup' })
+          setGoogleNotice({ message: "Your Google account isn't connected to a Buildadda account yet.", action: 'signup' })
         } else if (err instanceof ApiError && err.errorCode === 'GOOGLE_ACCOUNT_NOT_LINKED') {
           setGoogleNotice({
             message:
-              "This Nukkad account isn't connected to Google yet. Sign in with your email and password, then connect Google from Security settings.",
+              "This Buildadda account isn't connected to Google yet. Sign in with your email and password, then connect Google from Security settings.",
           })
         } else {
           setError(err instanceof Error ? err.message : "Google sign-in couldn't be completed. Please try again.")

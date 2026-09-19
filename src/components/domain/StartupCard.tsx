@@ -18,7 +18,7 @@ export function StartupCard({ startup }: { startup: Startup }) {
     startup.tagline?.trim() ||
     startup.problem?.trim() ||
     startup.solution?.trim() ||
-    'Early-stage venture building on Nukkad'
+    'Early-stage venture building on Buildadda'
 
   return (
     <Card

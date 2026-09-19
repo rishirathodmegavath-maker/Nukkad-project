@@ -60,7 +60,7 @@ export default function RegisterStartupPage() {
     <div className="max-w-2xl mx-auto">
       <PageHeader
         title="Register your startup"
-        description="Already building or running something — inside Nukkad or out in the world? Bring it here so the community can follow, join, and support it."
+        description="Already building or running something — inside Buildadda or out in the world? Bring it here so the community can follow, join, and support it."
       />
       <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">

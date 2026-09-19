@@ -89,7 +89,7 @@ function getStoredRecentColors(): string[] {
   }
 }
 
-/** Applies the effective brand colour (preset default = no override, i.e. shipped Nukkad Indigo) + advanced overrides for the given mode. */
+/** Applies the effective brand colour (preset default = no override, i.e. shipped Buildadda Indigo) + advanced overrides for the given mode. */
 function applyEffectiveTheme(mode: ThemeMode, preset: ThemePresetId, customPrimaryColor: string | null, overrides: AdvancedOverrides) {
   applyBrandOverride(resolvePresetBaseColor(preset, customPrimaryColor), mode)
 
@@ -237,7 +237,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     get().hydrateFromServer(settings)
   },
 
-  /** "Reset Theme" — back to Nukkad Indigo, keeping mode and advanced overrides untouched. */
+  /** "Reset Theme" — back to Buildadda Indigo, keeping mode and advanced overrides untouched. */
   resetTheme: () => {
     const { theme, overrides } = get()
     applyEffectiveTheme(theme, 'NUKKAD_INDIGO', null, overrides)
@@ -258,7 +258,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 
 // Apply theme immediately on module load, before first paint of the app shell — matches the
 // cached mode AND any cached preset/custom colour, so returning users don't flash back to
-// Nukkad Indigo before the backend round-trip in AppShell's hydration effect completes.
+// Buildadda Indigo before the backend round-trip in AppShell's hydration effect completes.
 if (typeof document !== 'undefined') {
   applyDataTheme(initialTheme)
   applyEffectiveTheme(initialTheme, initialCache.preset, initialCache.customPrimaryColor, initialCache.overrides)

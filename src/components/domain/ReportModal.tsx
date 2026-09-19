@@ -73,7 +73,7 @@ export function ReportModal({ open, onClose, reportedUserId, conversationId, pos
           <p className="text-sm text-fg">
             Report this {postId ? 'post' : 'account'} for <span className="font-semibold">{category}</span>?
           </p>
-          <p className="text-xs text-fg-muted">Our team will review this report. Thanks for helping keep Nukkad safe.</p>
+          <p className="text-xs text-fg-muted">Our team will review this report. Thanks for helping keep Buildadda safe.</p>
           <Button isLoading={submitMutation.isPending} onClick={() => submitMutation.mutate()} className="self-end">
             Submit report
           </Button>

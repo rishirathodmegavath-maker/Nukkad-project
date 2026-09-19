@@ -39,7 +39,7 @@ export default function FounderDashboardPage() {
         <EmptyState
           icon={<Rocket className="size-6" />}
           title="You haven't founded a startup yet"
-          description="Register a startup on Nukkad to unlock your dashboard — profile views, investor interest, applications, followers, and more."
+          description="Register a startup on Buildadda to unlock your dashboard — profile views, investor interest, applications, followers, and more."
           action={
             <Link to="/startups/new">
               <Button size="sm">Register your startup</Button>

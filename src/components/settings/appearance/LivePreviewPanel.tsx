@@ -26,7 +26,7 @@ export function LivePreviewPanel() {
         <span className="size-2.5 rounded-full bg-danger-500/60" />
         <span className="size-2.5 rounded-full bg-warning-500/60" />
         <span className="size-2.5 rounded-full bg-success-500/60" />
-        <span className="ml-2 text-[11px] text-fg-muted">Nukkad preview</span>
+        <span className="ml-2 text-[11px] text-fg-muted">Buildadda preview</span>
       </div>
 
       <div className="flex bg-canvas">

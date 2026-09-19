@@ -183,7 +183,7 @@ export default function HomePage() {
               <span className="text-lg">👋</span>
             </div>
             <p className="text-sm text-fg-muted mt-1 leading-relaxed">
-              Here’s what’s relevant and happening across your Nukkad ecosystem today.
+              Here’s what’s relevant and happening across your Buildadda ecosystem today.
             </p>
           </div>
 
@@ -334,7 +334,7 @@ export default function HomePage() {
                     <Rocket className="size-8 text-fg-muted mx-auto mb-2" />
                     <p className="text-sm font-semibold text-fg">No startups listed yet</p>
                     <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto">
-                      Startups graduate from validated ideas on Nukkad.
+                      Startups graduate from validated ideas on Buildadda.
                     </p>
                   </Card>
                 )}
@@ -343,7 +343,7 @@ export default function HomePage() {
           </section>
 
           {/* ------------------------------------------------------------ */}
-          {/* Section B: Latest from Nukkad (Primary Community Feed)       */}
+          {/* Section B: Latest from Buildadda (Primary Community Feed)       */}
           {/* ------------------------------------------------------------ */}
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between pb-1 border-b border-border/60">
@@ -351,7 +351,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-center size-6 rounded-lg bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/50">
                   <Rss className="size-3.5" />
                 </div>
-                <h2 className="text-base font-bold text-fg">Latest from Nukkad</h2>
+                <h2 className="text-base font-bold text-fg">Latest from Buildadda</h2>
               </div>
               <Link
                 to="/feed"
