@@ -1,7 +1,12 @@
 import { getStoredSession, persistSession, clearSession } from '@/lib/session'
+import { isAdminPortal } from '@/lib/portal'
 import type { Session } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+/** Each portal renews its session through its own endpoint — an admin session must stay an
+ *  admin-scoped session, and a member session a member one. */
+const AUTH_BASE = isAdminPortal ? '/admin/auth' : '/auth'
 
 if (!BASE_URL) {
   // Fails loud in dev rather than silently hitting a relative/undefined URL.
@@ -55,7 +60,7 @@ async function refreshAccessToken(currentRefreshToken: string): Promise<Session>
     refreshPromise = (async () => {
       let response: Response
       try {
-        response = await fetch(`${BASE_URL}/auth/refresh`, {
+        response = await fetch(`${BASE_URL}${AUTH_BASE}/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: currentRefreshToken }),
@@ -115,8 +120,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     response.status === 401 &&
     !options._isRetry &&
     session?.refreshToken &&
-    !path.startsWith('/auth/refresh') &&
-    !path.startsWith('/auth/login')
+    !path.startsWith(`${AUTH_BASE}/refresh`) &&
+    !path.startsWith(`${AUTH_BASE}/login`)
   ) {
     try {
       await refreshAccessToken(session.refreshToken)

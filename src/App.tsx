@@ -4,6 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query-client'
 import { useAuthStore } from '@/store/auth.store'
 import { AppRoutes } from '@/routes/AppRoutes'
+import { AdminPortalRoutes } from '@/routes/AdminPortalRoutes'
+import { isAdminPortal } from '@/lib/portal'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 export default function App() {
@@ -20,7 +22,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ErrorBoundary>
-          <AppRoutes />
+          {/* Two completely separate sites built from one codebase: the admin host only ever
+              mounts the control panel, every other host only ever mounts the member application. */}
+          {isAdminPortal ? <AdminPortalRoutes /> : <AppRoutes />}
         </ErrorBoundary>
       </BrowserRouter>
     </QueryClientProvider>

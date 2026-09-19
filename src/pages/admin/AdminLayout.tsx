@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 
 const ADMIN_NAV = [
   { to: '/admin', label: 'Dashboard', end: true },
+  { to: '/admin/activity', label: 'Activity', end: false },
   { to: '/admin/users', label: 'Users', end: false },
   { to: '/admin/startups', label: 'Startups', end: false },
   { to: '/admin/ideas', label: 'Ideas', end: false },
@@ -21,10 +22,11 @@ export default function AdminLayout() {
     <div>
       <div className="flex items-center gap-2.5 mb-1">
         <ShieldCheck className="size-5 text-brand-600 dark:text-brand-400" />
-        <h1 className="text-2xl font-bold text-fg tracking-tight">Admin</h1>
+        <h1 className="text-2xl font-bold text-fg tracking-tight">Control panel</h1>
       </div>
       <p className="text-sm text-fg-muted mb-6 max-w-2xl">
-        Platform administration — every action here is authorized and recorded in the audit log.
+        Platform administration — every action here is authorized and recorded in the audit log. Private
+        messages are never visible here.
       </p>
 
       <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto no-scrollbar mb-6">

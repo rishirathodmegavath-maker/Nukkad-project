@@ -1,22 +1,13 @@
 import { NavLink, Link } from 'react-router-dom'
-import { ShieldCheck, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { X, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { navSections } from './nav-config'
 import { useUiStore } from '@/store/ui.store'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
 
-const ADMIN_SECTION = {
-  title: 'Admin',
-  items: [{ to: '/admin', label: 'Admin Panel', icon: ShieldCheck, end: false }],
-}
-
 function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; collapsed?: boolean }) {
-  const { data: currentUser } = useCurrentUser()
-  // UX only — hides the entry point for non-admins. The backend independently rejects every
-  // /api/admin/** call with 403 for anyone without ROLE_ADMIN, regardless of what nav renders.
-  const isAdmin = !!currentUser?.roles.includes('ADMIN')
-  const sections = isAdmin ? [...navSections, ADMIN_SECTION] : navSections
+  // The admin panel is a separate site (admin.…), so it never appears in the member navigation.
+  const sections = navSections
 
   return (
     <div className={cn('flex flex-col gap-5 py-2', collapsed ? 'px-2 items-center' : 'px-3')}>

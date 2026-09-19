@@ -1,5 +1,5 @@
 import { apiClient, getPagedResult, type Page } from '@/lib/api-client'
-import type { AccountStatus, AdminAuditLog, AdminDashboard, AdminMessage, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
+import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
 
 export interface AdminUserFilters {
   q?: string
@@ -44,8 +44,8 @@ export async function resolveReport(id: string, status: 'RESOLVED' | 'DISMISSED'
   return apiClient.patch<AdminReport>(`/admin/reports/${id}`, { status, resolutionNote })
 }
 
-export async function getReportMessages(id: string): Promise<AdminMessage[]> {
-  return apiClient.get<AdminMessage[]>(`/admin/reports/${id}/messages`)
+export async function listAdminActivity(limit = 50): Promise<AdminActivity[]> {
+  return apiClient.get<AdminActivity[]>(`/admin/activity?limit=${limit}`)
 }
 
 export interface AdminAuditLogFilters {

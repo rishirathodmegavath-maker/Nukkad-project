@@ -1,6 +1,9 @@
 import type { Session } from '@/types'
+import { isAdminPortal } from '@/lib/portal'
 
-const SESSION_KEY = 'nukkad.session'
+// Separate key per portal, so even if both ever ran on one origin (e.g. local development) an admin
+// session and a member session could never overwrite or be mistaken for each other.
+const SESSION_KEY = isAdminPortal ? 'buildadda.admin.session' : 'nukkad.session'
 
 export function getStoredSession(): Session | null {
   try {

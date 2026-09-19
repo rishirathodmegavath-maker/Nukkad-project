@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoute'
-import { AdminRoute } from './AdminRoute'
 import { AppShell } from '@/components/layout/AppShell'
 
 import LoginPage from '@/pages/auth/LoginPage'
@@ -51,19 +50,6 @@ import GrantFormPage from '@/pages/grants/GrantFormPage'
 import GrantDetailPage from '@/pages/grants/GrantDetailPage'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
-import AdminLayout from '@/pages/admin/AdminLayout'
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
-import AdminUsersPage from '@/pages/admin/AdminUsersPage'
-import AdminUserDetailPage from '@/pages/admin/AdminUserDetailPage'
-import AdminStartupsPage from '@/pages/admin/AdminStartupsPage'
-import AdminIdeasPage from '@/pages/admin/AdminIdeasPage'
-import AdminGrantsPage from '@/pages/admin/AdminGrantsPage'
-import AdminFeedPage from '@/pages/admin/AdminFeedPage'
-import AdminInvestorActivationsPage from '@/pages/admin/AdminInvestorActivationsPage'
-import AdminOpportunitiesPage from '@/pages/admin/AdminOpportunitiesPage'
-import AdminReportsPage from '@/pages/admin/AdminReportsPage'
-import AdminWithdrawalsPage from '@/pages/admin/AdminWithdrawalsPage'
-import AdminAuditLogsPage from '@/pages/admin/AdminAuditLogsPage'
 
 export function AppRoutes() {
   return (
@@ -137,26 +123,6 @@ export function AppRoutes() {
           <Route path="/grants/:id/edit" element={<GrantFormPage />} />
           <Route path="/grants/:id" element={<GrantDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-
-          {/* UX-only gate — the real boundary is the backend's ROLE_ADMIN check on every
-              /api/admin/** call (see SecurityConfig). A non-admin who reaches this route
-              client-side is redirected before any admin API is ever called. */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="users" element={<AdminUsersPage />} />
-              <Route path="users/:id" element={<AdminUserDetailPage />} />
-              <Route path="startups" element={<AdminStartupsPage />} />
-              <Route path="ideas" element={<AdminIdeasPage />} />
-              <Route path="opportunities" element={<AdminOpportunitiesPage />} />
-              <Route path="grants" element={<AdminGrantsPage />} />
-              <Route path="feed" element={<AdminFeedPage />} />
-              <Route path="investor-activations" element={<AdminInvestorActivationsPage />} />
-              <Route path="reports" element={<AdminReportsPage />} />
-              <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
-              <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-            </Route>
-          </Route>
         </Route>
       </Route>
 

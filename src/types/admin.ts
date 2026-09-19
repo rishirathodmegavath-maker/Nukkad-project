@@ -37,13 +37,27 @@ export interface AdminReport {
   resolutionNote: string | null
 }
 
-export interface AdminMessage {
-  id: string
-  senderId: string
-  messageType: string
-  content: string | null
-  unsent: boolean
-  createdAt: string
+export type AdminActivityType =
+  | 'USER_JOINED'
+  | 'STARTUP_CREATED'
+  | 'IDEA_POSTED'
+  | 'OPPORTUNITY_POSTED'
+  | 'EVENT_CREATED'
+  | 'GRANT_ADDED'
+  | 'POST_PUBLISHED'
+  | 'APPLICATION_SUBMITTED'
+  | 'REPORT_FILED'
+  | 'WITHDRAWAL_REQUESTED'
+  | 'INVESTOR_APPLICATION'
+
+/** One line of the platform activity timeline. `label` is a title/name/category — never private content. */
+export interface AdminActivity {
+  type: AdminActivityType
+  occurredAt: string
+  actorId: string | null
+  actorName: string | null
+  label: string | null
+  targetId: string | null
 }
 
 export interface AdminAuditLog {

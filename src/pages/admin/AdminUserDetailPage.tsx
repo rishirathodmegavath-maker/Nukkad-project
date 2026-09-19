@@ -5,7 +5,7 @@ import { ArrowLeft, ShieldCheck, ShieldOff, Wallet as WalletIcon, ArrowDownLeft,
 import { getAdminUser, updateUserRole, updateUserStatus } from '@/services/admin.service'
 import { adjustWalletBalance, getAdminWallet, listAdminWalletTransactions, setWalletStatus } from '@/services/wallet.service'
 import type { AccountStatus } from '@/types/admin'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { getStoredSession } from '@/lib/session'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -207,7 +207,7 @@ function AdjustWalletModal({
 
 export default function AdminUserDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: currentUser } = useCurrentUser()
+  const currentAdminId = getStoredSession()?.userId
   const queryClient = useQueryClient()
   const [statusModalTarget, setStatusModalTarget] = useState<AccountStatus | null>(null)
   const [confirmAdminChange, setConfirmAdminChange] = useState(false)
@@ -288,7 +288,7 @@ export default function AdminUserDetailPage() {
     return <ErrorState title="Couldn't load this user" onRetry={refetch} />
   }
 
-  const isSelf = currentUser?.id === user.id
+  const isSelf = currentAdminId === user.id
   const isAdmin = user.roles.includes('ADMIN')
 
   return (

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Flag, MessageSquareOff } from 'lucide-react'
-import { getAdminPost, getReportMessages, listAdminReports, resolveReport } from '@/services/admin.service'
+import { Flag, Lock } from 'lucide-react'
+import { getAdminPost, listAdminReports, resolveReport } from '@/services/admin.service'
 import type { AdminReport, ReportStatus } from '@/types/admin'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Card } from '@/components/ui/Card'
@@ -30,52 +30,14 @@ const CATEGORIES = [
 
 const statusTone = { OPEN: 'warning', RESOLVED: 'success', DISMISSED: 'neutral' } as const
 
-function ConversationEvidence({ report }: { report: AdminReport }) {
-  const { data: messages, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'reports', report.id, 'messages'],
-    queryFn: () => getReportMessages(report.id),
-    enabled: !!report.conversationId,
-  })
-
-  if (!report.conversationId) {
-    return (
-      <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-surface-sunken px-3.5 py-3 text-sm text-fg-muted">
-        <MessageSquareOff className="size-4 shrink-0" />
-        No conversation is attached to this report.
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return <div className="flex flex-col gap-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 rounded-lg" />)}</div>
-  }
-
-  if (isError) {
-    return <p className="text-sm text-danger-500">Couldn't load the reported conversation.</p>
-  }
-
-  if (!messages || messages.length === 0) {
-    return <p className="text-sm text-fg-muted">This conversation has no messages.</p>
-  }
-
+function PrivateConversationNotice() {
   return (
-    <div className="flex flex-col gap-2 max-h-64 overflow-y-auto rounded-xl border border-border/60 bg-surface-sunken p-3">
-      {messages.map((m) => {
-        const isReportedUser = m.senderId === report.reportedUserId
-        return (
-          <div key={m.id} className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2 text-xs">
-              <span className={isReportedUser ? 'font-semibold text-danger-500' : 'font-semibold text-fg-secondary'}>
-                {isReportedUser ? (report.reportedUserName ?? 'Reported user') : (report.reporterName ?? 'Reporter')}
-              </span>
-              <span className="text-fg-muted">{formatRelativeTime(m.createdAt)}</span>
-            </div>
-            <p className="text-sm text-fg whitespace-pre-wrap break-words">
-              {m.unsent ? <span className="italic text-fg-muted">Message unsent</span> : m.content}
-            </p>
-          </div>
-        )
-      })}
+    <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-surface-sunken px-3.5 py-3 text-sm text-fg-muted">
+      <Lock className="size-4 shrink-0 mt-0.5" />
+      <span>
+        Private messages are encrypted and can't be read from the admin panel. Decide using the report
+        category and the reported user's record instead.
+      </span>
     </div>
   )
 }
@@ -147,7 +109,7 @@ function ResolveModal({ report, onClose }: { report: AdminReport | null; onClose
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-fg">{report.postId ? 'Reported post' : 'Reported conversation'}</p>
-          {report.postId ? <PostEvidence report={report} /> : <ConversationEvidence report={report} />}
+          {report.postId ? <PostEvidence report={report} /> : <PrivateConversationNotice />}
         </div>
         {isOpen ? (
           <div className="flex flex-col gap-1.5">
