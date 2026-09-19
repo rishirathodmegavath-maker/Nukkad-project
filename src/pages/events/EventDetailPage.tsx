@@ -380,6 +380,20 @@ export default function EventDetailPage() {
               )}
             </Card>
           )}
+
+          {event.startups.length > 0 && (
+            <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+              <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Featuring</h2>
+              <div className="flex flex-col gap-2.5">
+                {event.startups.map((s) => (
+                  <Link key={s.id} to={`/startups/${s.id}`} className="flex items-center gap-2.5 group">
+                    <Avatar src={s.logoUrl} name={s.name} size="sm" />
+                    <p className="text-sm font-bold text-fg group-hover:underline truncate">{s.name}</p>
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
 

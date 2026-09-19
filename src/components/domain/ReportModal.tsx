@@ -26,13 +26,14 @@ interface ReportModalProps {
   onClose: () => void
   reportedUserId: string
   conversationId?: string
+  postId?: string
 }
 
-export function ReportModal({ open, onClose, reportedUserId, conversationId }: ReportModalProps) {
+export function ReportModal({ open, onClose, reportedUserId, conversationId, postId }: ReportModalProps) {
   const [category, setCategory] = useState<string | null>(null)
 
   const submitMutation = useMutation({
-    mutationFn: () => apiClient.post('/reports', { reportedUserId, category: category!, conversationId }),
+    mutationFn: () => apiClient.post('/reports', { reportedUserId, category: category!, conversationId, postId }),
     onSuccess: () => {
       toast.success("Thanks — your report was submitted and we'll take a look.")
       handleClose()
@@ -70,7 +71,7 @@ export function ReportModal({ open, onClose, reportedUserId, conversationId }: R
             <ChevronLeft className="size-4" /> Back
           </button>
           <p className="text-sm text-fg">
-            Report this account for <span className="font-semibold">{category}</span>?
+            Report this {postId ? 'post' : 'account'} for <span className="font-semibold">{category}</span>?
           </p>
           <p className="text-xs text-fg-muted">Our team will review this report. Thanks for helping keep Nukkad safe.</p>
           <Button isLoading={submitMutation.isPending} onClick={() => submitMutation.mutate()} className="self-end">

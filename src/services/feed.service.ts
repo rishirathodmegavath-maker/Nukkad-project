@@ -23,6 +23,8 @@ export interface PostDto {
   createdAt: string
   attachments: AttachmentDto[]
   savedAt: string | null
+  removedByAdmin: boolean
+  removalReason: string | null
 }
 
 /** Ref to an already-uploaded, not-yet-attached file — same shape the upload endpoint returns and create-post expects. */
@@ -52,6 +54,8 @@ export function mapPost(dto: PostDto): Post {
     createdAt: dto.createdAt,
     attachments: dto.attachments.map(mapAttachment),
     savedAt: dto.savedAt ?? undefined,
+    removedByAdmin: dto.removedByAdmin,
+    removalReason: dto.removalReason ?? undefined,
   }
 }
 

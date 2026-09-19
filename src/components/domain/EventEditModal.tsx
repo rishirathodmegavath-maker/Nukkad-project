@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { updateEvent } from '@/services/events.service'
+import { listMyFoundedStartups } from '@/services/startups.service'
 import { toast } from '@/store/toast.store'
 import type { NukkadEvent } from '@/types'
 
@@ -24,6 +25,16 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
   const [endAt, setEndAt] = useState(toLocalInputValue(event.endAt))
   const [capacityInput, setCapacityInput] = useState(event.capacity ? String(event.capacity) : '')
   const [coverImageUrl, setCoverImageUrl] = useState(event.coverImageUrl ?? '')
+  const [startupIds, setStartupIds] = useState<string[]>(event.startups.map((s) => s.id))
+
+  const { data: foundedStartups } = useQuery({
+    queryKey: ['startups', 'me', 'founding'],
+    queryFn: listMyFoundedStartups,
+  })
+
+  function toggleStartup(startupId: string) {
+    setStartupIds((prev) => (prev.includes(startupId) ? prev.filter((id) => id !== startupId) : [...prev, startupId]))
+  }
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -37,6 +48,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
         meetingUrl: isOnline ? meetingUrl : undefined,
         capacity: capacityInput ? Number(capacityInput) : undefined,
         coverImageUrl: coverImageUrl.trim() || undefined,
+        startupIds,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event', event.id] })
@@ -86,6 +98,31 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
           onChange={(e) => setCoverImageUrl(e.target.value)}
           placeholder="https://…"
         />
+
+        {foundedStartups && foundedStartups.length > 0 && (
+          <div>
+            <p className="text-sm font-medium text-fg mb-1.5">Featuring your startup(s)</p>
+            <div className="flex flex-wrap gap-2">
+              {foundedStartups.map((s) => {
+                const active = startupIds.includes(s.id)
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => toggleStartup(s.id)}
+                    className={
+                      active
+                        ? 'rounded-full px-3 py-1.5 text-xs font-semibold bg-brand-600 text-white cursor-pointer'
+                        : 'rounded-full px-3 py-1.5 text-xs font-semibold bg-surface-sunken text-fg-secondary hover:bg-surface-hover cursor-pointer'
+                    }
+                  >
+                    {s.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 -mx-5 -mb-5 border-t border-border-subtle px-5 pt-4 pb-5">
           <Button variant="ghost" onClick={onClose}>

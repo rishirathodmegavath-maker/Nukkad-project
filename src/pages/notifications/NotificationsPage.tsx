@@ -15,6 +15,7 @@ import {
   Star,
   Building2,
   Landmark,
+  Wallet,
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNotifications, useMarkAllNotificationsRead, useMarkNotificationRead } from '@/hooks/useNotifications'
@@ -41,6 +42,9 @@ const typeIcon: Record<NotificationType, typeof Bell> = {
   startup: Rocket,
   chapter: Building2,
   investor: Landmark,
+  wallet: Wallet,
+  grant: Landmark,
+  investor_activation: Landmark,
 }
 
 const typeColor: Record<NotificationType, string> = {
@@ -54,6 +58,9 @@ const typeColor: Record<NotificationType, string> = {
   startup: 'bg-surface-sunken text-fg-secondary border border-border/80',
   chapter: 'bg-surface-sunken text-fg-secondary border border-border/80',
   investor: 'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/40',
+  wallet: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40',
+  grant: 'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/40',
+  investor_activation: 'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/40',
 }
 
 // These titles are only ever sent to the opportunity's own poster (see OpportunityService),
@@ -80,6 +87,9 @@ const typeLink: Record<NotificationType, (relatedId?: string, title?: string) =>
   startup: (id) => (id ? `/startups/${id}` : undefined),
   chapter: (id) => (id ? `/chapters/${id}` : undefined),
   investor: () => '/investors/requests',
+  wallet: () => '/wallet',
+  grant: (id) => (id ? `/grants/${id}` : undefined),
+  investor_activation: (id) => (id ? `/investors/${id}` : '/investors/activate'),
 }
 
 function NotificationRow({ notif }: { notif: NukkadNotification }) {

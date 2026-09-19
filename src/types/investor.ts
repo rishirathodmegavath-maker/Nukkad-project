@@ -56,4 +56,6 @@ export interface IntroRequest {
   status: IntroRequestStatus
   createdAt: string
   reviewedAt?: string
+  /** Set once the request is Accepted — the conversation opened between requester and recipient. */
+  conversationId?: string
 }

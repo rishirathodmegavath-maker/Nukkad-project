@@ -1,6 +1,6 @@
 import { apiClient, getPage } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
-import type { NukkadEvent, User } from '@/types'
+import type { EventStartupSummary, NukkadEvent, StartupEventSummary, User } from '@/types'
 
 export interface EventFilters {
   chapterId?: string
@@ -21,6 +21,14 @@ export interface EventInput {
   meetingUrl?: string
   coverImageUrl?: string
   capacity?: number
+  /** Startups this event is tagged with — the creator must manage each one. Omit to leave unchanged on update. */
+  startupIds?: string[]
+}
+
+interface EventStartupSummaryDto {
+  id: string
+  name: string
+  logoUrl: string | null
 }
 
 interface EventDto {
@@ -40,6 +48,7 @@ interface EventDto {
   attendeeCount: number
   isAttending: boolean
   canManage: boolean
+  startups: EventStartupSummaryDto[]
   createdAt: string
   updatedAt: string
 }
@@ -62,6 +71,7 @@ function mapEvent(dto: EventDto): NukkadEvent {
     attendeeCount: dto.attendeeCount,
     isAttending: dto.isAttending,
     canManage: dto.canManage,
+    startups: (dto.startups ?? []).map((s): EventStartupSummary => ({ id: s.id, name: s.name, logoUrl: s.logoUrl ?? undefined })),
     createdAt: dto.createdAt,
   }
 }
@@ -102,6 +112,7 @@ function toRequestBody(input: Partial<EventInput>) {
     meetingUrl: input.meetingUrl,
     coverImageUrl: input.coverImageUrl,
     capacity: input.capacity,
+    startupIds: input.startupIds,
   }
 }
 
@@ -123,4 +134,19 @@ export async function rsvpToEvent(id: string): Promise<NukkadEvent> {
 
 export async function cancelEventRsvp(id: string): Promise<NukkadEvent> {
   return mapEvent(await apiClient.post<EventDto>(`/events/${id}/cancel-rsvp`))
+}
+
+interface StartupEventSummaryDto {
+  id: string
+  title: string
+  startAt: string
+  endAt: string
+  online: boolean
+  location: string | null
+}
+
+/** Events a given startup is tagged on — powers the startup profile's "Events" card. */
+export async function getEventsForStartup(startupId: string): Promise<StartupEventSummary[]> {
+  const dtos = await apiClient.get<StartupEventSummaryDto[]>(`/events/by-startup/${startupId}`)
+  return dtos.map((d) => ({ id: d.id, title: d.title, startAt: d.startAt, endAt: d.endAt, isOnline: d.online, location: d.location ?? '' }))
 }

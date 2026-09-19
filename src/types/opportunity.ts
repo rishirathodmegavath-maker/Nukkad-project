@@ -11,6 +11,8 @@ export type OpportunityType =
 
 export type ApplicationStatus = 'Pending' | 'Shortlisted' | 'Accepted' | 'Rejected' | 'Withdrawn'
 
+export type WorkMode = 'Remote' | 'Hybrid' | 'In-person'
+
 export interface Opportunity {
   id: string
   title: string
@@ -19,9 +21,11 @@ export interface Opportunity {
   startupId?: string
   organizationName: string
   location: string
-  remote: boolean
+  workMode: WorkMode
   description: string
+  responsibilities?: string
   requirements: string[]
+  requiredSkills: string[]
   compensation?: string
   equity?: string
   experienceLevel?: string
@@ -41,6 +45,10 @@ export interface Opportunity {
   applicantCount?: number
   interestCount?: number
   chapterId?: string
+  /** Pre-publish review gate — a brand-new posting starts PENDING and is invisible to public
+   *  discovery until an admin approves it; only the poster and a platform admin can see it before then. */
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+  rejectionReason?: string
   createdAt: string
 }
 
@@ -50,9 +58,11 @@ export interface PostOpportunityInput {
   startupId?: string
   organizationName: string
   location?: string
-  remote: boolean
+  workMode: WorkMode
   description: string
+  responsibilities?: string
   requirements?: string[]
+  requiredSkills?: string[]
   compensation?: string
   equity?: string
   experienceLevel?: string

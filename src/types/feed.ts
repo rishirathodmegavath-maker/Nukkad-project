@@ -25,6 +25,8 @@ export interface Post {
   attachments: PostAttachment[]
   /** Only set on results from the dedicated saved-posts listing — when this post was saved. */
   savedAt?: string
+  removedByAdmin?: boolean
+  removalReason?: string
 }
 
 export type SavedPostsSort = 'newestSaved' | 'oldestSaved' | 'newestPost' | 'oldestPost'

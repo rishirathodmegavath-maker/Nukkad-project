@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Heart, Users, TrendingUp, Briefcase, Pencil, Check, X, UserPlus, Camera, Trash2, ChevronRight, MapPin, Globe, Lock, Sparkles } from 'lucide-react'
+import { Heart, Users, TrendingUp, Briefcase, Pencil, Check, X, UserPlus, Camera, Trash2, ChevronRight, MapPin, Globe, Lock, Sparkles, CalendarDays } from 'lucide-react'
 import {
   getStartup,
   toggleFollowStartup,
@@ -13,6 +13,7 @@ import {
   acceptStartupJoinRequest,
   rejectStartupJoinRequest,
   removeStartupTeamMember,
+  updateStartupTeamMemberRole,
   uploadStartupLogo,
   removeStartupLogo,
   deleteStartup,
@@ -21,6 +22,7 @@ import {
 } from '@/services/startups.service'
 import { getFundraiseByStartup } from '@/services/investors.service'
 import { listOpportunities } from '@/services/opportunities.service'
+import { getEventsForStartup } from '@/services/events.service'
 import { useUser } from '@/hooks/useUser'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
@@ -39,7 +41,7 @@ import { FundraiseCreateModal } from '@/components/domain/FundraiseCreateModal'
 import { StartupMaterialsSection } from '@/components/domain/StartupMaterialsSection'
 import { formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
-import type { Startup, StartupMembershipStatus } from '@/types'
+import type { Startup, StartupMembershipStatus, StartupTeamRole } from '@/types'
 
 const stageTone: Record<Startup['stage'], BadgeTone> = {
   Idea: 'neutral',
@@ -58,15 +60,24 @@ const membershipStatusTone: Record<StartupMembershipStatus, BadgeTone> = {
 function TeamMemberRow({
   userId,
   role,
+  teamRole,
   canRemove,
   onRemove,
   removing,
+  canChangeRole,
+  onChangeRole,
+  changingRole,
 }: {
   userId: string
   role: string
+  teamRole: StartupTeamRole
   canRemove: boolean
   onRemove: () => void
   removing: boolean
+  /** Only a founder can promote/demote — the target must not already be the founder. */
+  canChangeRole: boolean
+  onChangeRole: (newRole: 'ADMIN' | 'MEMBER') => void
+  changingRole: boolean
 }) {
   const { data: user } = useUser(userId)
   if (!user) return <Skeleton className="h-12 w-full rounded-lg" />
@@ -79,17 +90,30 @@ function TeamMemberRow({
           <p className="text-xs text-fg-muted truncate">{role}</p>
         </div>
       </Link>
-      {canRemove && (
-        <button
-          type="button"
-          disabled={removing}
-          onClick={onRemove}
-          title="Remove from team"
-          className="shrink-0 rounded-md p-1 text-fg-muted hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50 cursor-pointer"
-        >
-          <X className="size-3.5" />
-        </button>
-      )}
+      <div className="flex items-center gap-1 shrink-0">
+        {canChangeRole && (
+          <button
+            type="button"
+            disabled={changingRole}
+            onClick={() => onChangeRole(teamRole === 'ADMIN' ? 'MEMBER' : 'ADMIN')}
+            title={teamRole === 'ADMIN' ? 'Demote to Member' : 'Promote to Admin'}
+            className="rounded-md px-1.5 py-1 text-[11px] font-semibold text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-50 cursor-pointer"
+          >
+            {teamRole === 'ADMIN' ? 'Make Member' : 'Make Admin'}
+          </button>
+        )}
+        {canRemove && (
+          <button
+            type="button"
+            disabled={removing}
+            onClick={onRemove}
+            title="Remove from team"
+            className="rounded-md p-1 text-fg-muted hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50 cursor-pointer"
+          >
+            <X className="size-3.5" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -128,11 +152,13 @@ export default function StartupDetailPage() {
   // Derived from /my-membership (JWT-scoped server-side), not by cross-referencing the
   // separately-cached currentUser + members list — avoids a stale-currentUser-cache mismatch.
   const isFounder = myMembershipQuery.data?.isFounder ?? false
+  // Founder or Admin — unlocks edit-startup/manage-team/post-jobs/edit-fundraising. Delete stays founder-only.
+  const canManage = myMembershipQuery.data?.canManage ?? false
 
   const joinRequestsQuery = useQuery({
     queryKey: ['startup', id, 'join-requests'],
     queryFn: () => getStartupJoinRequests(id!),
-    enabled: !!id && isFounder,
+    enabled: !!id && canManage,
   })
 
   const updatesQuery = useQuery({
@@ -160,6 +186,12 @@ export default function StartupDetailPage() {
     queryKey: ['fundraise', 'by-startup', id],
     queryFn: () => getFundraiseByStartup(id!),
     enabled: !!id && !!startup?.isRaising,
+  })
+
+  const eventsQuery = useQuery({
+    queryKey: ['startup', id, 'events'],
+    queryFn: () => getEventsForStartup(id!),
+    enabled: !!id,
   })
 
   const invalidateStartup = () => {
@@ -249,6 +281,16 @@ export default function StartupDetailPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove teammate'),
   })
 
+  const changeRoleMutation = useMutation({
+    mutationFn: ({ userId, teamRole }: { userId: string; teamRole: 'ADMIN' | 'MEMBER' }) =>
+      updateStartupTeamMemberRole(id!, userId, teamRole),
+    onSuccess: (member) => {
+      invalidateStartup()
+      toast.success(member.teamRole === 'ADMIN' ? 'Promoted to Admin' : 'Moved back to Member')
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Could not update this teammate's role"),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: () => deleteStartup(id!),
     onSuccess: () => {
@@ -293,10 +335,25 @@ export default function StartupDetailPage() {
         <span className="text-fg truncate max-w-sm">{startup.name}</span>
       </div>
 
+      {canManage && startup.moderationStatus === 'PENDING' && (
+        <Card className="border border-warning-500/30 bg-warning-500/5 flex items-center gap-3">
+          <Badge tone="warning">Pending review</Badge>
+          <p className="text-sm text-fg-secondary">
+            This startup is waiting on admin approval and isn't visible to anyone else yet.
+          </p>
+        </Card>
+      )}
+      {canManage && startup.moderationStatus === 'REJECTED' && (
+        <Card className="border border-danger-500/30 bg-danger-500/5 flex items-center gap-3">
+          <Badge tone="danger">Not approved</Badge>
+          <p className="text-sm text-fg-secondary">{startup.rejectionReason ?? 'This startup was not approved.'}</p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <Card className="flex flex-col sm:flex-row sm:items-start gap-5">
-          {isFounder ? (
+          {canManage ? (
             <div className="relative shrink-0 size-20">
               <DropdownMenu
                 trigger={
@@ -356,20 +413,20 @@ export default function StartupDetailPage() {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {canManage && (
+                  <Button variant="secondary" size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditModalOpen(true)}>
+                    Edit
+                  </Button>
+                )}
                 {isFounder && (
-                  <>
-                    <Button variant="secondary" size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditModalOpen(true)}>
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger-subtle"
-                      size="sm"
-                      leftIcon={<Trash2 className="size-3.5" />}
-                      onClick={() => setConfirmDeleteOpen(true)}
-                    >
-                      Delete
-                    </Button>
-                  </>
+                  <Button
+                    variant="danger-subtle"
+                    size="sm"
+                    leftIcon={<Trash2 className="size-3.5" />}
+                    onClick={() => setConfirmDeleteOpen(true)}
+                  >
+                    Delete
+                  </Button>
                 )}
                 <Button
                   variant="secondary"
@@ -399,7 +456,7 @@ export default function StartupDetailPage() {
           </div>
         </Card>
 
-        {isFounder && pendingRequests.length > 0 && (
+        {canManage && pendingRequests.length > 0 && (
           <Card>
             <h2 className="font-semibold text-fg mb-3 flex items-center gap-2">
               <Users className="size-4" /> Join requests ({pendingRequests.length})
@@ -447,7 +504,7 @@ export default function StartupDetailPage() {
           </Card>
         )}
 
-        {isFounder && startup.profileCompletionPercent < 100 && (
+        {canManage && startup.profileCompletionPercent < 100 && (
           <Card className="flex items-center justify-between gap-3 border-brand-200 dark:border-brand-900 bg-brand-50/40 dark:bg-brand-950/20">
             <div className="flex items-center gap-3 min-w-0">
               <span className="flex items-center justify-center size-9 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-300 shrink-0">
@@ -576,7 +633,7 @@ export default function StartupDetailPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-fg truncate">{opp.title}</p>
                     <p className="text-xs text-fg-muted mt-0.5 truncate">
-                      {opp.type} {opp.location && `· ${opp.location}`} {opp.remote && '· Remote friendly'}
+                      {opp.type} {opp.location && `· ${opp.location}`} · {opp.workMode}
                     </p>
                   </div>
                   <Link to={`/opportunities/${opp.id}`} className="shrink-0">
@@ -587,7 +644,7 @@ export default function StartupDetailPage() {
                 </div>
               ))}
             </div>
-          ) : isFounder ? (
+          ) : canManage ? (
             <EmptyState
               title="No open positions yet"
               description="Post an opportunity to start hiring through this startup."
@@ -631,7 +688,7 @@ export default function StartupDetailPage() {
             <h2 className="font-semibold text-fg flex items-center gap-2">
               <Users className="size-4" /> Team
             </h2>
-            {isFounder && (
+            {canManage && (
               <button
                 type="button"
                 onClick={() => setAddTeammateModalOpen(true)}
@@ -648,9 +705,13 @@ export default function StartupDetailPage() {
                 key={member.userId}
                 userId={member.userId}
                 role={member.role}
-                canRemove={isFounder && !member.isFounder}
+                teamRole={member.teamRole}
+                canRemove={canManage && !member.isFounder && (isFounder || !member.isAdmin)}
                 removing={removeMemberMutation.isPending && removeMemberMutation.variables === member.userId}
                 onRemove={() => removeMemberMutation.mutate(member.userId)}
+                canChangeRole={isFounder && !member.isFounder}
+                changingRole={changeRoleMutation.isPending && changeRoleMutation.variables?.userId === member.userId}
+                onChangeRole={(newRole) => changeRoleMutation.mutate({ userId: member.userId, teamRole: newRole })}
               />
             ))}
           </div>
@@ -669,7 +730,32 @@ export default function StartupDetailPage() {
           </Card>
         )}
 
-        <StartupMaterialsSection startupId={startup.id} canManage={isFounder} />
+        <StartupMaterialsSection startupId={startup.id} canManage={canManage} />
+
+        {eventsQuery.data && eventsQuery.data.length > 0 && (
+          <Card>
+            <h2 className="font-semibold text-fg mb-3 flex items-center gap-2">
+              <CalendarDays className="size-4" /> Events
+            </h2>
+            <div className="flex flex-col gap-2.5">
+              {eventsQuery.data.map((evt) => (
+                <Link
+                  key={evt.id}
+                  to={`/events/${evt.id}`}
+                  className="flex items-center justify-between gap-3 border border-border-subtle rounded-lg p-3 hover:border-border-strong transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">{evt.title}</p>
+                    <p className="text-xs text-fg-muted mt-0.5 truncate">
+                      {new Date(evt.startAt).toLocaleDateString()} {evt.location && `· ${evt.location}`} {evt.isOnline && '· Online'}
+                    </p>
+                  </div>
+                  <ChevronRight className="size-4 text-fg-muted shrink-0" />
+                </Link>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {startup.isRaising && fundraise && (
           <Card>
@@ -689,10 +775,17 @@ export default function StartupDetailPage() {
                 View fundraise details
               </Button>
             </Link>
+            {canManage && (
+              <Link to="/investors">
+                <Button size="sm" className="w-full mt-2">
+                  Find Investors
+                </Button>
+              </Link>
+            )}
           </Card>
         )}
 
-        {isFounder && !startup.isRaising && (
+        {canManage && !startup.isRaising && (
           <Card>
             <h2 className="font-semibold text-fg mb-1">Fundraising</h2>
             <p className="text-sm text-fg-muted mb-3">Not currently raising. Starting a fundraise makes this startup discoverable to investors.</p>
@@ -711,18 +804,19 @@ export default function StartupDetailPage() {
       open={joinModalOpen}
       onClose={() => setJoinModalOpen(false)}
     />
-      {isFounder && <StartupEditModal open={editModalOpen} onClose={() => setEditModalOpen(false)} startup={startup} />}
-      {isFounder && (
+      {canManage && <StartupEditModal open={editModalOpen} onClose={() => setEditModalOpen(false)} startup={startup} />}
+      {canManage && (
         <AddTeammateModal
           startupId={startup.id}
           startupName={startup.name}
           existingMemberIds={(membersQuery.data ?? []).map((m) => m.userId)}
+          canGrantAdmin={isFounder}
           open={addTeammateModalOpen}
           onClose={() => setAddTeammateModalOpen(false)}
         />
       )}
 
-      {isFounder && !startup.isRaising && (
+      {canManage && !startup.isRaising && (
         <FundraiseCreateModal
           open={fundraiseModalOpen}
           onClose={() => setFundraiseModalOpen(false)}
@@ -731,7 +825,7 @@ export default function StartupDetailPage() {
         />
       )}
 
-      {isFounder && (
+      {canManage && (
         <>
           <input
             ref={logoInputRef}

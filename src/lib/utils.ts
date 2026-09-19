@@ -174,6 +174,14 @@ export function formatCurrency(amount: number) {
   return `₹${amount}`
 }
 
+/** Exact (never abbreviated) display for a wallet amount stored as integer minor units (paise for
+ *  INR) — unlike {@link formatCurrency}'s Cr/L/K rounding, meant for large fundraising figures,
+ *  a wallet balance or transaction line must show its exact value down to the paisa. */
+export function formatMoney(minorUnits: number, currency = 'INR') {
+  const major = minorUnits / 100
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 2 }).format(major)
+}
+
 let counter = 0
 export function generateId(prefix = 'id') {
   counter += 1

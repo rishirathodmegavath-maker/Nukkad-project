@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { getChapter } from '@/services/chapters.service'
 import { createEvent } from '@/services/events.service'
+import { listMyFoundedStartups } from '@/services/startups.service'
 import { toast } from '@/store/toast.store'
 
 function toLocalInputValue(date: Date) {
@@ -29,6 +30,10 @@ export default function PostEventPage() {
     queryFn: () => getChapter(chapterId!),
     enabled: !!chapterId,
   })
+  const { data: foundedStartups } = useQuery({
+    queryKey: ['startups', 'me', 'founding'],
+    queryFn: listMyFoundedStartups,
+  })
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -39,6 +44,11 @@ export default function PostEventPage() {
   const [endAt, setEndAt] = useState(() => toLocalInputValue(new Date(Date.now() + 26 * 3600 * 1000)))
   const [capacityInput, setCapacityInput] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [startupIds, setStartupIds] = useState<string[]>([])
+
+  function toggleStartup(startupId: string) {
+    setStartupIds((prev) => (prev.includes(startupId) ? prev.filter((id) => id !== startupId) : [...prev, startupId]))
+  }
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -53,6 +63,7 @@ export default function PostEventPage() {
         meetingUrl: isOnline ? meetingUrl : undefined,
         capacity: capacityInput ? Number(capacityInput) : undefined,
         coverImageUrl: coverImageUrl.trim() || undefined,
+        startupIds: startupIds.length > 0 ? startupIds : undefined,
       }),
     onSuccess: (event) => {
       queryClient.invalidateQueries({ queryKey: ['events'] })
@@ -152,6 +163,32 @@ export default function PostEventPage() {
             onChange={(e) => setCoverImageUrl(e.target.value)}
             placeholder="https://…"
           />
+
+          {foundedStartups && foundedStartups.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-fg mb-1.5">Featuring your startup(s)</p>
+              <p className="text-xs text-fg-muted mb-2">Optional — tag any of your own startups as presenting or participating.</p>
+              <div className="flex flex-wrap gap-2">
+                {foundedStartups.map((s) => {
+                  const active = startupIds.includes(s.id)
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => toggleStartup(s.id)}
+                      className={
+                        active
+                          ? 'rounded-full px-3 py-1.5 text-xs font-semibold bg-brand-600 text-white cursor-pointer'
+                          : 'rounded-full px-3 py-1.5 text-xs font-semibold bg-surface-sunken text-fg-secondary hover:bg-surface-hover cursor-pointer'
+                      }
+                    >
+                      {s.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 pt-2 mt-2 border-t border-border/60">
             <Button variant="ghost" type="button" onClick={() => navigate(-1)}>

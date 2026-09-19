@@ -22,6 +22,7 @@ import {
   Volume2,
   VolumeX,
   RotateCw,
+  Flag,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
@@ -35,6 +36,7 @@ import { Button } from '@/components/ui/Button'
 import { DropdownMenu, DropdownItem, DropdownDivider } from '@/components/ui/DropdownMenu'
 import { ShareModal } from '@/components/domain/ShareModal'
 import { LikesModal } from '@/components/domain/LikesModal'
+import { ReportModal } from '@/components/domain/ReportModal'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { formatRelativeTime, cn } from '@/lib/utils'
@@ -478,6 +480,7 @@ export function PostCard({ post }: { post: Post }) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [editContent, setEditContent] = useState(post.content)
   const [likesOpen, setLikesOpen] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
   // Optimistic like: the toggle should feel instant, not wait on a POST + a full feed refetch.
   // Flip it locally the moment the click happens, then reconcile with whatever the server
@@ -641,6 +644,10 @@ export function PostCard({ post }: { post: Post }) {
               <DropdownItem icon={<Info className="size-4" />} onClick={() => navigate(`/people/${post.authorId}`)}>
                 About this account
               </DropdownItem>
+              <DropdownDivider />
+              <DropdownItem danger icon={<Flag className="size-4" />} onClick={() => setReportOpen(true)}>
+                Report post
+              </DropdownItem>
             </>
           )}
         </DropdownMenu>
@@ -747,6 +754,8 @@ export function PostCard({ post }: { post: Post }) {
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} post={post} />
 
       <LikesModal postId={post.id} open={likesOpen} onClose={() => setLikesOpen(false)} />
+
+      <ReportModal open={reportOpen} onClose={() => setReportOpen(false)} reportedUserId={post.authorId} postId={post.id} />
 
       <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="sm">
         <div className="flex flex-col items-center text-center gap-2 pb-4">

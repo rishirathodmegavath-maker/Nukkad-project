@@ -24,7 +24,8 @@ export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportu
           </p>
           <p className="text-xs text-fg-muted flex items-center gap-1.5 mt-1">
             <MapPin className="size-3.5 text-fg-muted/80 shrink-0" /> {opportunity.location}
-            {opportunity.remote && ' · Remote friendly'}
+            {opportunity.location && ' · '}
+            {opportunity.workMode}
           </p>
         </div>
       </Link>

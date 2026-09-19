@@ -27,6 +27,8 @@ interface IdeaDto {
   helpNeeded: string[]
   teamMemberIds: string[]
   interestCount: number
+  moderationStatus: string
+  rejectionReason: string | null
   createdAt: string
   updatedAt: string
 }
@@ -47,6 +49,8 @@ function mapIdea(dto: IdeaDto): Idea {
     interestCount: dto.interestCount,
     teamUserIds: dto.teamMemberIds,
     startupId: dto.startupId ?? undefined,
+    moderationStatus: dto.moderationStatus as Idea['moderationStatus'],
+    rejectionReason: dto.rejectionReason ?? undefined,
     createdAt: dto.createdAt,
   }
 }

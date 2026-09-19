@@ -72,11 +72,11 @@ export default function PostedByMePage() {
                     </p>
                   )}
                 </div>
-                {opp.closed && (
-                  <Badge tone="neutral" className="shrink-0">
-                    Closed
-                  </Badge>
-                )}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  {opp.closed && <Badge tone="neutral">Closed</Badge>}
+                  {opp.moderationStatus === 'PENDING' && <Badge tone="warning">Pending review</Badge>}
+                  {opp.moderationStatus === 'REJECTED' && <Badge tone="danger">Not approved</Badge>}
+                </div>
               </div>
               <p className="text-xs text-fg-muted flex items-center gap-1.5">
                 <Users className="size-3.5" /> {opp.applicantCount ?? 0} applicant{(opp.applicantCount ?? 0) === 1 ? '' : 's'}

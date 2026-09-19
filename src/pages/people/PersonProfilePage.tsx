@@ -1432,7 +1432,7 @@ function OpportunitiesPostedSection({ userId }: { userId: string }) {
                 <Badge tone="neutral" className="text-[10px]">
                   {opp.type}
                 </Badge>
-                {opp.remote && <span className="text-[11px] text-fg-muted">Remote</span>}
+                <span className="text-[11px] text-fg-muted">{opp.workMode}</span>
               </div>
               <p className="font-bold text-sm text-fg leading-snug">{opp.title}</p>
               <p className="text-xs text-fg-muted line-clamp-2 mt-1">{opp.organizationName}</p>

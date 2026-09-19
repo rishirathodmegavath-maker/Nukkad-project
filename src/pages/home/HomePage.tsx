@@ -52,11 +52,9 @@ function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
           <Badge tone="neutral" className="text-[11px] font-semibold">
             {opp.type}
           </Badge>
-          {opp.remote && (
-            <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/40">
-              Remote
-            </span>
-          )}
+          <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/40">
+            {opp.workMode}
+          </span>
           {opp.compensation && (
             <span className="text-[11px] font-semibold text-fg-secondary bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
               {opp.compensation}

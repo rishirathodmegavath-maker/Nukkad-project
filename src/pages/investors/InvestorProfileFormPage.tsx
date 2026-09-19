@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Clock, XCircle } from 'lucide-react'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { TagInput } from '@/components/ui/TagInput'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { PageHeader } from '@/components/domain/PageHeader'
-import { createInvestorProfile } from '@/services/investors.service'
+import { getMyInvestorActivation, submitInvestorActivation } from '@/services/investors.service'
 import { toast } from '@/store/toast.store'
 import type { InvestorType } from '@/types'
 
@@ -25,9 +28,11 @@ export default function InvestorProfileFormPage() {
   const [portfolioCount, setPortfolioCount] = useState('')
   const [website, setWebsite] = useState('')
 
+  const activationQuery = useQuery({ queryKey: ['investors', 'activation', 'me'], queryFn: getMyInvestorActivation })
+
   const mutation = useMutation({
     mutationFn: () =>
-      createInvestorProfile({
+      submitInvestorActivation({
         investorType,
         firmName: firmName || undefined,
         thesis: thesis || undefined,
@@ -39,11 +44,11 @@ export default function InvestorProfileFormPage() {
         portfolioCount: portfolioCount ? Number(portfolioCount) : undefined,
         website: website || undefined,
       }),
-    onSuccess: (profile) => {
-      toast.success('Investor profile activated')
-      navigate(`/investors/${profile.id}`)
+    onSuccess: () => {
+      toast.success('Application submitted — an admin will review it')
+      activationQuery.refetch()
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not activate your investor profile'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not submit your application'),
   })
 
   function handleSubmit(e: FormEvent) {
@@ -51,12 +56,49 @@ export default function InvestorProfileFormPage() {
     mutation.mutate()
   }
 
+  if (activationQuery.isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Skeleton className="h-48 rounded-xl" />
+      </div>
+    )
+  }
+
+  const latest = activationQuery.data
+
+  if (latest?.status === 'PENDING') {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <PageHeader title="Investor application" description="Your application is being reviewed." />
+        <Card className="flex items-center gap-3 border border-warning-500/30 bg-warning-500/5">
+          <Badge tone="warning"><Clock className="size-3" /> Pending review</Badge>
+          <p className="text-sm text-fg-secondary">
+            We'll notify you once an admin has reviewed your investor application.
+          </p>
+        </Card>
+      </div>
+    )
+  }
+
+  if (latest?.status === 'APPROVED' && latest.resultingProfileId) {
+    navigate(`/investors/${latest.resultingProfileId}`, { replace: true })
+    return null
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       <PageHeader
         title="Activate your investor profile"
-        description="Your name, photo and headline come from your Nukkad profile — this just adds your investing details."
+        description="Your name, photo and headline come from your Nukkad profile — this just adds your investing details. An admin reviews every application before it goes live."
       />
+
+      {latest?.status === 'REJECTED' && (
+        <Card className="flex items-center gap-3 border border-danger-500/30 bg-danger-500/5 mb-5">
+          <Badge tone="danger"><XCircle className="size-3" /> Not approved</Badge>
+          <p className="text-sm text-fg-secondary">{latest.reviewNote ?? 'Your previous application was not approved.'} You can update your details and apply again below.</p>
+        </Card>
+      )}
+
       <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -102,7 +144,7 @@ export default function InvestorProfileFormPage() {
               Cancel
             </Button>
             <Button type="submit" size="lg" isLoading={mutation.isPending}>
-              Activate profile
+              {latest?.status === 'REJECTED' ? 'Re-submit application' : 'Submit application'}
             </Button>
           </div>
         </form>

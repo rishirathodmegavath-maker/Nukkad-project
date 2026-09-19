@@ -25,6 +25,7 @@ interface IntroRequestDto {
   status: string
   createdAt: string
   reviewedAt: string | null
+  conversationId: string | null
 }
 
 function mapIntroRequest(dto: IntroRequestDto): IntroRequest {
@@ -43,6 +44,7 @@ function mapIntroRequest(dto: IntroRequestDto): IntroRequest {
     status: dto.status as IntroRequest['status'],
     createdAt: dto.createdAt,
     reviewedAt: dto.reviewedAt ?? undefined,
+    conversationId: dto.conversationId ?? undefined,
   }
 }
 

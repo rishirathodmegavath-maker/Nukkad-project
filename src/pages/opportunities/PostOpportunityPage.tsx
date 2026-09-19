@@ -13,7 +13,7 @@ import { getOpportunity, postOpportunity, updateOpportunity } from '@/services/o
 import { listMyFoundedStartups } from '@/services/startups.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { toast } from '@/store/toast.store'
-import type { Opportunity, OpportunityType } from '@/types'
+import type { Opportunity, OpportunityType, WorkMode } from '@/types'
 
 const TYPES: OpportunityType[] = [
   'Full-time',
@@ -24,6 +24,8 @@ const TYPES: OpportunityType[] = [
   'AI/ML Role',
   'Campus',
 ]
+
+const WORK_MODES: WorkMode[] = ['Remote', 'Hybrid', 'In-person']
 
 type Step = 'form' | 'preview' | 'success'
 
@@ -41,9 +43,11 @@ export default function PostOpportunityPage() {
   const [organizationName, setOrganizationName] = useState('')
   const [startupId, setStartupId] = useState(() => searchParams.get('startupId') ?? '')
   const [location, setLocation] = useState('')
-  const [remote, setRemote] = useState(false)
+  const [workMode, setWorkMode] = useState<WorkMode>('In-person')
   const [description, setDescription] = useState('')
+  const [responsibilities, setResponsibilities] = useState('')
   const [requirements, setRequirements] = useState<string[]>([])
+  const [requiredSkills, setRequiredSkills] = useState<string[]>([])
   const [compensation, setCompensation] = useState('')
   const [equity, setEquity] = useState('')
   const [experienceLevel, setExperienceLevel] = useState('')
@@ -80,9 +84,11 @@ export default function PostOpportunityPage() {
     setOrganizationName(existing.organizationName)
     setStartupId(existing.startupId ?? '')
     setLocation(existing.location)
-    setRemote(existing.remote)
+    setWorkMode(existing.workMode)
     setDescription(existing.description)
+    setResponsibilities(existing.responsibilities ?? '')
     setRequirements(existing.requirements)
+    setRequiredSkills(existing.requiredSkills)
     setCompensation(existing.compensation ?? '')
     setEquity(existing.equity ?? '')
     setExperienceLevel(existing.experienceLevel ?? '')
@@ -109,9 +115,11 @@ export default function PostOpportunityPage() {
     startupId: startupId || undefined,
     organizationName: organizationName.trim(),
     location: location.trim() || undefined,
-    remote,
+    workMode,
     description: description.trim(),
+    responsibilities: responsibilities.trim() || undefined,
     requirements,
+    requiredSkills,
     compensation: compensation.trim() || undefined,
     equity: equity.trim() || undefined,
     experienceLevel: experienceLevel.trim() || undefined,
@@ -192,20 +200,42 @@ export default function PostOpportunityPage() {
             <p className="text-sm text-fg-muted flex items-center gap-1.5 mt-1 font-medium">
               <Briefcase className="size-3.5" /> {preview.organizationName}
             </p>
-            {(preview.location || preview.remote) && (
+            {(preview.location || preview.workMode) && (
               <p className="text-xs text-fg-muted flex items-center gap-1.5 mt-1">
                 <MapPin className="size-3.5" /> {preview.location}
-                {preview.remote && ' · Remote friendly'}
+                {preview.location && preview.workMode && ' · '}
+                {preview.workMode}
               </p>
             )}
           </div>
           <p className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">{preview.description}</p>
+          {preview.responsibilities && (
+            <div>
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Responsibilities</p>
+              <p className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">{preview.responsibilities}</p>
+            </div>
+          )}
           {preview.requirements && preview.requirements.length > 0 && (
-            <ul className="list-disc list-inside text-sm text-fg-secondary space-y-1">
-              {preview.requirements.map((req) => (
-                <li key={req}>{req}</li>
-              ))}
-            </ul>
+            <div>
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Requirements</p>
+              <ul className="list-disc list-inside text-sm text-fg-secondary space-y-1">
+                {preview.requirements.map((req) => (
+                  <li key={req}>{req}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {preview.requiredSkills && preview.requiredSkills.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Required skills</p>
+              <div className="flex flex-wrap gap-1.5">
+                {preview.requiredSkills.map((skill) => (
+                  <Badge key={skill} tone="neutral">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
           {(preview.compensation || preview.equity || preview.experienceLevel || preview.applicationDeadline) && (
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-3 border-t border-border/60">
@@ -287,17 +317,13 @@ export default function PostOpportunityPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bengaluru" />
-            <div className="flex items-end pb-2.5">
-              <label className="flex items-center gap-2.5 text-sm text-fg cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={remote}
-                  onChange={(e) => setRemote(e.target.checked)}
-                  className="size-4 rounded border-border accent-brand-600"
-                />
-                Remote available
-              </label>
-            </div>
+            <Select label="Work mode" required value={workMode} onChange={(e) => setWorkMode(e.target.value as WorkMode)}>
+              {WORK_MODES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <Textarea
@@ -309,9 +335,23 @@ export default function PostOpportunityPage() {
             rows={5}
           />
 
+          <Textarea
+            label="Responsibilities"
+            hint="Optional"
+            value={responsibilities}
+            onChange={(e) => setResponsibilities(e.target.value)}
+            placeholder="What will they actually be doing day to day?"
+            rows={4}
+          />
+
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Requirements</p>
             <TagInput value={requirements} onChange={setRequirements} placeholder="Add a requirement and press Enter…" />
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-fg mb-1.5">Required skills</p>
+            <TagInput value={requiredSkills} onChange={setRequiredSkills} placeholder="Add a skill and press Enter…" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

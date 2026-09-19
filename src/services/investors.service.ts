@@ -96,32 +96,29 @@ export async function listInvestors(filters: InvestorFilters = {}): Promise<Inve
   return dtos.map(mapInvestorProfile)
 }
 
-export async function getInvestor(id: string): Promise<InvestorProfile | undefined> {
+export async function getInvestor(id: string): Promise<InvestorProfile | null> {
   try {
     return mapInvestorProfile(await apiClient.get<InvestorProfileDto>(`/investors/${id}`))
   } catch {
-    return undefined
+    // null, not undefined: TanStack Query v5 throws if a queryFn resolves to undefined.
+    return null
   }
 }
 
-export async function getMyInvestorProfile(): Promise<InvestorProfile | undefined> {
+export async function getMyInvestorProfile(): Promise<InvestorProfile | null> {
   try {
     return mapInvestorProfile(await apiClient.get<InvestorProfileDto>('/investors/me'))
   } catch {
-    return undefined
+    return null
   }
 }
 
-export async function getInvestorByUserId(userId: string): Promise<InvestorProfile | undefined> {
+export async function getInvestorByUserId(userId: string): Promise<InvestorProfile | null> {
   try {
     return mapInvestorProfile(await apiClient.get<InvestorProfileDto>(`/investors/by-user/${userId}`))
   } catch {
-    return undefined
+    return null
   }
-}
-
-export async function createInvestorProfile(input: InvestorProfileInput): Promise<InvestorProfile> {
-  return mapInvestorProfile(await apiClient.post<InvestorProfileDto>('/investors', input))
 }
 
 export async function updateInvestorProfile(id: string, input: Partial<InvestorProfileInput>): Promise<InvestorProfile> {
@@ -130,6 +127,80 @@ export async function updateInvestorProfile(id: string, input: Partial<InvestorP
 
 export async function deleteInvestorProfile(id: string): Promise<void> {
   await apiClient.delete(`/investors/${id}`)
+}
+
+export type InvestorActivationStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export interface InvestorActivationRequest {
+  id: string
+  status: InvestorActivationStatus
+  investorType: InvestorType
+  firmName?: string
+  thesis?: string
+  sectors: string[]
+  stages: string[]
+  geographies: string[]
+  ticketMin?: number
+  ticketMax?: number
+  portfolioCount: number
+  website?: string
+  resultingProfileId?: string
+  reviewNote?: string
+  createdAt: string
+  reviewedAt?: string
+}
+
+interface InvestorActivationRequestDto {
+  id: string
+  status: InvestorActivationStatus
+  investorType: string
+  firmName: string | null
+  thesis: string | null
+  sectors: string[]
+  stages: string[]
+  geographies: string[]
+  ticketMin: number | null
+  ticketMax: number | null
+  portfolioCount: number
+  website: string | null
+  resultingProfileId: string | null
+  reviewNote: string | null
+  createdAt: string
+  reviewedAt: string | null
+}
+
+function mapActivationRequest(dto: InvestorActivationRequestDto): InvestorActivationRequest {
+  return {
+    id: dto.id,
+    status: dto.status,
+    investorType: dto.investorType as InvestorType,
+    firmName: dto.firmName ?? undefined,
+    thesis: dto.thesis ?? undefined,
+    sectors: dto.sectors,
+    stages: dto.stages,
+    geographies: dto.geographies,
+    ticketMin: dto.ticketMin ?? undefined,
+    ticketMax: dto.ticketMax ?? undefined,
+    portfolioCount: dto.portfolioCount,
+    website: dto.website ?? undefined,
+    resultingProfileId: dto.resultingProfileId ?? undefined,
+    reviewNote: dto.reviewNote ?? undefined,
+    createdAt: dto.createdAt,
+    reviewedAt: dto.reviewedAt ?? undefined,
+  }
+}
+
+export async function submitInvestorActivation(input: InvestorProfileInput): Promise<InvestorActivationRequest> {
+  return mapActivationRequest(await apiClient.post<InvestorActivationRequestDto>('/investors/activation-requests', input))
+}
+
+export async function getMyInvestorActivation(): Promise<InvestorActivationRequest | null> {
+  try {
+    return mapActivationRequest(await apiClient.get<InvestorActivationRequestDto>('/investors/activation-requests/me'))
+  } catch {
+    // null, not undefined: TanStack Query v5 throws if a queryFn resolves to undefined.
+    return null
+  }
 }
 
 interface FundraiseDto {

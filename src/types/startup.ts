@@ -4,6 +4,8 @@ export type StartupStage = 'Idea' | 'MVP' | 'Early Traction' | 'Growth' | 'Scali
 
 export type StartupMembershipStatus = 'ACTIVE' | 'PENDING' | 'REJECTED'
 
+export type StartupTeamRole = 'FOUNDER' | 'ADMIN' | 'MEMBER'
+
 export type StartupVisibility = 'Public' | 'Nukkad Members'
 
 export type StartupMaterialType =
@@ -32,7 +34,11 @@ export interface StartupTeamMember {
   id: string
   userId: string
   role: string
+  teamRole: StartupTeamRole
   isFounder: boolean
+  isAdmin: boolean
+  /** Founder or Admin — unlocks edit-startup/manage-team/post-jobs/edit-fundraising. */
+  canManage: boolean
   status: StartupMembershipStatus
   roleId?: string
   reviewedAt?: string
@@ -125,9 +131,15 @@ export interface Startup {
   followerIds?: string[]
   isFollowing?: boolean
   isRaising: boolean
-  /** True only for an active founder of this startup — drives edit/delete/manage-material UI. */
+  /** True for an active founder OR admin of this startup — drives edit/manage-material UI.
+   *  Delete-startup stays founder-only; check the viewer's own membership for that. */
   canManage: boolean
   /** Real percentage of optional profile fields actually filled in, computed server-side. */
   profileCompletionPercent: number
+  /** Pre-publish review gate — a brand-new startup starts PENDING and is invisible to public
+   *  discovery until an admin approves it; only its founders/admins and a platform admin can see
+   *  it before then. */
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+  rejectionReason?: string
   createdAt: string
 }

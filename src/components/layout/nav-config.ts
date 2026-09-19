@@ -9,6 +9,9 @@ import {
   Rss,
   CalendarDays,
   FolderOpen,
+  Wallet,
+  LayoutDashboard,
+  HandCoins,
 } from 'lucide-react'
 
 export const navSections = [
@@ -18,6 +21,8 @@ export const navSections = [
       { to: '/', label: 'Home', icon: Home, end: true },
       { to: '/feed', label: 'Feed', icon: Rss, end: false },
       { to: '/people', label: 'People', icon: Users, end: false },
+      { to: '/wallet', label: 'Wallet', icon: Wallet, end: false },
+      { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: false },
     ],
   },
   {
@@ -26,6 +31,7 @@ export const navSections = [
       { to: '/ideas', label: 'Ideas', icon: Lightbulb, end: false },
       { to: '/startups', label: 'Startups', icon: Rocket, end: false },
       { to: '/opportunities', label: 'Opportunities', icon: Briefcase, end: false },
+      { to: '/grants', label: 'Grants', icon: HandCoins, end: false },
     ],
   },
   {

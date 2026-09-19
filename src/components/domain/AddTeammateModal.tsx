@@ -4,21 +4,26 @@ import { Modal } from '@/components/ui/Modal'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Input'
 import { listUsers } from '@/services/users.service'
 import { addStartupTeamMember } from '@/services/startups.service'
 import { toast } from '@/store/toast.store'
+import type { StartupTeamRole } from '@/types'
 
 interface AddTeammateModalProps {
   startupId: string
   startupName: string
   existingMemberIds: string[]
+  /** Only a founder can grant the Admin tier at add-time — an admin adding a teammate can only add them as a Member. */
+  canGrantAdmin: boolean
   open: boolean
   onClose: () => void
 }
 
-export function AddTeammateModal({ startupId, startupName, existingMemberIds, open, onClose }: AddTeammateModalProps) {
+export function AddTeammateModal({ startupId, startupName, existingMemberIds, canGrantAdmin, open, onClose }: AddTeammateModalProps) {
   const queryClient = useQueryClient()
   const [query, setQuery] = useState('')
+  const [teamRole, setTeamRole] = useState<StartupTeamRole>('MEMBER')
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users', 'search', query],
@@ -32,7 +37,7 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, op
   )
 
   const addMutation = useMutation({
-    mutationFn: (userId: string) => addStartupTeamMember(startupId, userId),
+    mutationFn: (userId: string) => addStartupTeamMember(startupId, userId, undefined, canGrantAdmin ? teamRole : undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['startup', startupId] })
       toast.success('Added to the team')
@@ -52,6 +57,13 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, op
           className="w-full rounded-lg border border-border bg-surface px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:shadow-focus"
           autoFocus
         />
+
+        {canGrantAdmin && (
+          <Select label="Add as" value={teamRole} onChange={(e) => setTeamRole(e.target.value as StartupTeamRole)}>
+            <option value="MEMBER">Member</option>
+            <option value="ADMIN">Admin</option>
+          </Select>
+        )}
 
         <div className="flex flex-col gap-2 max-h-80 overflow-y-auto">
           {isLoading ? (

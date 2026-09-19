@@ -56,5 +56,9 @@ export interface Idea {
   interestCount?: number
   teamUserIds: string[]
   startupId?: string
+  /** Pre-publish review gate — a brand-new idea starts PENDING and is invisible to public
+   *  discovery until an admin approves it; only the creator and an admin can see it before then. */
+  moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
+  rejectionReason?: string
   createdAt: string
 }

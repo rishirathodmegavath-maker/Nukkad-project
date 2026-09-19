@@ -220,6 +220,21 @@ export default function IdeaDetailPage() {
         <span className="text-fg truncate max-w-sm">{idea.title}</span>
       </div>
 
+      {isCreator && idea.moderationStatus === 'PENDING' && (
+        <Card className="border border-warning-500/30 bg-warning-500/5 flex items-center gap-3">
+          <Badge tone="warning">Pending review</Badge>
+          <p className="text-sm text-fg-secondary">
+            This idea is waiting on admin approval and isn't visible to anyone else yet.
+          </p>
+        </Card>
+      )}
+      {isCreator && idea.moderationStatus === 'REJECTED' && (
+        <Card className="border border-danger-500/30 bg-danger-500/5 flex items-center gap-3">
+          <Badge tone="danger">Not approved</Badge>
+          <p className="text-sm text-fg-secondary">{idea.rejectionReason ?? 'This idea was not approved.'}</p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">

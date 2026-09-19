@@ -9,6 +9,7 @@ import type {
   StartupRole,
   StartupStage,
   StartupTeamMember,
+  StartupTeamRole,
   StartupUpdate,
   StartupVisibility,
   UpdateStartupInput,
@@ -54,6 +55,8 @@ interface StartupDto {
   isFollowing: boolean
   canManage: boolean
   profileCompletionPercent: number
+  moderationStatus: string
+  rejectionReason: string | null
   createdAt: string
   updatedAt: string
 }
@@ -89,6 +92,8 @@ function mapStartup(dto: StartupDto): Startup {
     isRaising: dto.isRaising,
     canManage: dto.canManage,
     profileCompletionPercent: dto.profileCompletionPercent,
+    moderationStatus: dto.moderationStatus as Startup['moderationStatus'],
+    rejectionReason: dto.rejectionReason ?? undefined,
     createdAt: dto.createdAt,
   }
 }
@@ -199,19 +204,28 @@ interface StartupTeamMemberDto {
   startupId: string
   userId: string
   role: string | null
+  teamRole: string
   isFounder: boolean
+  isAdmin: boolean
+  canManage: boolean
   status: string
   roleId: string | null
   createdAt: string
   reviewedAt: string | null
 }
 
+const TEAM_ROLE_LABEL: Record<StartupTeamRole, string> = { FOUNDER: 'Founder', ADMIN: 'Admin', MEMBER: 'Member' }
+
 function mapTeamMember(dto: StartupTeamMemberDto): StartupTeamMember {
+  const teamRole = dto.teamRole as StartupTeamRole
   return {
     id: dto.id,
     userId: dto.userId,
-    role: dto.role ?? (dto.isFounder ? 'Founder' : 'Member'),
+    role: dto.role ?? TEAM_ROLE_LABEL[teamRole],
+    teamRole,
     isFounder: dto.isFounder,
+    isAdmin: dto.isAdmin,
+    canManage: dto.canManage,
     status: dto.status as StartupMembershipStatus,
     roleId: dto.roleId ?? undefined,
     reviewedAt: dto.reviewedAt ?? undefined,
@@ -235,13 +249,32 @@ export async function getStartupMembers(startupId: string): Promise<StartupTeamM
   return dtos.map(mapTeamMember)
 }
 
-export async function addStartupTeamMember(startupId: string, userId: string, roleId?: string): Promise<StartupTeamMember> {
-  const dto = await apiClient.post<StartupTeamMemberDto>(`/startups/${startupId}/members`, { userId, roleId: roleId ?? null })
+export async function addStartupTeamMember(
+  startupId: string,
+  userId: string,
+  roleId?: string,
+  teamRole?: StartupTeamRole,
+): Promise<StartupTeamMember> {
+  const dto = await apiClient.post<StartupTeamMemberDto>(`/startups/${startupId}/members`, {
+    userId,
+    roleId: roleId ?? null,
+    teamRole: teamRole ?? null,
+  })
   return mapTeamMember(dto)
 }
 
 export async function removeStartupTeamMember(startupId: string, userId: string): Promise<void> {
   await apiClient.delete(`/startups/${startupId}/members/${userId}`)
+}
+
+/** Founder-only — promotes a Member to Admin or demotes an Admin back to Member. The Founder's own role can't be changed. */
+export async function updateStartupTeamMemberRole(
+  startupId: string,
+  userId: string,
+  teamRole: 'ADMIN' | 'MEMBER',
+): Promise<StartupTeamMember> {
+  const dto = await apiClient.patch<StartupTeamMemberDto>(`/startups/${startupId}/members/${userId}/role`, { teamRole })
+  return mapTeamMember(dto)
 }
 
 export async function getMyStartupMembership(startupId: string): Promise<StartupTeamMember | undefined> {

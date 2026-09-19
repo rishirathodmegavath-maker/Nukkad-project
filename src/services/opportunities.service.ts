@@ -9,12 +9,13 @@ import type {
   OpportunityMatch,
   OpportunityType,
   PostOpportunityInput,
+  WorkMode,
 } from '@/types'
 
 export interface OpportunityFilters {
   query?: string
   type?: OpportunityType
-  remote?: boolean
+  workMode?: WorkMode
   chapterId?: string
   startupId?: string
   postedByUserId?: string
@@ -29,8 +30,9 @@ interface OpportunityDto {
   startupId: string | null
   organizationName: string
   location: string | null
-  remote: boolean
+  workMode: string
   description: string
+  responsibilities: string | null
   compensation: string | null
   equity: string | null
   experienceLevel: string | null
@@ -38,12 +40,15 @@ interface OpportunityDto {
   postedByUserId: string
   chapterId: string | null
   requirements: string[]
+  requiredSkills: string[]
   hasApplied: boolean
   hasExpressedInterest: boolean
   applicationStatus: string | null
   applicantCount: number
   interestCount: number
   appliedAt: string | null
+  moderationStatus: string
+  rejectionReason: string | null
   createdAt: string
   updatedAt: string
 }
@@ -57,9 +62,11 @@ function mapOpportunity(dto: OpportunityDto): Opportunity {
     startupId: dto.startupId ?? undefined,
     organizationName: dto.organizationName,
     location: dto.location ?? '',
-    remote: dto.remote,
+    workMode: dto.workMode as WorkMode,
     description: dto.description,
+    responsibilities: dto.responsibilities ?? undefined,
     requirements: dto.requirements,
+    requiredSkills: dto.requiredSkills,
     compensation: dto.compensation ?? undefined,
     equity: dto.equity ?? undefined,
     experienceLevel: dto.experienceLevel ?? undefined,
@@ -72,6 +79,8 @@ function mapOpportunity(dto: OpportunityDto): Opportunity {
     applicantCount: dto.applicantCount,
     interestCount: dto.interestCount,
     chapterId: dto.chapterId ?? undefined,
+    moderationStatus: dto.moderationStatus as Opportunity['moderationStatus'],
+    rejectionReason: dto.rejectionReason ?? undefined,
     createdAt: dto.createdAt,
   }
 }
@@ -80,7 +89,7 @@ export async function listOpportunities(filters: OpportunityFilters = {}): Promi
   const dtos = await getPage<OpportunityDto>('/opportunities', {
     q: filters.query,
     type: filters.type,
-    remote: filters.remote,
+    workMode: filters.workMode,
     chapterId: filters.chapterId,
     startupId: filters.startupId,
     postedByUserId: filters.postedByUserId,
@@ -105,9 +114,11 @@ export async function postOpportunity(input: PostOpportunityInput): Promise<Oppo
       startupId: input.startupId || undefined,
       organizationName: input.organizationName,
       location: input.location || undefined,
-      remote: input.remote,
+      workMode: input.workMode,
       description: input.description,
+      responsibilities: input.responsibilities || undefined,
       requirements: input.requirements ?? [],
+      requiredSkills: input.requiredSkills ?? [],
       compensation: input.compensation || undefined,
       equity: input.equity || undefined,
       experienceLevel: input.experienceLevel || undefined,
@@ -124,9 +135,11 @@ export async function updateOpportunity(id: string, input: PostOpportunityInput)
       startupId: input.startupId || undefined,
       organizationName: input.organizationName,
       location: input.location || undefined,
-      remote: input.remote,
+      workMode: input.workMode,
       description: input.description,
+      responsibilities: input.responsibilities || undefined,
       requirements: input.requirements ?? [],
+      requiredSkills: input.requiredSkills ?? [],
       compensation: input.compensation || undefined,
       equity: input.equity || undefined,
       experienceLevel: input.experienceLevel || undefined,

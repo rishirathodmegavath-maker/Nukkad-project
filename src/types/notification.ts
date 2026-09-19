@@ -9,6 +9,9 @@ export type NotificationType =
   | 'startup'
   | 'chapter'
   | 'investor'
+  | 'wallet'
+  | 'grant'
+  | 'investor_activation'
 
 export interface NukkadNotification {
   id: string

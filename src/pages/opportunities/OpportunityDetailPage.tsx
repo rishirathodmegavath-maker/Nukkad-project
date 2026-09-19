@@ -159,6 +159,21 @@ export default function OpportunityDetailPage() {
         <span className="text-fg truncate max-w-sm">{opp.title}</span>
       </div>
 
+      {isOwner && opp.moderationStatus === 'PENDING' && (
+        <Card className="border border-warning-500/30 bg-warning-500/5 flex items-center gap-3">
+          <Badge tone="warning">Pending review</Badge>
+          <p className="text-sm text-fg-secondary">
+            This posting is waiting on admin approval and isn't visible to anyone else yet.
+          </p>
+        </Card>
+      )}
+      {isOwner && opp.moderationStatus === 'REJECTED' && (
+        <Card className="border border-danger-500/30 bg-danger-500/5 flex items-center gap-3">
+          <Badge tone="danger">Not approved</Badge>
+          <p className="text-sm text-fg-secondary">{opp.rejectionReason ?? 'This posting was not approved.'}</p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
@@ -174,12 +189,12 @@ export default function OpportunityDetailPage() {
             <span className="flex items-center gap-1.5">
               <Briefcase className="size-3.5" /> {opp.organizationName}
             </span>
-            {(opp.location || opp.remote) && (
+            {(opp.location || opp.workMode) && (
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-3.5" />
                 {opp.location}
-                {opp.location && opp.remote && ' · '}
-                {opp.remote && 'Remote friendly'}
+                {opp.location && opp.workMode && ' · '}
+                {opp.workMode}
               </span>
             )}
             {opp.compensation && (
@@ -209,6 +224,13 @@ export default function OpportunityDetailPage() {
             <p className="text-sm text-fg-secondary leading-relaxed">{opp.description}</p>
           </div>
 
+          {opp.responsibilities && (
+            <div className="mt-5">
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Responsibilities</p>
+              <p className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">{opp.responsibilities}</p>
+            </div>
+          )}
+
           {opp.requirements.length > 0 && (
             <div className="mt-5">
               <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Requirements</p>
@@ -217,6 +239,19 @@ export default function OpportunityDetailPage() {
                   <li key={req}>{req}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {opp.requiredSkills.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1.5">Required skills</p>
+              <div className="flex flex-wrap gap-1.5">
+                {opp.requiredSkills.map((skill) => (
+                  <Badge key={skill} tone="neutral">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
         </Card>

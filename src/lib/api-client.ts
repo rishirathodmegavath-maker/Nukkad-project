@@ -231,3 +231,17 @@ export async function getPage<T>(path: string, params: Record<string, string | n
   const page = await apiClient.get<Page<T>>(`${path}${qs ? `?${qs}` : ''}`)
   return page.content
 }
+
+/**
+ * Like {@link getPage}, but returns the full {@link Page} envelope (page/size/totalElements/
+ * totalPages) instead of discarding it — for surfaces with real server-side pagination controls
+ * (currently just Admin) rather than the "fetch up to 100 and render flat" shim above.
+ */
+export async function getPagedResult<T>(path: string, params: Record<string, string | number | boolean | undefined> = {}): Promise<Page<T>> {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') query.set(key, String(value))
+  }
+  const qs = query.toString()
+  return apiClient.get<Page<T>>(`${path}${qs ? `?${qs}` : ''}`)
+}
