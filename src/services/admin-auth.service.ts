@@ -27,6 +27,13 @@ export async function adminLogin(email: string, password: string): Promise<Sessi
   return session
 }
 
+/** Whether the server has emailed password reset switched on (it stays off until a mail provider is
+ *  set up). Public — the sign-in screens ask before anyone is signed in. */
+export async function getAdminPasswordResetEnabled(): Promise<boolean> {
+  const status = await apiClient.get<{ enabled: boolean }>('/admin/auth/password-reset/status')
+  return status.enabled === true
+}
+
 /** Emails the admin a one-time reset link. The server answers identically whether or not the address
  *  belongs to an administrator, so the caller must never claim an email was actually sent. */
 export async function requestAdminPasswordReset(email: string): Promise<void> {

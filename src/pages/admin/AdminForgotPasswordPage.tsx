@@ -5,12 +5,15 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { requestAdminPasswordReset } from '@/services/admin-auth.service'
+import { AdminPasswordResetGatePage } from './AdminPasswordResetGate'
+import { useAdminPasswordResetGate } from '@/hooks/useAdminPasswordResetGate'
 
 export default function AdminForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const gate = useAdminPasswordResetGate()
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -29,6 +32,8 @@ export default function AdminForgotPasswordPage() {
       setIsLoading(false)
     }
   }
+
+  if (gate !== 'enabled') return <AdminPasswordResetGatePage loading={gate === 'loading'} />
 
   return (
     <div className="min-h-screen bg-canvas flex items-center justify-center px-4 py-10">

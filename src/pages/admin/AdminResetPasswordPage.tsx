@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { confirmAdminPasswordReset } from '@/services/admin-auth.service'
 import { PASSWORD_REQUIREMENTS, isStrongPassword } from '@/lib/password'
+import { AdminPasswordResetGatePage } from './AdminPasswordResetGate'
+import { useAdminPasswordResetGate } from '@/hooks/useAdminPasswordResetGate'
 
 /** The emailed link carries the token in the URL fragment (#token=…), which browsers never send to a
  *  server or in a Referer header — so it can't leak to the fonts host this page loads or to access logs. */
@@ -20,6 +22,7 @@ export default function AdminResetPasswordPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [done, setDone] = useState(false)
+  const gate = useAdminPasswordResetGate()
 
   // The token is a credential: once it's in memory, take it out of the address bar and history.
   useEffect(() => {
@@ -47,6 +50,9 @@ export default function AdminResetPasswordPage() {
       setIsLoading(false)
     }
   }
+
+  // Once the reset itself has succeeded keep showing that, whatever the switch now says.
+  if (!done && gate !== 'enabled') return <AdminPasswordResetGatePage loading={gate === 'loading'} />
 
   return (
     <div className="min-h-screen bg-canvas flex items-center justify-center px-4 py-10">
