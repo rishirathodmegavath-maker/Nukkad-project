@@ -53,7 +53,7 @@ export default function PostDetailPage() {
               onClick={() => prevId && goTo(prevId)}
               disabled={!prevId}
               aria-label="Previous post"
-              className="flex size-8.5 items-center justify-center rounded-xl bg-surface border border-border/80 text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-30 cursor-pointer disabled:cursor-default transition-colors shadow-2xs"
+              className="flex size-8.5 items-center justify-center rounded-lg bg-surface border border-border/80 text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-30 cursor-pointer disabled:cursor-default transition-colors shadow-2xs"
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -61,7 +61,7 @@ export default function PostDetailPage() {
               onClick={() => nextId && goTo(nextId)}
               disabled={!nextId}
               aria-label="Next post"
-              className="flex size-8.5 items-center justify-center rounded-xl bg-surface border border-border/80 text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-30 cursor-pointer disabled:cursor-default transition-colors shadow-2xs"
+              className="flex size-8.5 items-center justify-center rounded-lg bg-surface border border-border/80 text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-30 cursor-pointer disabled:cursor-default transition-colors shadow-2xs"
             >
               <ChevronRight className="size-4" />
             </button>

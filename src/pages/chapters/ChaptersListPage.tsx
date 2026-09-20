@@ -10,7 +10,7 @@ import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
-import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import type { Chapter } from '@/types'
 
 export default function ChaptersListPage() {
@@ -60,13 +60,14 @@ export default function ChaptersListPage() {
         title="Chapters"
         description="Find your local BuildAdda community — meetups, chapter resources and leadership."
         action={
-          <Link to="/chapters/new">
-            <Button leftIcon={<Plus className="size-4" />}>Create a chapter</Button>
+          <Link to="/chapters/new" className={buttonClasses()}>
+            <Plus className="size-4" aria-hidden="true" />
+            Create a chapter
           </Link>
         }
       />
 
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search chapters by name or city…">
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter chapters by name or city…">
         <PillTabs
           items={[
             { key: 'all', label: 'All chapters' },
@@ -93,10 +94,9 @@ export default function ChaptersListPage() {
           title="You haven't joined or created a chapter yet"
           description="Join an existing chapter or start one for your campus, city, or tech hub."
           action={
-            <Link to="/chapters/new">
-              <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                Create a chapter
-              </Button>
+            <Link to="/chapters/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Create a chapter
             </Link>
           }
         />
@@ -106,10 +106,9 @@ export default function ChaptersListPage() {
           title="No chapters match yet"
           description="Start a chapter for your campus, city, or tech hub."
           action={
-            <Link to="/chapters/new">
-              <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                Create a chapter
-              </Button>
+            <Link to="/chapters/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Create a chapter
             </Link>
           }
         />

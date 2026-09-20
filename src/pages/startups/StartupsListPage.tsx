@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { Modal } from '@/components/ui/Modal'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -82,24 +83,26 @@ export default function StartupsListPage() {
               isLoading={isCheckingExistingStartup}
               onClick={handleExistingStartupClick}
             >
-              My Startup
+              My startup
             </Button>
-            <Link to="/startups/new">
-              <Button leftIcon={<Plus className="size-4" />}>Create Startup</Button>
+            <Link to="/startups/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Create a startup
             </Link>
           </div>
         }
       />
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search startups by name or sector…">
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter startups by name or sector…">
         <div className="flex flex-wrap items-center gap-3">
-          <PillTabs items={STAGE_FILTERS} value={stage} onChange={setStage} />
+          <PillTabs label="Stage" items={STAGE_FILTERS} value={stage} onChange={setStage} />
           <button
             type="button"
+            aria-pressed={raisingOnly}
             onClick={() => setRaisingOnly((v) => !v)}
             className={cn(
-              'rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+              'rounded-lg px-3.5 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150',
               raisingOnly
-                ? 'bg-accent-500 text-white border-accent-500 shadow-xs'
+                ? 'bg-brand-500/10 text-fg-brand border-brand-500/30'
                 : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
             )}
           >
@@ -140,8 +143,8 @@ export default function StartupsListPage() {
             description="Already building or running something — here or out in the world (think Swiggy, Zomato)? Add it to BuildAdda."
             action={
               <div className="flex flex-col items-center gap-2">
-                <Link to="/startups/new" onClick={() => setExistingStartupOpen(false)}>
-                  <Button size="sm">Create Startup</Button>
+                <Link to="/startups/new" onClick={() => setExistingStartupOpen(false)} className={buttonClasses({ size: 'sm' })}>
+                  Create a startup
                 </Link>
                 <Link
                   to="/ideas/new"

@@ -37,7 +37,7 @@ function routeFor(item: FlatItem, query: string): string {
 
 function CategoryHeading({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 px-3.5 pt-2.5 pb-1 text-[11px] font-bold uppercase tracking-wider text-fg-muted/80">
+    <div className="flex items-center gap-1.5 px-3.5 pt-2.5 pb-1 text-xs font-bold uppercase tracking-wider text-fg-muted/80">
       {icon}
       {label}
     </div>
@@ -150,8 +150,10 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
   const showDropdown = open && trimmed.length >= 2
 
   return (
-    <div ref={containerRef} className={cn('relative', variant === 'desktop' ? 'hidden sm:flex flex-1 max-w-md' : 'flex-1 sm:hidden')}>
-      <form onSubmit={handleSubmit} className="relative flex w-full items-center">
+    <div ref={containerRef} className={cn('relative', variant === 'desktop'
+        ? 'hidden sm:flex flex-1 max-w-xs lg:max-w-sm focus-within:max-w-md transition-[max-width] duration-200 motion-reduce:transition-none'
+        : 'flex-1 sm:hidden')}>
+      <form onSubmit={handleSubmit} role="search" aria-label="Search BuildAdda" className="relative flex w-full items-center">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" />
         <input
           ref={inputRef}
@@ -162,7 +164,8 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search people, ideas, startups…"
-          className="w-full rounded-xl border border-border/80 bg-surface-sunken/60 pl-10 pr-10 py-2 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted shadow-2xs"
+          aria-label="Search people, ideas, startups"
+          className="h-10 w-full rounded-lg border border-border/80 bg-surface-sunken/60 pl-10 pr-10 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted shadow-2xs"
         />
         {query && (
           <button

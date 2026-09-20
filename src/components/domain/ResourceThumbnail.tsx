@@ -30,7 +30,7 @@ export function ResourceThumbnail({ resource, className }: { resource: Resource;
         />
       ) : (
         <div className={cn('absolute inset-0 flex items-center justify-center bg-gradient-to-br', gradient)}>
-          <span className="flex size-14 items-center justify-center rounded-2xl bg-surface/80 text-fg-secondary shadow-xs backdrop-blur-sm">
+          <span className="flex size-14 items-center justify-center rounded-xl bg-surface/80 text-fg-secondary shadow-xs backdrop-blur-sm">
             <Icon className="size-7" strokeWidth={1.6} />
           </span>
         </div>

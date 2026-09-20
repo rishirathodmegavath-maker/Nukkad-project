@@ -70,7 +70,7 @@ export default function PostIdeaPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <PageHeader title="Post an idea" description="Share the problem, your solution, and what kind of help you need." />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="A short, clear title" />
           <Textarea
@@ -120,7 +120,7 @@ export default function PostIdeaPage() {
                   type="button"
                   onClick={() => toggleArea(area)}
                   className={cn(
-                    'rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                    'rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                     helpNeeded.includes(area)
                       ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                       : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',

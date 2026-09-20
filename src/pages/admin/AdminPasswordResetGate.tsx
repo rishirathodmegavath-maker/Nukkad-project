@@ -12,7 +12,7 @@ export function AdminPasswordResetGatePage({ loading }: { loading: boolean }) {
           <span className="text-xl font-bold tracking-tight text-fg">BuildAdda</span>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-surface p-6 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-surface p-6 shadow-sm">
           {loading ? (
             <div role="status" className="flex items-center justify-center gap-2 py-6 text-sm text-fg-muted">
               <Loader2 className="size-4 animate-spin" /> Checking…

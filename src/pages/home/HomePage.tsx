@@ -14,6 +14,7 @@ import {
   Compass,
   ChevronRight,
   Rss,
+  type LucideIcon,
 } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { listIdeas, listRecommendedIdeas } from '@/services/ideas.service'
@@ -31,6 +32,8 @@ import { PostCard } from '@/components/domain/PostCard'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
+import { Tabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { formatRelativeTime } from '@/lib/utils'
 import type { OpportunityMatch } from '@/types'
@@ -38,6 +41,21 @@ import type { OpportunityMatch } from '@/types'
 /* -------------------------------------------------------------------------- */
 /* Sub-components for Home Page                                               */
 /* -------------------------------------------------------------------------- */
+
+/** A count with a label that links to the page it counts. Reads as a link: white surface, brand hover, chevron. */
+function StatChip({ to, icon: Icon, value, label }: { to: string; icon: LucideIcon; value: number; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-fg transition-colors hover:border-brand-500/40 hover:bg-brand-500/10 hover:text-fg-brand"
+    >
+      <Icon className="size-3.5 text-fg-muted group-hover:text-fg-brand" aria-hidden="true" />
+      <span>{value}</span>
+      <span className="font-medium text-fg-secondary">{label}</span>
+      <ChevronRight className="size-3 text-fg-muted" aria-hidden="true" />
+    </Link>
+  )
+}
 
 function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
   const opp = match.opportunity
@@ -49,18 +67,18 @@ function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <Badge tone="neutral" className="text-[11px] font-semibold">
+          <Badge tone="neutral" className="text-xs font-semibold">
             {opp.type}
           </Badge>
-          <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/40">
+          <span className="text-xs font-medium text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/40">
             {opp.workMode}
           </span>
           {opp.compensation && (
-            <span className="text-[11px] font-semibold text-fg-secondary bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
+            <span className="text-xs font-semibold text-fg-secondary bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
               {opp.compensation}
             </span>
           )}
-          <span className="text-[11px] text-fg-muted font-medium ml-auto sm:ml-0">
+          <span className="text-xs text-fg-muted font-medium ml-auto sm:ml-0">
             {formatRelativeTime(opp.createdAt)}
           </span>
         </div>
@@ -173,7 +191,7 @@ export default function HomePage() {
       {/* ------------------------------------------------------------------ */}
       {/* 1. Personalized Briefing Hero & Contextual Action Bar             */}
       {/* ------------------------------------------------------------------ */}
-      <div className="rounded-2xl border border-border/80 bg-surface p-5 sm:p-6 shadow-xs">
+      <div className="rounded-xl border border-border/80 bg-surface p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
             <div className="flex items-center gap-2">
@@ -189,45 +207,14 @@ export default function HomePage() {
 
           {/* Quick Action Chips Bar */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            <Link to="/ideas/new">
-              <Button
-                size="sm"
-                variant="primary"
-                leftIcon={<Plus className="size-3.5" />}
-                className="shadow-xs"
-              >
-                Post an idea
-              </Button>
+            <Link to="/ideas/new" className={buttonClasses({ size: 'sm' })}>
+              <Plus className="size-3.5" aria-hidden="true" />
+              Post an idea
             </Link>
 
-            {currentUser && (
-              <Link
-                to={`/people/${currentUser.id}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-surface-sunken hover:bg-surface-hover text-xs font-semibold text-fg transition-colors"
-              >
-                <Users className="size-3.5 text-fg-muted" />
-                <span>{currentUser.connectionsCount ?? 0}</span>
-                <span className="text-fg-muted font-medium">connections</span>
-              </Link>
-            )}
-
-            <Link
-              to="/opportunities"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-surface-sunken hover:bg-surface-hover text-xs font-semibold text-fg transition-colors"
-            >
-              <Briefcase className="size-3.5 text-fg-muted" />
-              <span>{allOppsQuery.data?.length ?? recommendedOppsQuery.data?.length ?? 0}</span>
-              <span className="text-fg-muted font-medium">roles</span>
-            </Link>
-
-            <Link
-              to="/events"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-surface-sunken hover:bg-surface-hover text-xs font-semibold text-fg transition-colors"
-            >
-              <CalendarDays className="size-3.5 text-fg-muted" />
-              <span>{eventsQuery.data?.length ?? 0}</span>
-              <span className="text-fg-muted font-medium">events</span>
-            </Link>
+            {currentUser && <StatChip to={`/people/${currentUser.id}`} icon={Users} value={currentUser.connectionsCount ?? 0} label="connections" />}
+            <StatChip to="/opportunities" icon={Briefcase} value={allOppsQuery.data?.length ?? recommendedOppsQuery.data?.length ?? 0} label="roles" />
+            <StatChip to="/events" icon={CalendarDays} value={eventsQuery.data?.length ?? 0} label="events" />
           </div>
         </div>
       </div>
@@ -245,43 +232,16 @@ export default function HomePage() {
           {/* ------------------------------------------------------------ */}
           <section className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/60">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDiscoveryTab('ideas')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    discoveryTab === 'ideas'
-                      ? 'bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/50 shadow-2xs'
-                      : 'text-fg-muted hover:text-fg hover:bg-surface-hover'
-                  }`}
-                >
-                  <Lightbulb className="size-4" />
-                  <span>Ideas to Build</span>
-                  {matchedIdeas.length > 0 && (
-                    <span className="text-xs px-1.5 py-0.2 rounded-md bg-surface border border-border/80 text-fg font-medium">
-                      {ideasQuery.data?.length ?? 0}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDiscoveryTab('startups')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    discoveryTab === 'startups'
-                      ? 'bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/50 shadow-2xs'
-                      : 'text-fg-muted hover:text-fg hover:bg-surface-hover'
-                  }`}
-                >
-                  <Rocket className="size-4" />
-                  <span>Startups in Motion</span>
-                  {featuredStartups.length > 0 && (
-                    <span className="text-xs px-1.5 py-0.2 rounded-md bg-surface border border-border/80 text-fg font-medium">
-                      {startupsQuery.data?.length ?? 0}
-                    </span>
-                  )}
-                </button>
-              </div>
+              <Tabs
+                label="Discover"
+                className="border-b-0"
+                value={discoveryTab}
+                onChange={(k) => setDiscoveryTab(k as 'ideas' | 'startups')}
+                items={[
+                  { key: 'ideas', label: 'Ideas to Build', count: matchedIdeas.length > 0 ? ideasQuery.data?.length ?? 0 : undefined },
+                  { key: 'startups', label: 'Startups in Motion', count: featuredStartups.length > 0 ? startupsQuery.data?.length ?? 0 : undefined },
+                ]}
+              />
 
               <Link
                 to={discoveryTab === 'ideas' ? '/ideas' : '/startups'}
@@ -310,8 +270,9 @@ export default function HomePage() {
                     <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto">
                       Be the first builder to post a concept and recruit collaborators.
                     </p>
-                    <Link to="/ideas/new" className="inline-block mt-4">
-                      <Button size="sm">Post an idea</Button>
+                    <Link to="/ideas/new" className={buttonClasses({ size: 'sm', className: 'mt-4' })}>
+                      <Plus className="size-3.5" aria-hidden="true" />
+                      Post an idea
                     </Link>
                   </Card>
                 )}
@@ -372,8 +333,8 @@ export default function HomePage() {
                     <div className="flex items-center gap-3">
                       <div className="size-10 rounded-full bg-surface-sunken animate-pulse" />
                       <div className="flex flex-col gap-1.5 flex-1">
-                        <div className="h-3.5 w-28 rounded bg-surface-sunken animate-pulse" />
-                        <div className="h-2.5 w-16 rounded bg-surface-sunken animate-pulse" />
+                        <div className="h-3.5 w-28 rounded-md bg-surface-sunken animate-pulse" />
+                        <div className="h-2.5 w-16 rounded-md bg-surface-sunken animate-pulse" />
                       </div>
                     </div>
                     <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse" />
@@ -385,7 +346,7 @@ export default function HomePage() {
               <Card className="p-6 text-center border border-border/80 shadow-xs">
                 <p className="text-sm font-semibold text-fg">Couldn’t load the feed right now.</p>
                 <p className="text-xs text-fg-muted mt-1 mb-3">Please try again to see the latest community posts.</p>
-                <Button size="sm" variant="outline" onClick={() => feedQuery.refetch()}>
+                <Button size="sm" variant="secondary" onClick={() => feedQuery.refetch()}>
                   Retry
                 </Button>
               </Card>
@@ -394,15 +355,6 @@ export default function HomePage() {
                 {feedQuery.data.map((post) => (
                   <PostCard key={post.id} post={post} />
                 ))}
-
-                <div className="pt-2 text-center">
-                  <Link to="/feed">
-                    <Button variant="secondary" size="sm" className="w-full sm:w-auto shadow-2xs">
-                      <span>Explore all community posts</span>
-                      <ArrowRight className="size-3.5 ml-1.5" />
-                    </Button>
-                  </Link>
-                </div>
               </div>
             ) : (
               <Card className="p-6 text-center border border-border/80 shadow-xs">
@@ -411,8 +363,8 @@ export default function HomePage() {
                 <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto mb-3">
                   Be the first to share something with the community.
                 </p>
-                <Link to="/feed">
-                  <Button size="sm">Go to Feed</Button>
+                <Link to="/feed" className={buttonClasses({ size: 'sm' })}>
+                  Go to feed
                 </Link>
               </Card>
             )}
@@ -426,7 +378,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-fg">Opportunities for you</h2>
                 {currentUser?.skills && currentUser.skills.length > 0 && (
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-fg-muted font-medium bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
+                  <span className="hidden sm:inline-flex items-center gap-1 text-xs text-fg-muted font-medium bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
                     <Sparkles className="size-3 text-accent-500" />
                     Skill matched
                   </span>
@@ -487,7 +439,7 @@ export default function HomePage() {
 
             <Card padding="none" className="overflow-hidden border border-border/80 shadow-2xs">
               <div className="p-3">
-                <SuggestedForYou limit={4} />
+                <SuggestedForYou limit={4} showHeader={false} />
               </div>
             </Card>
           </section>
@@ -520,11 +472,9 @@ export default function HomePage() {
             ) : (
               <Card className="p-4 text-center">
                 <p className="text-xs font-semibold text-fg">No upcoming meetups scheduled</p>
-                <p className="text-[11px] text-fg-muted mt-0.5 mb-3">Host a meetup for your local ecosystem.</p>
-                <Link to="/events/new">
-                  <Button size="sm" variant="outline" className="w-full text-xs">
-                    Host an event
-                  </Button>
+                <p className="text-xs text-fg-muted mt-0.5 mb-3">Host a meetup for your local ecosystem.</p>
+                <Link to="/events/new" className={buttonClasses({ size: 'sm', variant: 'secondary', className: 'w-full' })}>
+                  Host an event
                 </Link>
               </Card>
             )}
@@ -564,7 +514,7 @@ export default function HomePage() {
                       </p>
                     )}
                   </div>
-                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-full border border-brand-200/60 dark:border-brand-800/40 shrink-0">
+                  <span className="text-xs font-semibold text-fg-brand bg-brand-500/10 px-2 py-0.5 rounded-full border border-brand-500/20 shrink-0">
                     Member
                   </span>
                 </div>
@@ -588,13 +538,11 @@ export default function HomePage() {
             ) : (
               <Card className="p-4 text-center border border-border/80 shadow-2xs">
                 <p className="text-xs font-semibold text-fg">Connect with your city</p>
-                <p className="text-[11px] text-fg-muted mt-0.5 mb-3">
+                <p className="text-xs text-fg-muted mt-0.5 mb-3">
                   Join a local chapter to access localized events, resources, and builders.
                 </p>
-                <Link to="/chapters">
-                  <Button size="sm" variant="secondary" className="w-full text-xs">
-                    Find your chapter
-                  </Button>
+                <Link to="/chapters" className={buttonClasses({ size: 'sm', variant: 'secondary', className: 'w-full' })}>
+                  Find your chapter
                 </Link>
               </Card>
             )}

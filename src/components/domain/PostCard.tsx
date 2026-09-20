@@ -318,7 +318,7 @@ function CommentItem({
         ) : (
           <Skeleton className="size-6 rounded-full shrink-0" />
         )}
-        <div className="min-w-0 flex-1 rounded-2xl bg-surface-sunken/70 border border-border/50 px-3.5 py-2.5">
+        <div className="min-w-0 flex-1 rounded-xl bg-surface-sunken/70 border border-border/50 px-3.5 py-2.5">
           <div className="flex items-baseline justify-between gap-2">
             {author ? (
               <Link to={`/people/${author.id}`} className="text-xs font-bold text-fg hover:underline shrink-0">
@@ -327,7 +327,7 @@ function CommentItem({
             ) : (
               <Skeleton className="h-3.5 w-16" />
             )}
-            <span className="text-[10px] text-fg-muted shrink-0">{formatRelativeTime(comment.createdAt)}</span>
+            <span className="text-xs text-fg-muted shrink-0">{formatRelativeTime(comment.createdAt)}</span>
           </div>
           <p className="text-sm text-fg whitespace-pre-line break-words mt-1 leading-relaxed">{comment.content}</p>
         </div>
@@ -350,7 +350,7 @@ function CommentItem({
           </DropdownMenu>
         )}
       </div>
-      <div className="flex items-center gap-3 pl-9 text-[11px] font-bold text-fg-muted">
+      <div className="flex items-center gap-3 pl-9 text-xs font-bold text-fg-muted">
         <button type="button" onClick={() => onReply(comment)} className="hover:text-fg cursor-pointer transition-colors">
           Reply
         </button>
@@ -472,6 +472,10 @@ function CommentsSection({ post }: { post: Post }) {
     </div>
   )
 }
+
+/** Like / comment / share / save all share one box: same height, same icon size, same spacing between them. */
+const ACTION_BUTTON =
+  'flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg cursor-pointer'
 
 export function PostCard({ post }: { post: Post }) {
   const { data: author } = useUser(post.authorId)
@@ -596,10 +600,10 @@ export function PostCard({ post }: { post: Post }) {
           ) : (
             <Skeleton className="h-4 w-28" />
           )}
-          <p className="text-[11px] font-medium text-fg-muted mt-0.5 flex items-center gap-2">
+          <p className="text-xs font-medium text-fg-muted mt-0.5 flex items-center gap-2">
             {formatRelativeTime(post.createdAt)}
             {meta && !post.relatedId && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-surface-sunken px-1.5 py-0.5 text-[11px] font-semibold text-fg-secondary">
+              <span className="inline-flex items-center gap-1 rounded-md bg-surface-sunken px-1.5 py-0.5 text-xs font-semibold text-fg-secondary">
                 <meta.icon className="size-3" />
                 {meta.label}
               </span>
@@ -610,7 +614,7 @@ export function PostCard({ post }: { post: Post }) {
           trigger={
             <button
               type="button"
-              className="flex size-8 items-center justify-center rounded-xl text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors"
+              className="flex size-8 items-center justify-center rounded-lg text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors"
               aria-label="Post options"
             >
               <MoreHorizontal className="size-4" />
@@ -701,17 +705,19 @@ export function PostCard({ post }: { post: Post }) {
         )}
       </div>
 
-      <div className="flex items-center gap-4 px-4 sm:px-5 py-3 border-t border-border/70 bg-surface">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1 px-2 sm:px-3 py-1.5 border-t border-border/70 bg-surface">
+        <div className="flex items-center">
           <button
             type="button"
             onClick={() => likeMutation.mutate()}
             disabled={likeMutation.isPending}
             className={cn(
-              'flex items-center text-sm cursor-pointer transition-all duration-150 active:scale-90 font-medium disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
-              post.isLiked ? 'text-rose-500' : 'text-fg-secondary hover:text-fg',
+              ACTION_BUTTON,
+              'active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
+              post.isLiked ? 'text-rose-500 hover:text-rose-500' : '',
             )}
             aria-label={post.isLiked ? 'Unlike post' : 'Like post'}
+            aria-pressed={post.isLiked}
           >
             <Heart className={cn('size-5 transition-transform', post.isLiked && 'fill-current scale-110')} />
           </button>
@@ -719,7 +725,8 @@ export function PostCard({ post }: { post: Post }) {
             <button
               type="button"
               onClick={() => setLikesOpen(true)}
-              className="text-xs sm:text-sm font-semibold text-fg-secondary hover:text-fg hover:underline cursor-pointer transition-colors"
+              aria-label={`View who liked this post (${post.likesCount})`}
+              className="-ml-1.5 h-9 min-w-6 rounded-lg px-1.5 text-sm font-semibold tabular-nums text-fg-secondary hover:text-fg hover:underline cursor-pointer transition-colors"
             >
               {post.likesCount}
             </button>
@@ -729,23 +736,16 @@ export function PostCard({ post }: { post: Post }) {
         <button
           type="button"
           onClick={() => setCommentsOpen((o) => !o)}
-          className={cn(
-            'flex items-center gap-1.5 text-sm cursor-pointer transition-colors font-medium',
-            commentsOpen ? 'text-fg font-bold' : 'text-fg-secondary hover:text-fg',
-          )}
+          className={cn(ACTION_BUTTON, commentsOpen && 'text-fg font-bold')}
           aria-label="Comments"
+          aria-expanded={commentsOpen}
         >
           <MessageCircle className="size-5" />
-          {post.commentsCount > 0 && <span className="text-xs sm:text-sm font-semibold">{post.commentsCount}</span>}
+          {post.commentsCount > 0 && <span className="text-sm font-semibold tabular-nums">{post.commentsCount}</span>}
         </button>
 
-        <button
-          type="button"
-          onClick={() => setShareOpen(true)}
-          className="flex items-center text-fg-secondary hover:text-fg cursor-pointer transition-colors"
-          aria-label="Share post"
-        >
-          <Send className="size-4.5" />
+        <button type="button" onClick={() => setShareOpen(true)} className={ACTION_BUTTON} aria-label="Share post">
+          <Send className="size-5" />
         </button>
 
         <button
@@ -753,10 +753,12 @@ export function PostCard({ post }: { post: Post }) {
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending}
           className={cn(
-            'flex items-center cursor-pointer transition-all duration-150 active:scale-90 ml-auto disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
-            post.isSaved ? 'text-amber-500' : 'text-fg-secondary hover:text-amber-500',
+            ACTION_BUTTON,
+            'ml-auto active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
+            post.isSaved ? 'text-amber-500 hover:text-amber-500' : 'hover:text-amber-500',
           )}
           aria-label={post.isSaved ? 'Remove from saved' : 'Save post'}
+          aria-pressed={post.isSaved}
         >
           <Bookmark className={cn('size-5 transition-transform', post.isSaved && 'fill-current scale-110')} />
         </button>
@@ -772,7 +774,7 @@ export function PostCard({ post }: { post: Post }) {
 
       <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="sm">
         <div className="flex flex-col items-center text-center gap-2 pb-4">
-          <div className="size-12 rounded-2xl bg-danger-100 text-danger-500 flex items-center justify-center mb-1 border border-danger-200">
+          <div className="size-12 rounded-xl bg-danger-100 text-danger-500 flex items-center justify-center mb-1 border border-danger-200">
             <Trash2 className="size-6" />
           </div>
           <p className="text-lg font-bold text-fg">Delete this post?</p>

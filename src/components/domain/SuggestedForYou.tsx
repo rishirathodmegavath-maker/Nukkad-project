@@ -38,7 +38,7 @@ function SuggestionRow({ user }: { user: User }) {
         <Avatar src={user.avatarUrl} name={user.name} size="md" />
       </Link>
       <div className="min-w-0 flex-1">
-        <Link to={`/people/${user.id}`} className="text-sm font-semibold text-fg hover:underline truncate block">
+        <Link to={`/people/${user.id}`} className="text-sm font-semibold text-fg hover:underline line-clamp-2 break-words block">
           {user.name}
         </Link>
         <p className="text-xs text-fg-muted truncate">{user.headline || 'Suggested for you'}</p>
@@ -93,7 +93,7 @@ function SuggestionRow({ user }: { user: User }) {
   )
 }
 
-export function SuggestedForYou({ limit = 5 }: { limit?: number }) {
+export function SuggestedForYou({ limit = 5, showHeader = true }: { limit?: number; showHeader?: boolean }) {
   const { data: users, isLoading } = useQuery({
     queryKey: ['users', 'suggested', limit],
     queryFn: () => usersService.listSuggestedConnections(limit),
@@ -101,12 +101,14 @@ export function SuggestedForYou({ limit = 5 }: { limit?: number }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="text-sm font-semibold text-fg-muted">Suggested for you</h2>
-        <Link to="/people" className="text-xs font-semibold text-fg hover:text-fg-muted">
-          See all
-        </Link>
-      </div>
+      {showHeader && (
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-sm font-semibold text-fg-muted">Suggested for you</h2>
+          <Link to="/people" className="text-xs font-semibold text-fg hover:text-fg-muted">
+            See all
+          </Link>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col gap-3 py-1">

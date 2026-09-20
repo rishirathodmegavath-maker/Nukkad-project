@@ -49,7 +49,7 @@ function PinCard({ title, description, children }: { title: string; description:
   return (
     <Card variant="elevated" padding="lg" className="mx-auto w-full max-w-md">
       <div className="mb-5 flex flex-col items-center gap-3 text-center">
-        <div className="flex size-12 items-center justify-center rounded-2xl border border-brand-500/20 bg-brand-500/10 text-brand-600 dark:text-brand-400">
+        <div className="flex size-12 items-center justify-center rounded-xl border border-brand-500/20 bg-brand-500/10 text-brand-600 dark:text-brand-400">
           <ShieldCheck className="size-6" />
         </div>
         <div>

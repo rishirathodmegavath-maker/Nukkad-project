@@ -82,7 +82,7 @@ export default function PostEventPage() {
   if (userLoading || chapterLoading) {
     return (
       <div className="max-w-2xl mx-auto">
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     )
   }
@@ -108,7 +108,7 @@ export default function PostEventPage() {
         title="Create an event"
         description={chapterId ? `For ${chapter?.name}` : 'Host your own meet or meetup — open to anyone.'}
       />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input
             label="Title"

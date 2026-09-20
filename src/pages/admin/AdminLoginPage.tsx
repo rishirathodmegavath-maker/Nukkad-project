@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
           <span className="text-xl font-bold tracking-tight text-fg">BuildAdda</span>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-surface p-6 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-surface p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <ShieldCheck className="size-5 text-brand-600 dark:text-brand-400" />
             <h1 className="text-lg font-bold text-fg tracking-tight">Admin control panel</h1>

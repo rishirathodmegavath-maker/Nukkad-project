@@ -63,7 +63,7 @@ function LikerRow({ liker, onNavigate }: { liker: PostLiker; onNavigate: () => v
           <div className="flex items-center gap-2">
             <p className="font-bold text-sm text-fg truncate">{user.name}</p>
             {isSelf && (
-              <span className="text-[11px] font-medium text-fg-muted bg-surface-sunken px-1.5 py-0.5 rounded">You</span>
+              <span className="text-xs font-medium text-fg-muted bg-surface-sunken px-1.5 py-0.5 rounded-md">You</span>
             )}
           </div>
           <p className="text-xs text-fg-muted truncate">{user.headline || user.role || 'Community Member'}</p>

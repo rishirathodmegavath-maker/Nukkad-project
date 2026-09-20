@@ -8,7 +8,7 @@ import { IdeaCard } from '@/components/domain/IdeaCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
-import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { IdeaStage } from '@/types'
@@ -71,14 +71,17 @@ export default function IdeasListPage() {
         title="Ideas"
         description="Browse what builders are exploring — or post your own and find a team."
         action={
-          <Link to="/ideas/new">
-            <Button leftIcon={<Plus className="size-4" />}>Post an idea</Button>
+          <Link to="/ideas/new" className={buttonClasses()}>
+            <Plus className="size-4" aria-hidden="true" />
+            Post an idea
           </Link>
         }
       />
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search ideas by title or problem…">
-        <PillTabs items={STAGE_FILTERS} value={stage} onChange={setStage} />
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter ideas by title or problem…">
+        <PillTabs label="Stage" items={STAGE_FILTERS} value={stage} onChange={setStage} />
         <PillTabs
+          tone="soft"
+          label="Whose ideas"
           items={[
             { key: 'all', label: 'All ideas' },
             { key: 'mine', label: 'My ideas' },
@@ -106,8 +109,9 @@ export default function IdeasListPage() {
           title="You haven't posted any ideas yet"
           description="Post an idea to find a team and see it here."
           action={
-            <Link to="/ideas/new">
-              <Button size="sm">Post an idea</Button>
+            <Link to="/ideas/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Post an idea
             </Link>
           }
         />
@@ -117,8 +121,9 @@ export default function IdeasListPage() {
           title="No ideas match yet"
           description="Try a different search, or be the first to post one."
           action={
-            <Link to="/ideas/new">
-              <Button size="sm">Post an idea</Button>
+            <Link to="/ideas/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Post an idea
             </Link>
           }
         />

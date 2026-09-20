@@ -71,7 +71,7 @@ export default function CreateChapterPage() {
         title="Create a chapter"
         description="Don't see a chapter for your city yet? Start one — you'll lead it as its first president."
       />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
           <Input
             label="Chapter name"

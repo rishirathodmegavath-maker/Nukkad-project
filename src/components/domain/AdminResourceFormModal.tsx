@@ -237,7 +237,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
             type="checkbox"
             checked={featured}
             onChange={(e) => setFeatured(e.target.checked)}
-            className="mt-0.5 size-4 cursor-pointer rounded border-border accent-[var(--color-brand-600)]"
+            className="mt-0.5 size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
           />
           <span>
             <span className="font-medium">Feature on the Resources page</span>

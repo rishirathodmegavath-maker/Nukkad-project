@@ -292,7 +292,7 @@ export default function ChapterDetailPage() {
         <span className="text-fg truncate max-w-sm">{chapter.name}</span>
       </div>
 
-      <Card padding="none" className="overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
+      <Card padding="none" className="overflow-hidden rounded-xl border border-border/80 shadow-xs bg-surface">
         <div className="relative h-44 sm:h-56 w-full bg-surface-sunken overflow-hidden group">
           <CoverImage
             src={chapter.coverImageUrl}
@@ -410,7 +410,7 @@ export default function ChapterDetailPage() {
       </Card>
 
       {(activityQuery.data?.length ?? 0) > 0 && (
-        <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface">
+        <Card className="rounded-xl border border-border/80 shadow-xs bg-surface">
           <h2 className="flex items-center gap-2 text-sm font-bold text-fg mb-3">
             <Activity className="size-4 text-brand-600" /> Recent Activity
           </h2>

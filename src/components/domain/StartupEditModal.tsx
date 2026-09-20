@@ -206,7 +206,7 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
             name="startup-currently-raising"
             checked={isRaising}
             onChange={(e) => setIsRaising(e.target.checked)}
-            className="size-4 rounded border-border accent-brand-600"
+            className="size-4 rounded-md border-border accent-brand-600"
           />
           Currently raising
         </label>
@@ -218,7 +218,7 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
             name="startup-fundraising-visible"
             checked={fundraisingVisible}
             onChange={(e) => setFundraisingVisible(e.target.checked)}
-            className="mt-0.5 size-4 rounded border-border accent-brand-600"
+            className="mt-0.5 size-4 rounded-md border-border accent-brand-600"
           />
           <span>
             <span className="font-medium">Show fundraising information</span>

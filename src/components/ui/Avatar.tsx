@@ -47,7 +47,7 @@ export function Avatar({ src, name, size = 'md', online, ring, className }: Avat
           className="size-full rounded-full object-cover bg-surface-sunken border border-border/70 shadow-xs"
         />
       ) : (
-        <span className="size-full rounded-full bg-gradient-to-br from-brand-100 to-brand-200/70 dark:from-brand-950 dark:to-brand-900/60 text-brand-700 dark:text-brand-300 flex items-center justify-center border border-brand-200/80 dark:border-brand-700/40 shadow-xs">
+        <span aria-hidden="true" className="size-full rounded-full bg-gradient-to-br from-brand-100 to-brand-200/70 dark:from-brand-950 dark:to-brand-900/60 text-brand-700 dark:text-brand-300 flex items-center justify-center border border-brand-200/80 dark:border-brand-700/40 shadow-xs">
           {initials(name || '?')}
         </span>
       )}

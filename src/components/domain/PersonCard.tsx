@@ -45,7 +45,7 @@ export function PersonCard({
   })
 
   return (
-    <Card interactive className="relative flex flex-col gap-3 rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
+    <Card interactive className="relative flex flex-col gap-3 border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
       {topRightAction && (
         <div className="absolute top-2.5 right-2.5 z-10" onClick={(e) => e.stopPropagation()}>
           {topRightAction}
@@ -75,12 +75,22 @@ export function PersonCard({
         ))}
       </div>
 
+      {(user.lookingFor.length > 0 || user.role) && (
+        <p className="text-xs text-fg-muted">
+          {user.lookingFor.length > 0 ? (
+            <>
+              <span className="font-medium text-fg-secondary">Looking for: </span>
+              {user.lookingFor.slice(0, 2).join(' · ')}
+            </>
+          ) : (
+            user.role
+          )}
+        </p>
+      )}
+
       {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} />}
 
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/60 gap-2">
-        <span className="text-xs text-fg-muted truncate max-w-[140px]">
-          {user.lookingFor.length > 0 ? user.lookingFor.slice(0, 2).join(' · ') : user.role || 'Builder'}
-        </span>
+      <div className="flex items-center justify-end mt-auto gap-2">
         {user.connectionStatus === 'PENDING_INCOMING' ? (
           <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
             <Button

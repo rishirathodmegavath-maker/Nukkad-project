@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { OpportunityType } from '@/types'
@@ -76,26 +77,22 @@ export default function OpportunitiesListPage() {
         title="Opportunities"
         description="Jobs, internships, founding roles and co-founder openings from across BuildAdda."
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Link to="/opportunities/mine">
-              <Button variant="ghost" size="sm" leftIcon={<Inbox className="size-4" />}>
-                My Applications
-              </Button>
-            </Link>
-            <Link to="/opportunities/posted">
-              <Button variant="ghost" size="sm" leftIcon={<ListChecks className="size-4" />}>
-                Posted by Me
-              </Button>
-            </Link>
-            <Link to="/opportunities/new">
-              <Button size="sm" leftIcon={<Plus className="size-4" />}>
-                Post Opportunity
-              </Button>
-            </Link>
-          </div>
+          <Link to="/opportunities/new" className={buttonClasses()}>
+            <Plus className="size-4" aria-hidden="true" />
+            Post an opportunity
+          </Link>
         }
       />
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search opportunities…">
+      {/* Your own activity: views of your opportunities, kept next to the title instead of far right. */}
+      <nav aria-label="Your opportunities" className="-mt-3 mb-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium">
+        <Link to="/opportunities/mine" className="inline-flex items-center gap-1.5 text-fg-brand hover:underline">
+          <Inbox className="size-4" aria-hidden="true" /> My applications
+        </Link>
+        <Link to="/opportunities/posted" className="inline-flex items-center gap-1.5 text-fg-brand hover:underline">
+          <ListChecks className="size-4" aria-hidden="true" /> Posted by me
+        </Link>
+      </nav>
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter opportunities…">
         <PillTabs items={TYPE_FILTERS} value={type} onChange={setType} />
       </SearchFilterBar>
 
@@ -139,10 +136,9 @@ export default function OpportunitiesListPage() {
           title="No opportunities posted yet"
           description="Be the first to post a job, internship, or founding role for the BuildAdda community."
           action={
-            <Link to="/opportunities/new">
-              <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                Post an opportunity
-              </Button>
+            <Link to="/opportunities/new" className={buttonClasses()}>
+              <Plus className="size-4" aria-hidden="true" />
+              Post an opportunity
             </Link>
           }
         />

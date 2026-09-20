@@ -61,14 +61,14 @@ function ConnectionRow({
               {user.name}
             </p>
             {isSelf && (
-              <span className="text-[11px] font-medium text-fg-muted bg-surface-sunken px-1.5 py-0.5 rounded">
+              <span className="text-xs font-medium text-fg-muted bg-surface-sunken px-1.5 py-0.5 rounded-md">
                 You
               </span>
             )}
           </div>
           <p className="text-xs text-fg-muted truncate">{user.headline || user.role || 'Community Member'}</p>
           {user.location && (
-            <p className="text-[11px] text-fg-muted flex items-center gap-1 mt-0.5">
+            <p className="text-xs text-fg-muted flex items-center gap-1 mt-0.5">
               <MapPin className="size-3 text-fg-muted/80 shrink-0" />
               <span className="truncate">{user.location}</span>
             </p>

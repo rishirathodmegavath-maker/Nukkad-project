@@ -176,7 +176,7 @@ export default function OpportunityDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
+          <Card className="rounded-xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="neutral">{opp.type}</Badge>

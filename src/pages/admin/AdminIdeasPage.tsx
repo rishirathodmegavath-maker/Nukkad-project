@@ -84,7 +84,7 @@ export default function AdminIdeasPage() {
             name="admin-ideas-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
-            className="size-3.5 rounded border-border accent-brand-600"
+            className="size-3.5 rounded-md border-border accent-brand-600"
           />
           Show removed ideas too
         </label>

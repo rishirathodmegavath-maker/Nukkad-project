@@ -170,20 +170,20 @@ export function ShareModal({ open, onClose, post }: ShareModalProps) {
             <span className="flex size-11 items-center justify-center rounded-full bg-surface-sunken text-fg transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">
               <Link2 className="size-[18px]" />
             </span>
-            <span className="text-[11px] text-fg-secondary">Copy Link</span>
+            <span className="text-xs text-fg-secondary">Copy Link</span>
           </button>
           <button
             onClick={() => openExternal(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`)}
             className="group flex shrink-0 flex-col items-center gap-1.5 cursor-pointer"
           >
             <span className="flex size-11 items-center justify-center rounded-full bg-[#0A66C2] text-white text-sm font-bold transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">in</span>
-            <span className="text-[11px] text-fg-secondary">LinkedIn</span>
+            <span className="text-xs text-fg-secondary">LinkedIn</span>
           </button>
           <button onClick={() => openExternal(`https://wa.me/?text=${encodeURIComponent(shareText)}`)} className="group flex shrink-0 flex-col items-center gap-1.5 cursor-pointer">
             <span className="flex size-11 items-center justify-center rounded-full bg-[#25D366] text-white transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">
               <MessageCircle className="size-[18px]" />
             </span>
-            <span className="text-[11px] text-fg-secondary">WhatsApp</span>
+            <span className="text-xs text-fg-secondary">WhatsApp</span>
           </button>
           <button
             onClick={() => openExternal(`mailto:?subject=${encodeURIComponent('Check this out on BuildAdda')}&body=${encodeURIComponent(shareText)}`)}
@@ -192,21 +192,21 @@ export function ShareModal({ open, onClose, post }: ShareModalProps) {
             <span className="flex size-11 items-center justify-center rounded-full bg-surface-sunken text-fg transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">
               <Mail className="size-[18px]" />
             </span>
-            <span className="text-[11px] text-fg-secondary">Email</span>
+            <span className="text-xs text-fg-secondary">Email</span>
           </button>
           <button
             onClick={() => openExternal(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`)}
             className="group flex shrink-0 flex-col items-center gap-1.5 cursor-pointer"
           >
             <span className="flex size-11 items-center justify-center rounded-full bg-[#1877F2] text-white text-sm font-bold transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">f</span>
-            <span className="text-[11px] text-fg-secondary">Facebook</span>
+            <span className="text-xs text-fg-secondary">Facebook</span>
           </button>
           <button
             onClick={() => openExternal(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareSnippet)}&url=${encodeURIComponent(shareUrl)}`)}
             className="group flex shrink-0 flex-col items-center gap-1.5 cursor-pointer"
           >
             <span className="flex size-11 items-center justify-center rounded-full bg-black text-white text-sm font-bold transition-all duration-150 group-hover:scale-110 group-hover:shadow-md group-active:scale-100">X</span>
-            <span className="text-[11px] text-fg-secondary">X</span>
+            <span className="text-xs text-fg-secondary">X</span>
           </button>
         </div>
       </div>

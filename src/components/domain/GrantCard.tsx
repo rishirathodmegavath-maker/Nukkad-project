@@ -11,7 +11,7 @@ export function GrantCard({ grant }: { grant: Grant }) {
         <div className="flex items-center justify-between gap-2">
           <Badge tone="neutral">{grant.providerType}</Badge>
           {grant.deadline && (
-            <span className="text-[11px] text-fg-muted font-medium flex items-center gap-1">
+            <span className="text-xs text-fg-muted font-medium flex items-center gap-1">
               <CalendarClock className="size-3" /> {new Date(grant.deadline).toLocaleDateString()}
             </span>
           )}

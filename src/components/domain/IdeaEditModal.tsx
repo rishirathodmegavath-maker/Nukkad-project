@@ -84,7 +84,7 @@ export function IdeaEditModal({ open, onClose, idea }: { open: boolean; onClose:
                 type="button"
                 onClick={() => toggleArea(area)}
                 className={cn(
-                  'rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                  'rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                   helpNeeded.includes(area)
                     ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                     : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',

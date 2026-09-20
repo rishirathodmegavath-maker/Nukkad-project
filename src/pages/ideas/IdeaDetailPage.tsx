@@ -237,7 +237,7 @@ export default function IdeaDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
+          <Card className="rounded-xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <Badge tone={stageTone[idea.stage]}>{idea.stage}</Badge>
               <Badge tone="neutral">{idea.category}</Badge>
@@ -290,7 +290,7 @@ export default function IdeaDetailPage() {
           </Card>
 
           {isCreator && pendingReview.length > 0 && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface">
+            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface">
               <h2 className="font-bold text-base text-fg mb-3 flex items-center gap-2">
                 <Users className="size-4" /> Interested builders ({pendingReview.length})
               </h2>
@@ -452,14 +452,14 @@ export default function IdeaDetailPage() {
         </Card>
 
         {creator && !isCreator && (
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+          <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
             <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Pitched by</h2>
             <Link to={`/people/${creator.id}`} className="flex items-center gap-3 group">
               <Avatar src={creator.avatarUrl} name={creator.name} size="md" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-fg group-hover:underline truncate">{creator.name}</p>
                 <p className="text-xs text-fg-muted truncate">{creator.headline || creator.role || 'Idea Creator'}</p>
-                {creator.location && <p className="text-[11px] text-fg-muted truncate mt-0.5">{creator.location}</p>}
+                {creator.location && <p className="text-xs text-fg-muted truncate mt-0.5">{creator.location}</p>}
               </div>
             </Link>
 
@@ -478,7 +478,7 @@ export default function IdeaDetailPage() {
           </Card>
         )}
 
-        <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface">
+        <Card className="rounded-xl border border-border/80 shadow-xs bg-surface">
           <h2 className="font-bold text-base text-fg mb-3">Team ({idea.teamUserIds.length})</h2>
           <div className="flex flex-col gap-3">
             {idea.teamUserIds.map((userId) => (

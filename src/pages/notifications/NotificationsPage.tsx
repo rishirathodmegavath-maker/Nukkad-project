@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/Button'
 import { MessageAction } from '@/components/domain/MessageAction'
 import { Avatar } from '@/components/ui/Avatar'
 import { PillTabs } from '@/components/ui/Tabs'
+import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { cn, formatRelativeTime } from '@/lib/utils'
@@ -185,7 +186,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
           {title}
         </p>
         <p className="text-sm text-fg-muted mt-1 leading-relaxed">{message}</p>
-        <p className="text-[11px] font-medium text-fg-muted/80 mt-1.5">{formatRelativeTime(notif.createdAt)}</p>
+        <p className="text-xs font-medium text-fg-muted/80 mt-1.5">{formatRelativeTime(notif.createdAt)}</p>
 
         {isNowConnected && actor && (
           <div className="mt-3" onClick={(e) => e.stopPropagation()}>
@@ -218,7 +219,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
       {!notif.isRead && (
         <span
-          className="size-2.5 rounded-full bg-brand-600 dark:bg-brand-500 shrink-0 mt-1.5 shadow-2xs animate-pulse"
+          className="size-2.5 rounded-full bg-brand-600 dark:bg-brand-500 shrink-0 mt-1.5 shadow-2xs motion-safe:animate-pulse"
           aria-label="Unread"
         />
       )}
@@ -274,34 +275,32 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-fg tracking-tight">Notifications</h1>
-          <p className="text-sm text-fg-muted mt-0.5">
-            {unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}` : 'Stay updated on network activity.'}
-          </p>
-        </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<CheckCheck className="size-4" />}
-            onClick={() => markAllRead.mutate()}
-            isLoading={markAllRead.isPending}
-          >
-            Mark all as read
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Notifications"
+        description={unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}` : 'Stay updated on network activity.'}
+        action={
+          unreadCount > 0 ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<CheckCheck className="size-4" />}
+              onClick={() => markAllRead.mutate()}
+              isLoading={markAllRead.isPending}
+            >
+              Mark all as read
+            </Button>
+          ) : undefined
+        }
+      />
 
-      <PillTabs items={tabs} value={filter} onChange={setFilter} />
+      <PillTabs tone="soft" label="Filter notifications" items={tabs} value={filter} onChange={setFilter} />
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />
       ) : isError ? (
         <ErrorState title="Couldn't load notifications" onRetry={refetch} />
       ) : filteredNotifications && filteredNotifications.length > 0 ? (
-        <Card padding="none" className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
+        <Card padding="none" className="divide-y divide-border/70 overflow-hidden rounded-xl border border-border/80 shadow-xs bg-surface">
           {filteredNotifications.map((notif) => (
             <NotificationRow key={notif.id} notif={notif} />
           ))}

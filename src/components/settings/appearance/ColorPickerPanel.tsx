@@ -183,7 +183,7 @@ function NumberField({ label, value, max, onCommit }: { label: string; value: nu
         }}
         className="w-full rounded-md border border-border/80 bg-surface px-1.5 py-1 text-center text-xs text-fg focus-visible:outline-none focus-visible:border-brand-500"
       />
-      <span className="text-[10px] text-fg-muted uppercase tracking-wide">{label}</span>
+      <span className="text-xs text-fg-muted uppercase tracking-wide">{label}</span>
     </label>
   )
 }
@@ -362,7 +362,7 @@ export function ColorPickerPanel() {
             <button
               type="button"
               onClick={clearRecentColors}
-              className="flex items-center gap-1 text-[11px] text-fg-muted hover:text-fg cursor-pointer"
+              className="flex items-center gap-1 text-xs text-fg-muted hover:text-fg cursor-pointer"
             >
               <Trash2 className="size-3" /> Clear
             </button>

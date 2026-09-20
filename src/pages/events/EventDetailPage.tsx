@@ -108,8 +108,8 @@ export default function EventDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-6 w-48 rounded" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-6 w-48 rounded-md" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     )
   }
@@ -145,7 +145,7 @@ export default function EventDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Main Event Details */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card padding="none" className="overflow-hidden rounded-2xl border border-border/80 shadow-xs bg-surface">
+          <Card padding="none" className="overflow-hidden rounded-xl border border-border/80 shadow-xs bg-surface">
             {event.coverImageUrl && (
               <div className="h-56 sm:h-72 w-full bg-surface-sunken overflow-hidden">
                 <CoverImage
@@ -248,7 +248,7 @@ export default function EventDetailPage() {
         {/* Action Sidebar */}
         <div className="flex flex-col gap-6">
           {/* Registration / RSVP Card */}
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-4">
+          <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-4">
             <div>
               <h2 className="font-bold text-base text-fg">Registration</h2>
               <p className="text-xs text-fg-muted mt-0.5">
@@ -355,14 +355,14 @@ export default function EventDetailPage() {
 
           {/* Organizer Card */}
           {organizer && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
               <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Organized by</h2>
               <Link to={`/people/${organizer.id}`} className="flex items-center gap-3 group">
                 <Avatar src={organizer.avatarUrl} name={organizer.name} size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold text-fg group-hover:underline truncate">{organizer.name}</p>
                   <p className="text-xs text-fg-muted truncate">{organizer.headline || organizer.role || 'Event Host'}</p>
-                  {organizer.location && <p className="text-[11px] text-fg-muted truncate mt-0.5">{organizer.location}</p>}
+                  {organizer.location && <p className="text-xs text-fg-muted truncate mt-0.5">{organizer.location}</p>}
                 </div>
               </Link>
 
@@ -382,7 +382,7 @@ export default function EventDetailPage() {
           )}
 
           {event.startups.length > 0 && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
               <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Featuring</h2>
               <div className="flex flex-col gap-2.5">
                 {event.startups.map((s) => (

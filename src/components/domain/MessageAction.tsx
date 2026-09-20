@@ -16,7 +16,7 @@ export function MessageAction({ userId, size = 'sm' }: { userId: string; size?: 
   return (
     <Button
       size={size}
-      variant="secondary"
+      variant="soft"
       leftIcon={<MessageSquare className="size-3.5" />}
       isLoading={messageMutation.isPending}
       onClick={() => messageMutation.mutate()}
