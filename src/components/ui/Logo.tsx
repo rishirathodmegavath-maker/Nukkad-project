@@ -1,8 +1,11 @@
 import { cn } from '@/lib/utils'
+// Imported (not referenced from /public) so the build gives it a content-hashed filename: a returning
+// visitor can never be served a stale cached copy of the old logo.
+import logoUrl from '@/assets/logo.png'
 
 const sizeClasses = {
-  sm: 'size-8 p-1.5',
-  md: 'size-9 p-1.5',
+  sm: 'size-8',
+  md: 'size-9',
 }
 
 interface LogoProps {
@@ -10,11 +13,8 @@ interface LogoProps {
   className?: string
 }
 
-/** Brand mark — white chip behind the logo so the black artwork reads on any background (dark panels, brand-colored boxes, light surfaces alike). */
+/** Brand mark. The artwork is already a self-contained rounded square, so it is shown as-is — no chip,
+ *  stroke, shadow or tint behind it (per the logo pack's usage rules). */
 export function Logo({ size = 'sm', className }: LogoProps) {
-  return (
-    <span className={cn('flex items-center justify-center rounded-lg bg-white shrink-0', sizeClasses[size], className)}>
-      <img src="/logo.png" alt="Buildadda" className="size-full object-contain" />
-    </span>
-  )
+  return <img src={logoUrl} alt="Buildadda" className={cn('shrink-0', sizeClasses[size], className)} />
 }
