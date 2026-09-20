@@ -1,7 +1,11 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { WalletIcon, ArrowDownLeft, ArrowUpRight, Lock, Banknote } from 'lucide-react'
+import { WalletIcon, ArrowDownLeft, ArrowUpRight, Lock, Banknote, KeyRound } from 'lucide-react'
 import { cancelWithdrawal, getMyWallet, listMyTransactions, listMyWithdrawals, requestWithdrawal } from '@/services/wallet.service'
+import { getWalletPinStatus } from '@/services/wallet-pin.service'
+import { ApiError } from '@/lib/api-client'
+import { clearWalletUnlock, getWalletUnlockExpiry } from '@/lib/wallet-unlock'
+import { ChangePinModal, CreatePinCard, ResetPinCard, UnlockCard } from './WalletPinScreens'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -85,7 +89,10 @@ function RequestWithdrawalModal({ balanceMinorUnits, onClose }: { balanceMinorUn
   )
 }
 
-export default function WalletPage() {
+/** The server says the wallet is locked (the PIN session expired, or a lockout started elsewhere). */
+const isWalletLockedError = (err: unknown) => err instanceof ApiError && err.errorCode === 'WALLET_LOCKED'
+
+function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePin: () => void }) {
   const [page, setPage] = useState(0)
   const [requesting, setRequesting] = useState(false)
   const queryClient = useQueryClient()
@@ -97,20 +104,39 @@ export default function WalletPage() {
   })
   const withdrawalsQuery = useQuery({ queryKey: ['wallet', 'me', 'withdrawals'], queryFn: () => listMyWithdrawals(0, 20) })
 
+  // If any request comes back "locked", go straight to the PIN screen rather than showing an error.
+  const lockedByServer = [walletQuery.error, txnsQuery.error, withdrawalsQuery.error].some(isWalletLockedError)
+  useEffect(() => {
+    if (lockedByServer) onLock()
+  }, [lockedByServer, onLock])
+
   const cancelMutation = useMutation({
     mutationFn: (id: string) => cancelWithdrawal(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet', 'me'] })
       toast.success('Withdrawal request cancelled — funds returned to your balance')
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not cancel this request'),
+    onError: (err) => {
+      if (isWalletLockedError(err)) onLock()
+      toast.error(err instanceof Error ? err.message : 'Could not cancel this request')
+    },
   })
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
-      <div>
-        <h1 className="text-xl font-bold text-fg tracking-tight">Wallet</h1>
-        <p className="text-sm text-fg-muted mt-1">Your balance and transaction history.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-fg tracking-tight">Wallet</h1>
+          <p className="text-sm text-fg-muted mt-1">Your balance and transaction history.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" leftIcon={<KeyRound className="size-3.5" />} onClick={onChangePin}>
+            Change PIN
+          </Button>
+          <Button variant="outline" size="sm" leftIcon={<Lock className="size-3.5" />} onClick={onLock}>
+            Lock
+          </Button>
+        </div>
       </div>
 
       {walletQuery.isLoading ? (
@@ -253,5 +279,87 @@ export default function WalletPage() {
         <RequestWithdrawalModal balanceMinorUnits={walletQuery.data.balanceMinorUnits} onClose={() => setRequesting(false)} />
       )}
     </div>
+  )
+}
+
+/**
+ * The wallet is closed until the member enters their PIN: there is no balance, history or withdrawal
+ * on screen (and none fetched) before that. Leaving the page, pressing Lock, or letting the PIN
+ * session expire closes it again and discards the cached wallet data, so nothing lingers in memory.
+ * The real barrier is on the server — every /wallet request is refused without the unlock token.
+ */
+export default function WalletPage() {
+  const queryClient = useQueryClient()
+  const [unlocked, setUnlocked] = useState(false)
+  const [screen, setScreen] = useState<'unlock' | 'reset'>('unlock')
+  const [changingPin, setChangingPin] = useState(false)
+  // Bumped whenever a fresh unlock token is issued, so the auto-lock timer restarts for it.
+  const [unlockEpoch, setUnlockEpoch] = useState(0)
+
+  const statusQuery = useQuery({
+    queryKey: ['wallet-pin', 'status'],
+    queryFn: getWalletPinStatus,
+    retry: false,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+  })
+
+  const lock = useCallback(() => {
+    clearWalletUnlock()
+    setUnlocked(false)
+    setScreen('unlock')
+    setChangingPin(false)
+    queryClient.removeQueries({ queryKey: ['wallet'] })
+  }, [queryClient])
+
+  // Leaving the wallet page locks it. (Runs on the first mount too, where there is nothing to clear.)
+  useEffect(
+    () => () => {
+      clearWalletUnlock()
+      queryClient.removeQueries({ queryKey: ['wallet'] })
+    },
+    [queryClient],
+  )
+
+  // Close the wallet by itself when the PIN session runs out.
+  useEffect(() => {
+    if (!unlocked) return
+    const timer = setTimeout(lock, Math.max(0, getWalletUnlockExpiry() - Date.now()))
+    return () => clearTimeout(timer)
+  }, [unlocked, unlockEpoch, lock])
+
+  const refetchStatus = statusQuery.refetch
+  const handleUnlocked = useCallback(() => {
+    setUnlocked(true)
+    setUnlockEpoch((n) => n + 1)
+    refetchStatus()
+  }, [refetchStatus])
+
+  if (statusQuery.isLoading) return <Skeleton className="mx-auto h-72 max-w-md rounded-xl" />
+  if (statusQuery.isError || !statusQuery.data) {
+    return <ErrorState title="Couldn't open your wallet" onRetry={statusQuery.refetch} />
+  }
+
+  if (unlocked) {
+    return (
+      <>
+        <WalletContent onLock={lock} onChangePin={() => setChangingPin(true)} />
+        {changingPin && (
+          <ChangePinModal onClose={() => setChangingPin(false)} onChanged={() => setUnlockEpoch((n) => n + 1)} />
+        )}
+      </>
+    )
+  }
+
+  if (!statusQuery.data.hasPin) return <CreatePinCard onUnlocked={handleUnlocked} />
+  if (screen === 'reset') return <ResetPinCard onUnlocked={handleUnlocked} onCancel={() => setScreen('unlock')} />
+
+  return (
+    <UnlockCard
+      lockedUntilMs={statusQuery.dataUpdatedAt + statusQuery.data.lockedForSeconds * 1000}
+      onUnlocked={handleUnlocked}
+      onForgot={() => setScreen('reset')}
+      onLockedOut={() => statusQuery.refetch()}
+    />
   )
 }
