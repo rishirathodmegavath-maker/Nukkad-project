@@ -30,6 +30,7 @@ import {
   Eye,
   Layers,
   Activity,
+  Wallet,
   User as UserIcon,
 } from 'lucide-react'
 import {
@@ -2237,6 +2238,10 @@ export default function PersonProfilePage() {
                   </Button>
                   <Button variant="outline" size="sm" leftIcon={<Lock className="size-3.5" />} onClick={() => setPrivacyOpen(true)}>
                     Privacy
+                  </Button>
+                  {/* Only reachable from your own profile, not the site-wide navigation. */}
+                  <Button variant="outline" size="sm" leftIcon={<Wallet className="size-3.5" />} onClick={() => navigate('/wallet')}>
+                    Wallet
                   </Button>
                   <Button variant="outline" size="sm" leftIcon={<Share2 className="size-3.5" />} onClick={handleShareProfile} aria-label="Share profile">
                     Share
