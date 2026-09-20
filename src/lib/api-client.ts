@@ -115,14 +115,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     throw new ApiError('Network error — is the backend running?', 0)
   }
 
+  const isAuthEndpoint = path.startsWith(`${AUTH_BASE}/refresh`) || path.startsWith(`${AUTH_BASE}/login`)
+
   // Refresh-on-401 and retry once. Never applies to the refresh/login calls themselves.
-  if (
-    response.status === 401 &&
-    !options._isRetry &&
-    session?.refreshToken &&
-    !path.startsWith(`${AUTH_BASE}/refresh`) &&
-    !path.startsWith(`${AUTH_BASE}/login`)
-  ) {
+  if (response.status === 401 && !options._isRetry && session?.refreshToken && !isAuthEndpoint) {
     try {
       await refreshAccessToken(session.refreshToken)
     } catch (err) {
@@ -134,6 +130,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
     }
     return request<T>(path, { ...options, _isRetry: true })
+  }
+
+  // A protected endpoint refused the request with no session in storage to refresh (e.g. it was
+  // cleared by a logout in another tab, or corrupted/wiped storage) — without this, the caller's
+  // own error handling for this one query decides what the user sees, and several pages render
+  // that as a misleading "no results" empty state instead of prompting the user to sign back in.
+  if (response.status === 401 && !session?.refreshToken && !isAuthEndpoint) {
+    clearSession()
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+      window.location.assign('/login')
+    }
+    throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
   }
 
   const body = (await response.json().catch(() => null)) as Envelope<T> | ErrorEnvelope | null

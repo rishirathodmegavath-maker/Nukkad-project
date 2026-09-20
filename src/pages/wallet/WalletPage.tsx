@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { WalletIcon, ArrowDownLeft, ArrowUpRight, Lock, Banknote } from 'lucide-react'
 import { cancelWithdrawal, getMyWallet, listMyTransactions, listMyWithdrawals, requestWithdrawal } from '@/services/wallet.service'
@@ -28,7 +28,20 @@ function RequestWithdrawalModal({ balanceMinorUnits, onClose }: { balanceMinorUn
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not request this withdrawal'),
+    onSettled: () => { submittingRef.current = false },
   })
+
+  // Unlike the admin wallet-adjustment endpoint, requestWithdrawal has no idempotency key -- each
+  // call creates a genuinely new, separate withdrawal hold. mutation.isPending only flips true on
+  // the render after mutate() is called, so a fast double-click can fire both calls before React
+  // re-renders the button as disabled (same gap as OnboardingPage's finish-setup button). This ref
+  // is set synchronously, independent of React's render cycle, so the second click is a no-op.
+  const submittingRef = useRef(false)
+  function handleRequestWithdrawal() {
+    if (submittingRef.current) return
+    submittingRef.current = true
+    mutation.mutate()
+  }
 
   const amountMinorUnits = Math.round((Number(amount) || 0) * 100)
   const isValid = amountMinorUnits > 0 && amountMinorUnits <= balanceMinorUnits
@@ -42,7 +55,7 @@ function RequestWithdrawalModal({ balanceMinorUnits, onClose }: { balanceMinorUn
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button isLoading={mutation.isPending} disabled={!isValid} onClick={() => mutation.mutate()}>
+          <Button isLoading={mutation.isPending} disabled={!isValid} onClick={handleRequestWithdrawal}>
             Request withdrawal
           </Button>
         </>
