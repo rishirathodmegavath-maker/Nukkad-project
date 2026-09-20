@@ -1,5 +1,6 @@
 import { getStoredSession, persistSession, clearSession } from '@/lib/session'
 import { isAdminPortal } from '@/lib/portal'
+import { getWalletUnlockToken } from '@/lib/wallet-unlock'
 import type { Session } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -103,6 +104,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const headers: Record<string, string> = { ...options.headers }
   if (options.body !== undefined) headers['Content-Type'] = 'application/json'
   if (session?.token) headers.Authorization = `Bearer ${session.token}`
+  // Wallet endpoints also need proof that the wallet PIN was just entered (see wallet-unlock.ts).
+  // The PIN endpoints are how that proof is obtained, so they never send it.
+  if (path.startsWith('/wallet/') && !path.startsWith('/wallet/pin')) {
+    const unlockToken = getWalletUnlockToken()
+    if (unlockToken) headers['X-Wallet-Token'] = unlockToken
+  }
 
   let response: Response
   try {
