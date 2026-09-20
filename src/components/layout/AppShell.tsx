@@ -4,6 +4,7 @@ import { Topbar } from './Topbar'
 import { MobileNav } from './MobileNav'
 import { Toaster } from '@/components/ui/Toaster'
 import { MessengerWidget } from '@/components/domain/MessengerWidget'
+import { IncomingMessageToaster } from '@/components/domain/IncomingMessageToaster'
 import { useAppearanceSync } from '@/hooks/useAppearanceSync'
 
 export function AppShell() {
@@ -20,6 +21,7 @@ export function AppShell() {
       </div>
       <MobileNav />
       <MessengerWidget />
+      <IncomingMessageToaster />
       <Toaster />
     </div>
   )
