@@ -49,6 +49,8 @@ export default function AdminFeedPage() {
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
           <input
             type="checkbox"
+            id="admin-feed-include-removed"
+            name="admin-feed-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
             className="size-3.5 rounded border-border accent-brand-600"

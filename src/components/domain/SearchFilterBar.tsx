@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { Search, X } from 'lucide-react'
 
 interface SearchFilterBarProps {
@@ -9,11 +9,14 @@ interface SearchFilterBarProps {
 }
 
 export function SearchFilterBar({ query, onQueryChange, placeholder = 'Search…', children }: SearchFilterBarProps) {
+  const fieldId = useId()
   return (
     <div className="flex flex-col gap-3.5 mb-6">
       <div className="relative max-w-md">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" />
         <input
+          id={fieldId}
+          name={fieldId}
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder={placeholder}

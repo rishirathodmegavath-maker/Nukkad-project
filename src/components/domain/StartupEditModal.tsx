@@ -202,6 +202,8 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
         <label className="flex items-center gap-2.5 text-sm text-fg cursor-pointer">
           <input
             type="checkbox"
+            id="startup-currently-raising"
+            name="startup-currently-raising"
             checked={isRaising}
             onChange={(e) => setIsRaising(e.target.checked)}
             className="size-4 rounded border-border accent-brand-600"
@@ -212,6 +214,8 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
         <label className="flex items-start gap-2.5 text-sm text-fg cursor-pointer">
           <input
             type="checkbox"
+            id="startup-fundraising-visible"
+            name="startup-fundraising-visible"
             checked={fundraisingVisible}
             onChange={(e) => setFundraisingVisible(e.target.checked)}
             className="mt-0.5 size-4 rounded border-border accent-brand-600"

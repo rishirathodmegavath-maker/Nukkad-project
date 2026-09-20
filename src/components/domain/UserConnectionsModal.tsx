@@ -167,6 +167,8 @@ export function UserConnectionsModal({
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" />
           <input
+            id="user-connections-search"
+            name="user-connections-search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search connections by name, skill, company…"

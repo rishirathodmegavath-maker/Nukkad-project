@@ -80,6 +80,8 @@ export default function AdminStartupsPage() {
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
           <input
             type="checkbox"
+            id="admin-startups-include-removed"
+            name="admin-startups-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
             className="size-3.5 rounded border-border accent-brand-600"

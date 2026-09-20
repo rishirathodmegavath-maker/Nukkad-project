@@ -47,6 +47,8 @@ export function AddChapterMemberModal({ chapterId, chapterName, existingMemberId
     <Modal open onClose={onClose} title="Add a member" description={`Directly add someone to "${chapterName}".`} size="md">
       <div className="flex flex-col gap-4">
         <input
+          id="add-chapter-member-search"
+          name="add-chapter-member-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search people by name…"

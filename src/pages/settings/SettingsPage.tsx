@@ -95,6 +95,8 @@ function AvatarUpload({ user }: { user: User }) {
       <input
         ref={fileInputRef}
         type="file"
+        id="settings-avatar-upload"
+        name="settings-avatar-upload"
         accept="image/png,image/jpeg,image/webp,image/gif"
         className="hidden"
         onChange={handleFileChange}

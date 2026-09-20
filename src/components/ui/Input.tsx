@@ -1,4 +1,4 @@
-import { useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react'
+import { useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react'
 import { ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,12 +41,20 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: ReactNode
 }
 
-export function Input({ label, hint, error, required, leftIcon, rightIcon, className, ...props }: InputProps) {
+export function Input({ label, hint, error, required, leftIcon, rightIcon, className, id, name, ...props }: InputProps) {
+  // Falls back to a generated id/name when the caller doesn't supply one — without this, a field
+  // with neither attribute set is invisible to the browser's autofill and shows up as a DevTools
+  // "form field should have an id or name" issue. useId() (not a plain string) keeps every
+  // instance unique even when this component renders many times on one page.
+  const generatedId = useId()
+  const fieldId = id ?? generatedId
   return (
     <FieldWrap label={label} hint={hint} error={error} required={required}>
       <span className="relative flex items-center">
         {leftIcon && <span className="absolute left-3.5 text-fg-muted pointer-events-none">{leftIcon}</span>}
         <input
+          id={fieldId}
+          name={name ?? fieldId}
           className={cn(
             fieldBase,
             error
@@ -93,10 +101,14 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string
 }
 
-export function Textarea({ label, hint, error, required, className, ...props }: TextareaProps) {
+export function Textarea({ label, hint, error, required, className, id, name, ...props }: TextareaProps) {
+  const generatedId = useId()
+  const fieldId = id ?? generatedId
   return (
     <FieldWrap label={label} hint={hint} error={error} required={required}>
       <textarea
+        id={fieldId}
+        name={name ?? fieldId}
         className={cn(
           fieldBase,
           'resize-y min-h-[100px] leading-relaxed',
@@ -117,11 +129,15 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   error?: string
 }
 
-export function Select({ label, hint, error, required, className, children, ...props }: SelectProps) {
+export function Select({ label, hint, error, required, className, children, id, name, ...props }: SelectProps) {
+  const generatedId = useId()
+  const fieldId = id ?? generatedId
   return (
     <FieldWrap label={label} hint={hint} error={error} required={required}>
       <div className="relative flex items-center">
         <select
+          id={fieldId}
+          name={name ?? fieldId}
           className={cn(
             fieldBase,
             'appearance-none pr-10 cursor-pointer',

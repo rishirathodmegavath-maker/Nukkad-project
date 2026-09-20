@@ -332,6 +332,8 @@ export default function FeedPage() {
             <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
             <div className="flex-1 flex flex-col gap-2 min-w-0">
               <textarea
+                id="feed-post-composer"
+                name="feed-post-composer"
                 autoFocus
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -403,6 +405,8 @@ export default function FeedPage() {
                   <input
                     ref={mediaInputRef}
                     type="file"
+                    id="feed-media-upload"
+                    name="feed-media-upload"
                     accept="image/*,video/*"
                     multiple
                     hidden
@@ -411,6 +415,8 @@ export default function FeedPage() {
                   <input
                     ref={docInputRef}
                     type="file"
+                    id="feed-doc-upload"
+                    name="feed-doc-upload"
                     accept="application/pdf"
                     multiple
                     hidden

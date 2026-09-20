@@ -45,6 +45,8 @@ export function AdvancedCustomizationPanel() {
             <span className="text-sm text-fg-secondary">{label}</span>
             <input
               type="color"
+              id={`theme-color-${key}`}
+              name={`theme-color-${key}`}
               value={overrides[key] ?? resolveCurrentColor(cssVar)}
               onChange={(e) => setAdvancedOverride(key, e.target.value)}
               className="size-8 rounded-md border border-border/80 cursor-pointer bg-transparent p-0"
