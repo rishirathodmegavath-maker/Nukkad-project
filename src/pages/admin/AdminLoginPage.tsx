@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Lock, Mail, ShieldCheck } from 'lucide-react'
 import { Input, PasswordInput } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +9,8 @@ import { getStoredSession } from '@/lib/session'
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
+  // Set by the change-password flow, which ends every session and sends the admin back here.
+  const notice = (useLocation().state as { notice?: string } | null)?.notice
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -49,6 +51,12 @@ export default function AdminLoginPage() {
           </div>
           <p className="text-sm text-fg-muted mb-5">Authorized administrators only. Every sign-in is recorded.</p>
 
+          {notice && (
+            <p role="status" className="mb-4 rounded-lg bg-success-100/50 px-3 py-2 text-sm text-fg">
+              {notice}
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             <Input
               label="Admin email"
@@ -69,6 +77,12 @@ export default function AdminLoginPage() {
               leftIcon={<Lock className="size-4" />}
               placeholder="Your password"
             />
+            <Link
+              to="/forgot-password"
+              className="self-end -mt-2 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
+            >
+              Forgot password?
+            </Link>
             {error && (
               <p role="alert" className="text-sm text-danger-500 -mt-2">
                 {error}
