@@ -48,7 +48,7 @@ export async function resendVerificationEmail(email: string): Promise<void> {
   await apiClient.post('/auth/resend-verification', { email })
 }
 
-/** Google can only authenticate an existing, already-linked Buildadda account — never creates one. */
+/** Google can only authenticate an existing, already-linked BuildAdda account — never creates one. */
 export async function loginWithGoogle(idToken: string): Promise<Session> {
   const dto = await apiClient.post<AuthResponseDto>('/auth/google', { idToken })
   const session = toSession(dto)
@@ -57,7 +57,7 @@ export async function loginWithGoogle(idToken: string): Promise<Session> {
 }
 
 /** Redirect-flow counterpart: exchanges the OAuth authorization code Google handed back after
- * the full-page redirect for a Buildadda session, via the backend (which holds the client secret).
+ * the full-page redirect for a BuildAdda session, via the backend (which holds the client secret).
  * Subject to the same "must already be linked" policy as loginWithGoogle. */
 export async function exchangeGoogleCode(code: string, redirectUri: string): Promise<Session> {
   const dto = await apiClient.post<AuthResponseDto>('/auth/google/code', { code, redirectUri })
@@ -74,6 +74,10 @@ export async function linkGoogleAccount(idToken: string): Promise<void> {
 export async function requestPasswordReset(email: string): Promise<{ sent: true }> {
   await apiClient.post('/auth/password-reset/request', { email })
   return { sent: true }
+}
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  await apiClient.post('/auth/password-reset/confirm', { token, newPassword })
 }
 
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
