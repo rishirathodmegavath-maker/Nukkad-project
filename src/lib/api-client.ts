@@ -189,14 +189,23 @@ export async function uploadFile<T>(
   fieldName = 'file',
   extraFields?: Record<string, string | undefined>,
   method: 'POST' | 'PUT' = 'POST',
+  /** More files sent in the same request, by field name (e.g. a card image next to the main file). */
+  extraFiles?: Record<string, File | null | undefined>,
 ): Promise<T> {
-  if (file && file.size > MAX_UPLOAD_BYTES) {
-    throw new ApiError(`File is too large (${formatMb(file.size)}). Maximum allowed size is ${formatMb(MAX_UPLOAD_BYTES)}.`, 0, 'FILE_TOO_LARGE')
+  for (const candidate of [file, ...Object.values(extraFiles ?? {})]) {
+    if (candidate && candidate.size > MAX_UPLOAD_BYTES) {
+      throw new ApiError(`File is too large (${formatMb(candidate.size)}). Maximum allowed size is ${formatMb(MAX_UPLOAD_BYTES)}.`, 0, 'FILE_TOO_LARGE')
+    }
   }
 
   const session = getStoredSession()
   const formData = new FormData()
   if (file) formData.append(fieldName, file)
+  if (extraFiles) {
+    for (const [key, extra] of Object.entries(extraFiles)) {
+      if (extra) formData.append(key, extra)
+    }
+  }
   if (extraFields) {
     for (const [key, value] of Object.entries(extraFields)) {
       if (value !== undefined) formData.append(key, value)
@@ -224,7 +233,7 @@ export async function uploadFile<T>(
       if (typeof window !== 'undefined') window.location.assign('/login')
       throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
     }
-    return uploadFile<T>(path, file, fieldName, extraFields, method)
+    return uploadFile<T>(path, file, fieldName, extraFields, method, extraFiles)
   }
 
   const body = (await response.json().catch(() => null)) as Envelope<T> | ErrorEnvelope | null
@@ -233,6 +242,65 @@ export async function uploadFile<T>(
     throw new ApiError(errorBody?.message ?? `Upload failed (${response.status})`, response.status, errorBody?.errorCode)
   }
   return (body as Envelope<T>).data
+}
+
+/**
+ * Downloads a file from an authenticated endpoint as a real browser download (saved to disk, not
+ * opened). It has to go through fetch: the endpoint needs the bearer token, which a plain link can't
+ * send, and the file's own storage URL can't be used because browsers ignore the HTML `download`
+ * attribute for a cross-origin URL. `fileName` is what the file is saved as.
+ */
+export async function downloadFile(path: string, fileName: string): Promise<void> {
+  const send = () => {
+    const session = getStoredSession()
+    return fetch(`${BASE_URL}${path}`, { headers: session?.token ? { Authorization: `Bearer ${session.token}` } : {} })
+  }
+
+  let response: Response
+  try {
+    response = await send()
+  } catch {
+    throw new ApiError('Network error — is the backend running?', 0)
+  }
+
+  if (response.status === 401) {
+    const session = getStoredSession()
+    if (!session?.refreshToken) {
+      clearSession()
+      if (typeof window !== 'undefined') window.location.assign('/login')
+      throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
+    }
+    try {
+      await refreshAccessToken(session.refreshToken)
+    } catch (err) {
+      if (err instanceof RefreshNetworkError) {
+        throw new ApiError('Network error — is the backend running?', 0)
+      }
+      clearSession()
+      if (typeof window !== 'undefined') window.location.assign('/login')
+      throw new ApiError('Session expired — please log in again', 401, 'UNAUTHORIZED')
+    }
+    try {
+      response = await send()
+    } catch {
+      throw new ApiError('Network error — is the backend running?', 0)
+    }
+  }
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as ErrorEnvelope | null
+    throw new ApiError(body?.message ?? `Download failed (${response.status})`, response.status, body?.errorCode)
+  }
+
+  const objectUrl = URL.createObjectURL(await response.blob())
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = fileName
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  // Give the browser time to start the save before releasing the blob.
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000)
 }
 
 /**

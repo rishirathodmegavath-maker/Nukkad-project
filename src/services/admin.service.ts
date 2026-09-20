@@ -1,5 +1,7 @@
-import { apiClient, getPagedResult, type Page } from '@/lib/api-client'
+import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
+import { mapResource, type ResourceDto } from '@/services/resources.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
+import type { Resource, ResourceCategory, ResourceType } from '@/types'
 
 export interface AdminUserFilters {
   q?: string
@@ -242,4 +244,92 @@ export async function approveInvestorActivation(id: string): Promise<AdminInvest
 
 export async function rejectInvestorActivation(id: string, reason: string): Promise<AdminInvestorActivationRow> {
   return apiClient.patch<AdminInvestorActivationRow>(`/admin/investor-activation-requests/${id}/reject`, { reason })
+}
+
+// ---- Resource library (admin-curated: this is the ONLY place resources are created, edited or deleted) ----
+
+export async function listAdminResources(
+  params: { q?: string; type?: ResourceType; category?: ResourceCategory; chapterId?: string; page?: number; size?: number } = {},
+): Promise<Page<Resource>> {
+  const result = await getPagedResult<ResourceDto>('/admin/resources', { ...params })
+  return { ...result, content: result.content.map(mapResource) }
+}
+
+export interface AdminCreateResourceInput {
+  title: string
+  description?: string
+  type: ResourceType
+  category?: ResourceCategory
+  provider?: string
+  durationMinutes?: number
+  featured?: boolean
+  /** Exactly one of `url` / `file` — the server rejects both or neither. */
+  url?: string
+  file?: File
+  /** An optional card image (PNG, JPEG, WEBP or GIF). */
+  thumbnail?: File
+  chapterId?: string
+  tags: string[]
+}
+
+export async function createAdminResource(input: AdminCreateResourceInput): Promise<Resource> {
+  const dto = await uploadFile<ResourceDto>(
+    '/admin/resources',
+    input.file ?? null,
+    'file',
+    {
+      title: input.title,
+      description: input.description,
+      type: input.type,
+      category: input.category,
+      provider: input.provider,
+      durationMinutes: input.durationMinutes ? String(input.durationMinutes) : undefined,
+      featured: input.featured ? 'true' : undefined,
+      url: input.url,
+      chapterId: input.chapterId,
+      tags: input.tags.join(','),
+    },
+    'POST',
+    { thumbnail: input.thumbnail },
+  )
+  return mapResource(dto)
+}
+
+export interface AdminUpdateResourceInput {
+  title?: string
+  description?: string
+  type?: ResourceType
+  /** Pass '' to take it off its shelf; omit to leave unchanged. */
+  category?: ResourceCategory | ''
+  /** Pass '' to clear; omit to leave unchanged. */
+  provider?: string
+  /** Pass 0 to clear; omit to leave unchanged. */
+  durationMinutes?: number
+  featured?: boolean
+  url?: string
+  /** Pass '' to unassign from any chapter; omit to leave unchanged. */
+  chapterId?: string
+  tags?: string[]
+}
+
+export async function updateAdminResource(id: string, input: AdminUpdateResourceInput): Promise<Resource> {
+  return mapResource(await apiClient.put<ResourceDto>(`/admin/resources/${id}`, input))
+}
+
+/** Sets or replaces the card image of an existing resource. */
+export async function replaceAdminResourceThumbnail(id: string, image: File): Promise<Resource> {
+  return mapResource(await uploadFile<ResourceDto>(`/admin/resources/${id}/thumbnail`, image, 'image'))
+}
+
+export async function removeAdminResourceThumbnail(id: string): Promise<Resource> {
+  return mapResource(await apiClient.delete<ResourceDto>(`/admin/resources/${id}/thumbnail`))
+}
+
+/** Chapters a resource can be scoped to. The admin token can't call the member chapters API, so this has its own endpoint. */
+export async function listAdminResourceChapters(): Promise<{ id: string; name: string }[]> {
+  return apiClient.get<{ id: string; name: string }[]>('/admin/resources/chapter-options')
+}
+
+export async function deleteAdminResource(id: string): Promise<void> {
+  await apiClient.delete(`/admin/resources/${id}`)
 }

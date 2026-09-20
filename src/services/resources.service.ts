@@ -1,72 +1,85 @@
-import { apiClient, getPage, uploadFile } from '@/lib/api-client'
-import type { Resource, ResourceType } from '@/types'
+import { apiClient, downloadFile, getPage, getPagedResult, type Page } from '@/lib/api-client'
+import type { Resource, ResourceCategory, ResourceType } from '@/types'
 
 export interface ResourceFilters {
   query?: string
   type?: ResourceType
+  category?: ResourceCategory
+  /** Only the resources on the front page shelf. */
+  featured?: boolean
   chapterId?: string
+  size?: number
 }
 
-export interface CreateResourceInput {
-  title: string
-  description?: string
-  type: ResourceType
-  url?: string
-  file?: File
-  chapterId?: string
-  tags: string[]
-}
-
-export interface UpdateResourceInput {
-  title?: string
-  description?: string
-  type?: ResourceType
-  url?: string
-  /** Pass '' to unassign from any chapter; omit to leave unchanged. */
-  chapterId?: string
-  tags?: string[]
-}
-
-interface ResourceDto {
+/** The wire shape of a resource. Also used by the admin service, which returns the same object. */
+export interface ResourceDto {
   id: string
   title: string
   description: string | null
   type: string
+  category: string | null
+  provider: string | null
+  thumbnailUrl: string | null
+  durationMinutes: number | null
+  featured: boolean
   url: string
   uploaderUserId: string
   chapterId: string | null
   chapterName: string | null
   tags: string[]
   isSaved: boolean
-  canManage: boolean
+  fileName: string | null
+  previewable: boolean
   createdAt: string
   updatedAt: string
 }
 
-function mapResource(dto: ResourceDto): Resource {
+export function mapResource(dto: ResourceDto): Resource {
   return {
     id: dto.id,
     title: dto.title,
     description: dto.description ?? '',
     type: dto.type as ResourceType,
+    category: (dto.category ?? undefined) as ResourceCategory | undefined,
+    provider: dto.provider ?? undefined,
+    thumbnailUrl: dto.thumbnailUrl ?? undefined,
+    durationMinutes: dto.durationMinutes ?? undefined,
+    featured: dto.featured,
     url: dto.url,
     uploaderUserId: dto.uploaderUserId,
     chapterId: dto.chapterId ?? undefined,
     chapterName: dto.chapterName ?? undefined,
     tags: dto.tags,
     isSaved: dto.isSaved,
-    canManage: dto.canManage,
+    fileName: dto.fileName ?? undefined,
+    previewable: dto.previewable,
     createdAt: dto.createdAt,
   }
 }
 
-export async function listResources(filters: ResourceFilters = {}): Promise<Resource[]> {
-  const dtos = await getPage<ResourceDto>('/resources', {
+// Members can only browse, open, download and save resources — the library is curated by admins
+// (see admin.service.ts for create / edit / delete), so there is deliberately no write call here.
+
+function toParams(filters: ResourceFilters) {
+  return {
     q: filters.query,
     type: filters.type,
+    category: filters.category,
+    featured: filters.featured,
     chapterId: filters.chapterId,
-  })
+    size: filters.size,
+  }
+}
+
+export async function listResources(filters: ResourceFilters = {}): Promise<Resource[]> {
+  const dtos = await getPage<ResourceDto>('/resources', toParams(filters))
   return dtos.map(mapResource)
+}
+
+/** One page of the library, with the totals a pager needs. */
+export async function listResourcesPage(filters: ResourceFilters, page: number): Promise<Page<Resource>> {
+  const result = await getPagedResult<ResourceDto>('/resources', { ...toParams(filters), page })
+  return { ...result, content: result.content.map(mapResource) }
 }
 
 export async function getResource(id: string): Promise<Resource | undefined> {
@@ -77,26 +90,11 @@ export async function getResource(id: string): Promise<Resource | undefined> {
   }
 }
 
-export async function createResource(input: CreateResourceInput): Promise<Resource> {
-  const dto = await uploadFile<ResourceDto>('/resources', input.file ?? null, 'file', {
-    title: input.title,
-    description: input.description,
-    type: input.type,
-    url: input.url,
-    chapterId: input.chapterId,
-    tags: input.tags.join(','),
-  })
-  return mapResource(dto)
-}
-
-export async function updateResource(id: string, input: UpdateResourceInput): Promise<Resource> {
-  return mapResource(await apiClient.put<ResourceDto>(`/resources/${id}`, input))
-}
-
-export async function deleteResource(id: string): Promise<void> {
-  await apiClient.delete(`/resources/${id}`)
-}
-
 export async function toggleSaveResource(id: string): Promise<{ saved: boolean }> {
   return apiClient.post<{ saved: boolean }>(`/resources/${id}/save`)
+}
+
+/** Saves a hosted file to the member's device. Opening it in the browser needs no call — see the detail page. */
+export async function downloadResource(resource: Resource): Promise<void> {
+  await downloadFile(`/resources/${resource.id}/download`, resource.fileName ?? resource.title)
 }

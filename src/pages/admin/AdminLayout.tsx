@@ -10,6 +10,7 @@ const ADMIN_NAV = [
   { to: '/admin/ideas', label: 'Ideas', end: false },
   { to: '/admin/opportunities', label: 'Opportunities', end: false },
   { to: '/admin/grants', label: 'Grants', end: false },
+  { to: '/admin/resources', label: 'Resources', end: false },
   { to: '/admin/feed', label: 'Feed', end: false },
   { to: '/admin/investor-activations', label: 'Investor Applications', end: false },
   { to: '/admin/reports', label: 'Reports', end: false },
