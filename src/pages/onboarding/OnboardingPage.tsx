@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Check, Sparkles } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
@@ -64,6 +64,16 @@ export default function OnboardingPage() {
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save profile setup'),
   })
+
+  // mutation.isPending only flips true on the render after mutate() is called, so a fast
+  // double-click can fire both calls before React re-renders the button as disabled. This ref is
+  // set synchronously, independent of React's render cycle, so the second click is a true no-op.
+  const submittingRef = useRef(false)
+  function handleFinishSetup() {
+    if (submittingRef.current) return
+    submittingRef.current = true
+    mutation.mutate(undefined, { onSettled: () => { submittingRef.current = false } })
+  }
 
   function toggle<T>(list: T[], setList: (v: T[]) => void, value: T) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
@@ -182,7 +192,7 @@ export default function OnboardingPage() {
               <Button variant="secondary" size="lg" onClick={() => setStep(2)}>
                 Back
               </Button>
-              <Button size="lg" className="flex-1" isLoading={mutation.isPending} onClick={() => mutation.mutate()}>
+              <Button size="lg" className="flex-1" isLoading={mutation.isPending} onClick={handleFinishSetup}>
                 Finish setup
               </Button>
             </div>

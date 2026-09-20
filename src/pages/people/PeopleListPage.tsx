@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs, Tabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { MyNetworkSection } from '@/pages/people/MyNetworkSection'
 import type { LookingFor } from '@/types'
 
@@ -104,7 +104,7 @@ export default function PeopleListPage() {
     [query, lookingFor],
   )
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, isError, refetch } = useQuery({
     queryKey: ['users', filters],
     queryFn: () => listUsers(filters),
     enabled: view === 'discover',
@@ -151,7 +151,9 @@ export default function PeopleListPage() {
 
           {isLoading ? (
             <CardSkeletonGrid count={9} />
-          ) : users && users.length > 0 ? (
+          ) : isError || !users ? (
+            <ErrorState title="Couldn't load people" onRetry={refetch} />
+          ) : users.length > 0 ? (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {users.map((user) => (
                 <PersonCard key={user.id} user={user} />

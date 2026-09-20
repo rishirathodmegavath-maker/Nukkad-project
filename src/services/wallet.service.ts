@@ -21,6 +21,7 @@ export interface AdjustWalletBalanceInput {
   direction: 'CREDIT' | 'DEBIT'
   amountMinorUnits: number
   reason: string
+  idempotencyKey: string
 }
 
 export async function adjustWalletBalance(userId: string, input: AdjustWalletBalanceInput): Promise<AdminWallet> {

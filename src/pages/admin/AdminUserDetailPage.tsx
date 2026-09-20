@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ShieldCheck, ShieldOff, Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Lock, LockOpen } from 'lucide-react'
@@ -140,12 +140,18 @@ function AdjustWalletModal({
 }: {
   open: boolean
   onClose: () => void
-  onConfirm: (direction: 'CREDIT' | 'DEBIT', amountMinorUnits: number, reason: string) => void
+  onConfirm: (direction: 'CREDIT' | 'DEBIT', amountMinorUnits: number, reason: string, idempotencyKey: string) => void
   isPending: boolean
 }) {
   const [direction, setDirection] = useState<'CREDIT' | 'DEBIT'>('CREDIT')
   const [amount, setAmount] = useState('')
   const [reason, setReason] = useState('')
+  // One key per open modal, not per click: a double-click before the button disables reuses this
+  // same key so the backend dedupes it to a single adjustment instead of applying it twice.
+  const idempotencyKeyRef = useRef(crypto.randomUUID())
+  useEffect(() => {
+    if (open) idempotencyKeyRef.current = crypto.randomUUID()
+  }, [open])
 
   const amountMinorUnits = Math.round(Number(amount) * 100)
   const canSubmit = amount.trim() !== '' && amountMinorUnits > 0 && reason.trim().length > 0
@@ -170,7 +176,7 @@ function AdjustWalletModal({
             variant={direction === 'DEBIT' ? 'danger' : 'primary'}
             isLoading={isPending}
             disabled={!canSubmit}
-            onClick={() => onConfirm(direction, amountMinorUnits, reason.trim())}
+            onClick={() => onConfirm(direction, amountMinorUnits, reason.trim(), idempotencyKeyRef.current)}
           >
             {direction === 'CREDIT' ? 'Credit wallet' : 'Debit wallet'}
           </Button>
@@ -232,7 +238,7 @@ export default function AdminUserDetailPage() {
   })
 
   const adjustWalletMutation = useMutation({
-    mutationFn: (vars: { direction: 'CREDIT' | 'DEBIT'; amountMinorUnits: number; reason: string }) =>
+    mutationFn: (vars: { direction: 'CREDIT' | 'DEBIT'; amountMinorUnits: number; reason: string; idempotencyKey: string }) =>
       adjustWalletBalance(id!, vars),
     onSuccess: () => {
       toast.success('Wallet balance adjusted')
@@ -474,7 +480,8 @@ export default function AdminUserDetailPage() {
         open={adjustWalletOpen}
         onClose={() => setAdjustWalletOpen(false)}
         isPending={adjustWalletMutation.isPending}
-        onConfirm={(direction, amountMinorUnits, reason) => adjustWalletMutation.mutate({ direction, amountMinorUnits, reason })}
+        onConfirm={(direction, amountMinorUnits, reason, idempotencyKey) =>
+          adjustWalletMutation.mutate({ direction, amountMinorUnits, reason, idempotencyKey })}
       />
 
       <WalletStatusModal
