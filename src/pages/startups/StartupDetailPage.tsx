@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Heart, Users, TrendingUp, Briefcase, Pencil, Check, X, UserPlus, Camera, Trash2, ChevronRight, MapPin, Globe, Lock, Sparkles, CalendarDays } from 'lucide-react'
@@ -22,6 +22,7 @@ import {
 } from '@/services/startups.service'
 import { getFundraiseByStartup } from '@/services/investors.service'
 import { listOpportunities } from '@/services/opportunities.service'
+import { getCurrentUserId } from '@/services/users.service'
 import { getEventsForStartup } from '@/services/events.service'
 import { useUser } from '@/hooks/useUser'
 import { Card } from '@/components/ui/Card'
@@ -41,7 +42,8 @@ import { FundraiseCreateModal } from '@/components/domain/FundraiseCreateModal'
 import { StartupMaterialsSection } from '@/components/domain/StartupMaterialsSection'
 import { formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
-import type { Startup, StartupMembershipStatus, StartupTeamRole } from '@/types'
+import type { Opportunity, Startup, StartupMembershipStatus, StartupTeamRole } from '@/types'
+import { ModerationBadge } from '@/components/domain/ModerationBadge'
 
 const stageTone: Record<Startup['stage'], BadgeTone> = {
   Idea: 'neutral',
@@ -181,6 +183,29 @@ export default function StartupDetailPage() {
     queryFn: () => listOpportunities({ startupId: id }),
     enabled: !!id,
   })
+
+  // The public listing above only ever returns APPROVED postings — to everyone, the poster included —
+  // so on its own it tells a founder "No open positions" while their own role is still waiting for
+  // review. The API lets a poster see their own unreviewed postings when the query is filtered to
+  // postedByUserId=self, so a manager also asks for those and the two lists are merged below. Public
+  // visitors never make this request, and the moderation rules are untouched.
+  const myUserId = getCurrentUserId()
+  const ownOpportunitiesQuery = useQuery({
+    queryKey: ['startup', id, 'opportunities', 'mine'],
+    queryFn: () => listOpportunities({ startupId: id, postedByUserId: myUserId }),
+    enabled: !!id && canManage && !!myUserId,
+  })
+  const openPositions = useMemo(() => {
+    const byId = new Map<string, Opportunity>()
+    for (const opp of opportunitiesQuery.data ?? []) byId.set(opp.id, opp)
+    for (const opp of ownOpportunitiesQuery.data ?? []) {
+      // A rejected posting is not an open position (it has its own "Not approved" state under
+      // Posted by Me); closed and admin-removed ones are already excluded by the API.
+      if (opp.moderationStatus === 'REJECTED') continue
+      byId.set(opp.id, opp)
+    }
+    return [...byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  }, [opportunitiesQuery.data, ownOpportunitiesQuery.data])
 
   const { data: fundraise } = useQuery({
     queryKey: ['fundraise', 'by-startup', id],
@@ -621,28 +646,38 @@ export default function StartupDetailPage() {
           <h2 className="font-semibold text-fg mb-3 flex items-center gap-2">
             <Briefcase className="size-4" /> Open Positions
           </h2>
-          {opportunitiesQuery.isLoading ? (
+          {opportunitiesQuery.isLoading || ownOpportunitiesQuery.isLoading ? (
             <div className="flex flex-col gap-2.5">
               <Skeleton className="h-14 w-full rounded-lg" />
               <Skeleton className="h-14 w-full rounded-lg" />
             </div>
-          ) : opportunitiesQuery.data && opportunitiesQuery.data.length > 0 ? (
+          ) : openPositions.length > 0 ? (
             <div className="flex flex-col gap-2.5">
-              {opportunitiesQuery.data.map((opp) => (
-                <div key={opp.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-lg p-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-fg truncate">{opp.title}</p>
-                    <p className="text-xs text-fg-muted mt-0.5 truncate">
-                      {opp.type} {opp.location && `· ${opp.location}`} · {opp.workMode}
-                    </p>
+              {openPositions.map((opp) => {
+                // Only a manager's own role can be unreviewed here; the poster can't apply to it.
+                const isOwnPosting = opp.postedByUserId === myUserId
+                return (
+                  <div key={opp.id} className="flex items-center justify-between gap-3 border border-border-subtle rounded-lg p-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium text-fg truncate">{opp.title}</p>
+                        <ModerationBadge status={opp.moderationStatus} />
+                      </div>
+                      <p className="text-xs text-fg-muted mt-0.5 truncate">
+                        {opp.type} {opp.location && `· ${opp.location}`} · {opp.workMode}
+                      </p>
+                      {opp.moderationStatus === 'PENDING' && (
+                        <p className="text-xs text-fg-muted mt-0.5">Only you can see this until an admin approves it.</p>
+                      )}
+                    </div>
+                    <Link to={`/opportunities/${opp.id}`} className="shrink-0">
+                      <Button size="sm" variant="secondary">
+                        {isOwnPosting ? 'View' : 'Apply Now'}
+                      </Button>
+                    </Link>
                   </div>
-                  <Link to={`/opportunities/${opp.id}`} className="shrink-0">
-                    <Button size="sm" variant="secondary">
-                      Apply Now
-                    </Button>
-                  </Link>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : canManage ? (
             <EmptyState

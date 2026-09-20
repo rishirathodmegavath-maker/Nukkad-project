@@ -69,6 +69,7 @@ import * as privacyService from '@/services/privacy.service'
 import { UploadSpinnerOverlay, type UploadPhase } from '@/components/ui/UploadButton'
 import { EditProfileModal } from '@/components/domain/EditProfileModal'
 import { UserConnectionsModal } from '@/components/domain/UserConnectionsModal'
+import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { toast } from '@/store/toast.store'
 import { cn } from '@/lib/utils'
 import type {
@@ -1348,9 +1349,12 @@ function IdeasSection({ userId }: { userId: string }) {
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <Badge tone="neutral" className="text-[10px]">
-                  {idea.stage}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-1">
+                  <Badge tone="neutral" className="text-[10px]">
+                    {idea.stage}
+                  </Badge>
+                  <ModerationBadge status={idea.moderationStatus} />
+                </div>
                 <span className="text-[11px] text-fg-muted">{idea.category}</span>
               </div>
               <p className="font-bold text-sm text-fg leading-snug">{idea.title}</p>
@@ -1395,7 +1399,10 @@ function StartupsSection({ userId }: { userId: string }) {
                 {startup.isRaising && <Badge tone="accent" dot className="text-[10px]">Raising</Badge>}
               </div>
               <p className="text-xs text-fg-muted line-clamp-2 mt-0.5">{startup.tagline}</p>
-              <Badge tone="neutral" className="text-[10px] mt-2">{startup.stage}</Badge>
+              <div className="flex flex-wrap items-center gap-1 mt-2">
+                <Badge tone="neutral" className="text-[10px]">{startup.stage}</Badge>
+                <ModerationBadge status={startup.moderationStatus} />
+              </div>
             </div>
           </Link>
         ))}
@@ -1430,9 +1437,12 @@ function OpportunitiesPostedSection({ userId }: { userId: string }) {
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <Badge tone="neutral" className="text-[10px]">
-                  {opp.type}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-1">
+                  <Badge tone="neutral" className="text-[10px]">
+                    {opp.type}
+                  </Badge>
+                  <ModerationBadge status={opp.moderationStatus} />
+                </div>
                 <span className="text-[11px] text-fg-muted">{opp.workMode}</span>
               </div>
               <p className="font-bold text-sm text-fg leading-snug">{opp.title}</p>

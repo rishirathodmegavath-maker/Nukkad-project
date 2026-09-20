@@ -129,10 +129,14 @@ export default function PostOpportunityPage() {
   const createMutation = useMutation({
     mutationFn: () => postOpportunity(currentInput()),
     onSuccess: (opp) => {
+      // The posting starts PENDING (admin review), so refresh the places the owner will look for it:
+      // "Posted by Me" and the linked startup's Open Positions.
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] })
+      if (opp.startupId) queryClient.invalidateQueries({ queryKey: ['startup', opp.startupId, 'opportunities'] })
       setPublished(opp)
       setStep('success')
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not publish this opportunity'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not submit this opportunity'),
   })
 
   const updateMutation = useMutation({
@@ -176,11 +180,13 @@ export default function PostOpportunityPage() {
         <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
           <CheckCircle2 className="size-7" />
         </div>
-        <h1 className="text-xl font-bold text-fg">Opportunity published</h1>
-        <p className="text-sm text-fg-muted">Your opportunity is now visible to people on Buildadda.</p>
+        <h1 className="text-xl font-bold text-fg">Submitted for review</h1>
+        <p className="text-sm text-fg-muted">
+          It’ll be public once an admin approves it. Until then only you can see it — track its status under Posted by Me.
+        </p>
         <div className="flex gap-3 mt-2">
-          <Button variant="secondary" onClick={() => navigate('/opportunities')}>
-            Back to Opportunities
+          <Button variant="secondary" onClick={() => navigate('/opportunities/posted')}>
+            Posted by Me
           </Button>
           <Button onClick={() => navigate(`/opportunities/${published.id}`)}>View Opportunity</Button>
         </div>
@@ -261,7 +267,7 @@ export default function PostOpportunityPage() {
             Back to edit
           </Button>
           <Button size="lg" isLoading={createMutation.isPending} onClick={() => createMutation.mutate()}>
-            Publish Opportunity
+            Submit for review
           </Button>
         </div>
       </div>

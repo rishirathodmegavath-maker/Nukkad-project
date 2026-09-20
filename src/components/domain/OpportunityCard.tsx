@@ -4,6 +4,7 @@ import type { Opportunity } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { MatchReasons } from '@/components/domain/MatchReasons'
+import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { formatRelativeTime } from '@/lib/utils'
 
 export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportunity; reasons?: string[] }) {
@@ -14,6 +15,7 @@ export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportu
           <div className="flex items-center gap-1.5">
             <Badge tone="neutral">{opportunity.type}</Badge>
             {opportunity.closed && <Badge tone="danger">Closed</Badge>}
+            <ModerationBadge status={opportunity.moderationStatus} />
           </div>
           <span className="text-xs text-fg-muted font-medium">{formatRelativeTime(opportunity.createdAt)}</span>
         </div>

@@ -4,6 +4,7 @@ import type { Idea } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { MatchReasons } from '@/components/domain/MatchReasons'
+import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { formatRelativeTime } from '@/lib/utils'
 
 const stageTone: Record<Idea['stage'], BadgeTone> = {
@@ -23,7 +24,10 @@ export function IdeaCard({ idea, reasons }: { idea: Idea; reasons?: string[] }) 
       <Link to={`/ideas/${idea.id}`} className="flex flex-col p-5 h-full min-w-0">
         {/* Header: Stage and Time */}
         <div className="flex items-center justify-between gap-2 mb-3">
-          <Badge tone={stageTone[idea.stage] ?? 'neutral'}>{idea.stage}</Badge>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge tone={stageTone[idea.stage] ?? 'neutral'}>{idea.stage}</Badge>
+            <ModerationBadge status={idea.moderationStatus} />
+          </div>
           <span className="text-xs text-fg-muted font-medium">
             {idea.createdAt ? formatRelativeTime(idea.createdAt) : 'Recently posted'}
           </span>
