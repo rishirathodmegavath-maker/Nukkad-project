@@ -103,6 +103,9 @@ const CONNECTION_REQUEST_TITLE = 'New connection request'
 function dropSupersededRequests(list: NukkadNotification[]): NukkadNotification[] {
   const seen = new Set<string>()
   return list.filter((n) => {
+    // Chat messages are not notifications any more (they show as a brief toast, and as unread
+    // conversations). Rows from before that change are hidden here too, whichever side is deployed first.
+    if (n.type === 'reply') return false
     if (n.type !== 'connection' || n.title !== CONNECTION_REQUEST_TITLE || !n.actorUserId) return true
     if (seen.has(n.actorUserId)) return false
     seen.add(n.actorUserId)
