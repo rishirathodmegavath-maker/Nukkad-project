@@ -178,6 +178,8 @@ function ImageCropModalInner({
           <ZoomIn className="size-4 text-fg-muted shrink-0" />
           <input
             type="range"
+            id="image-crop-zoom"
+            name="image-crop-zoom"
             min={1}
             max={3}
             step={0.01}

@@ -154,6 +154,8 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                 >
                   <input
                     type="checkbox"
+                    id={`interest-experience-${exp.id}`}
+                    name={`interest-experience-${exp.id}`}
                     checked={experienceIds.includes(exp.id)}
                     onChange={() => setExperienceIds((prev) => toggle(prev, exp.id))}
                     className="size-4 rounded border-border accent-brand-600"
@@ -178,6 +180,8 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                 >
                   <input
                     type="checkbox"
+                    id={`interest-project-${project.id}`}
+                    name={`interest-project-${project.id}`}
                     checked={projectIds.includes(project.id)}
                     onChange={() => setProjectIds((prev) => toggle(prev, project.id))}
                     className="size-4 rounded border-border accent-brand-600"

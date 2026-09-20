@@ -191,7 +191,7 @@ function ExperienceFormModal({
           {!isCurrent && <Input label="End date" type="month" value={endDate} onChange={(e) => setEndDate(e.target.value)} />}
         </div>
         <label className="flex items-center gap-2 text-sm text-fg cursor-pointer select-none">
-          <input type="checkbox" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} className="rounded accent-brand-500 size-4" />
+          <input type="checkbox" id="experience-current-role" name="experience-current-role" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} className="rounded accent-brand-500 size-4" />
           I currently work here
         </label>
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What were your key responsibilities and impact?" />
@@ -2529,8 +2529,8 @@ export default function PersonProfilePage() {
         </div>
       </div>
 
-      <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleAvatarChange} />
-      <input ref={coverInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleCoverChange} />
+      <input ref={fileInputRef} type="file" id="profile-avatar-upload" name="profile-avatar-upload" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleAvatarChange} />
+      <input ref={coverInputRef} type="file" id="profile-cover-upload" name="profile-cover-upload" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleCoverChange} />
       <ImageLightbox src={lightboxSrc} alt={user.name} onClose={() => setLightboxSrc(null)} />
 
       <ImageCropModal

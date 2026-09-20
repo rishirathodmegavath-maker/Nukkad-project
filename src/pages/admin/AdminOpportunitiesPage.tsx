@@ -82,6 +82,8 @@ export default function AdminOpportunitiesPage() {
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
           <input
             type="checkbox"
+            id="admin-opportunities-include-closed"
+            name="admin-opportunities-include-closed"
             checked={includeClosed}
             onChange={(e) => { setIncludeClosed(e.target.checked); setPage(0) }}
             className="size-3.5 rounded border-border accent-brand-600"
@@ -91,6 +93,8 @@ export default function AdminOpportunitiesPage() {
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
           <input
             type="checkbox"
+            id="admin-opportunities-include-removed"
+            name="admin-opportunities-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
             className="size-3.5 rounded border-border accent-brand-600"

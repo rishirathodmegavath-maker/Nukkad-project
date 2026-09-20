@@ -639,6 +639,8 @@ export default function ChapterDetailPage() {
       <input
         ref={coverInputRef}
         type="file"
+        id="chapter-cover-upload"
+        name="chapter-cover-upload"
         accept="image/png,image/jpeg,image/webp,image/gif"
         className="hidden"
         onChange={handleCoverChange}

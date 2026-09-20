@@ -119,6 +119,8 @@ export function ShareModal({ open, onClose, post }: ShareModalProps) {
     <Modal open={open} onClose={onClose} title="Share" size="md">
       <div className="flex flex-col gap-4">
         <input
+          id="share-modal-search"
+          name="share-modal-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search connections…"

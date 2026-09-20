@@ -155,6 +155,8 @@ function ApplyForm({
                 >
                   <input
                     type="checkbox"
+                    id={`apply-experience-${exp.id}`}
+                    name={`apply-experience-${exp.id}`}
                     checked={experienceIds.includes(exp.id)}
                     onChange={() => setExperienceIds((prev) => toggle(prev, exp.id))}
                     className="size-4 rounded border-border accent-brand-600"
@@ -179,6 +181,8 @@ function ApplyForm({
                 >
                   <input
                     type="checkbox"
+                    id={`apply-project-${project.id}`}
+                    name={`apply-project-${project.id}`}
                     checked={projectIds.includes(project.id)}
                     onChange={() => setProjectIds((prev) => toggle(prev, project.id))}
                     className="size-4 rounded border-border accent-brand-600"

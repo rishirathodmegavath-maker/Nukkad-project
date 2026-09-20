@@ -163,10 +163,15 @@ function NumberField({ label, value, max, onCommit }: { label: string; value: nu
     setText(rounded)
   }
 
+  // label is always one of the literal "R"/"G"/"B"/"H"/"S%"/"L%" call sites below, so a
+  // sanitized-label id is stable and unique across the six fields rendered on this panel.
+  const fieldId = `color-channel-${label.replace(/[^a-z0-9]/gi, '').toLowerCase()}`
   return (
     <label className="flex flex-col items-center gap-1 flex-1 min-w-0">
       <input
         type="number"
+        id={fieldId}
+        name={fieldId}
         min={0}
         max={max}
         value={text}
@@ -290,6 +295,8 @@ export function ColorPickerPanel() {
         <div className="flex-1 flex items-center gap-1.5">
           <input
             type="text"
+            id="custom-color-hex"
+            name="custom-color-hex"
             value={hexInput}
             onChange={(e) => handleHexInputChange(e.target.value)}
             onBlur={handleHexCommit}

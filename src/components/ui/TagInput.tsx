@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useId, useState, type KeyboardEvent } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +12,9 @@ interface TagInputProps {
 /** Type + Enter to add a tag, click × to remove — used for skills, project tech stacks, etc. */
 export function TagInput({ value, onChange, placeholder = 'Type and press Enter…', className }: TagInputProps) {
   const [draft, setDraft] = useState('')
+  // This can render more than once on the same form (skills + tech stack, etc.), so the id/name
+  // has to be generated per-instance, not a fixed string.
+  const fieldId = useId()
 
   function commit() {
     const trimmed = draft.trim()
@@ -52,6 +55,8 @@ export function TagInput({ value, onChange, placeholder = 'Type and press Enter�
         </span>
       ))}
       <input
+        id={fieldId}
+        name={fieldId}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}

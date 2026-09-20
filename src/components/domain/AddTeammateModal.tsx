@@ -51,6 +51,8 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
     <Modal open onClose={onClose} title="Add a teammate" description={`Directly add someone to “${startupName}”.`} size="md">
       <div className="flex flex-col gap-4">
         <input
+          id="add-teammate-search"
+          name="add-teammate-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search people by name…"

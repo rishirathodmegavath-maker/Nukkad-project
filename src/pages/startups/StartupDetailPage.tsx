@@ -830,6 +830,8 @@ export default function StartupDetailPage() {
           <input
             ref={logoInputRef}
             type="file"
+            id="startup-logo-upload"
+            name="startup-logo-upload"
             accept="image/png,image/jpeg,image/webp,image/gif"
             className="hidden"
             onChange={handleLogoChange}

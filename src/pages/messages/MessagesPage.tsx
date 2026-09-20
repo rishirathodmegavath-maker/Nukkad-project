@@ -296,6 +296,8 @@ function DirectDetailsPanel({
         <p className="text-xs font-semibold text-fg-muted">Nickname</p>
         <div className="flex gap-2">
           <input
+            id="conversation-nickname"
+            name="conversation-nickname"
             value={nicknameDraft}
             onChange={(e) => setNicknameDraft(e.target.value)}
             placeholder={otherUser.name}
@@ -606,6 +608,8 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
           <input
             ref={avatarInputRef}
             type="file"
+            id="group-avatar-upload"
+            name="group-avatar-upload"
             accept="image/*"
             className="hidden"
             onChange={(e) => {
@@ -617,6 +621,8 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
           {editingName ? (
             <div className="flex gap-2 w-full">
               <input
+                id="group-name"
+                name="group-name"
                 value={nameDraft}
                 onChange={(e) => setNameDraft(e.target.value)}
                 className="flex-1 min-w-0 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm outline-none focus:border-brand-500"
@@ -1405,6 +1411,8 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
             <form onSubmit={handleSend} className="flex items-center gap-2 px-4 py-3">
               <input
                 ref={composerInputRef}
+                id="message-composer"
+                name="message-composer"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Write a message…"
