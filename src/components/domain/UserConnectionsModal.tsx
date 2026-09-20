@@ -31,7 +31,7 @@ function ConnectionRow({
   const isSelf = currentUser?.id === user.id
 
   const connectMutation = useMutation({
-    mutationFn: () => toggleConnect(user.id),
+    mutationFn: () => toggleConnect(user.id, user.connectionStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-connections'] })
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })

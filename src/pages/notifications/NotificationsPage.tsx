@@ -23,6 +23,7 @@ import { useUser } from '@/hooks/useUser'
 import { toggleConnect, declineConnection } from '@/services/users.service'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { MessageAction } from '@/components/domain/MessageAction'
 import { Avatar } from '@/components/ui/Avatar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
@@ -92,25 +93,60 @@ const typeLink: Record<NotificationType, (relatedId?: string, title?: string) =>
   investor_activation: (id) => (id ? `/investors/${id}` : '/investors/activate'),
 }
 
+const CONNECTION_REQUEST_TITLE = 'New connection request'
+
+/**
+ * A "wants to connect" notification is an event, but what the person can do about it depends on the
+ * connection as it is now. A re-sent request leaves an older notification behind for the same
+ * person; only the newest one stands for the request that actually exists, so keep just that one.
+ */
+function dropSupersededRequests(list: NukkadNotification[]): NukkadNotification[] {
+  const seen = new Set<string>()
+  return list.filter((n) => {
+    if (n.type !== 'connection' || n.title !== CONNECTION_REQUEST_TITLE || !n.actorUserId) return true
+    if (seen.has(n.actorUserId)) return false
+    seen.add(n.actorUserId)
+    return true
+  })
+}
+
 function NotificationRow({ notif }: { notif: NukkadNotification }) {
   const { data: actor } = useUser(notif.actorUserId)
   const markRead = useMarkNotificationRead()
   const queryClient = useQueryClient()
   const Icon = typeIcon[notif.type]
   const link = typeLink[notif.type](notif.relatedId, notif.title)
-  const isPendingRequest = notif.type === 'connection' && actor?.connectionStatus === 'PENDING_INCOMING'
+
+  // Show the request as it stands now, not as it was when it arrived.
+  const isRequest = notif.type === 'connection' && notif.title === CONNECTION_REQUEST_TITLE
+  const status = actor?.connectionStatus
+  const isPendingRequest = isRequest && status === 'PENDING_INCOMING'
+  const isNowConnected = isRequest && status === 'CONNECTED'
+  const isNoLongerPending = isRequest && (status === 'NONE' || status === 'PENDING_OUTGOING')
+  const title = isNowConnected ? "You're now connected" : notif.title
+  const message = isNowConnected
+    ? `You and ${actor?.name} are connected.`
+    : isNoLongerPending
+    ? `${actor?.name}'s connection request is no longer pending.`
+    : notif.message
+
+  const refreshConnectionViews = () => {
+    for (const key of ['user', 'users', 'network', 'user-connections', 'notifications', 'currentUser']) {
+      queryClient.invalidateQueries({ queryKey: [key] })
+    }
+  }
 
   const acceptMutation = useMutation({
-    mutationFn: () => toggleConnect(notif.actorUserId!),
+    mutationFn: () => toggleConnect(notif.actorUserId!, 'PENDING_INCOMING'),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ['user', notif.actorUserId] })
+      refreshConnectionViews()
       toast.success(`You are now connected with ${updated.name}`)
     },
   })
   const declineMutation = useMutation({
     mutationFn: () => declineConnection(notif.actorUserId!),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ['user', notif.actorUserId] })
+      refreshConnectionViews()
       toast.info(`Declined ${updated.name}'s request`)
     },
   })
@@ -143,10 +179,16 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
       <div className="flex-1 min-w-0">
         <p className={cn('text-sm leading-snug', !notif.isRead ? 'font-bold text-fg' : 'font-semibold text-fg/90')}>
-          {notif.title}
+          {title}
         </p>
-        <p className="text-sm text-fg-muted mt-1 leading-relaxed">{notif.message}</p>
+        <p className="text-sm text-fg-muted mt-1 leading-relaxed">{message}</p>
         <p className="text-[11px] font-medium text-fg-muted/80 mt-1.5">{formatRelativeTime(notif.createdAt)}</p>
+
+        {isNowConnected && actor && (
+          <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+            <MessageAction userId={actor.id} />
+          </div>
+        )}
 
         {isPendingRequest && (
           <div className="flex items-center gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
@@ -191,7 +233,8 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState('all')
-  const { data: notifications, isLoading, isError, refetch } = useNotifications()
+  const { data: rawNotifications, isLoading, isError, refetch } = useNotifications()
+  const notifications = useMemo(() => (rawNotifications ? dropSupersededRequests(rawNotifications) : undefined), [rawNotifications])
   const markAllRead = useMarkAllNotificationsRead()
 
   const tabs = useMemo(() => {

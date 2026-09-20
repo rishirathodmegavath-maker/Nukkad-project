@@ -27,7 +27,7 @@ function LikerRow({ liker, onNavigate }: { liker: PostLiker; onNavigate: () => v
   const isSelf = currentUser?.id === liker.userId
 
   const connectMutation = useMutation({
-    mutationFn: () => toggleConnect(liker.userId),
+    mutationFn: () => toggleConnect(liker.userId, user?.connectionStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-connections'] })
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })

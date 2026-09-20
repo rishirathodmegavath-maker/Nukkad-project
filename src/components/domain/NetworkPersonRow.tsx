@@ -24,8 +24,9 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
     queryClient.invalidateQueries({ queryKey: ['currentUser'] })
   }
 
+  // Each list is one relationship, so the status the row was showing is known from its variant.
   const acceptMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, 'PENDING_INCOMING'),
     onSuccess: () => {
       invalidateAll()
       toast.success(`You're now connected with ${user.name}`)
@@ -41,7 +42,7 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
   })
 
   const cancelMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, 'PENDING_OUTGOING'),
     onSuccess: () => {
       invalidateAll()
       toast.info(`Cancelled your request to ${user.name}`)
@@ -49,7 +50,7 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
   })
 
   const removeMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, 'CONNECTED'),
     onSuccess: () => {
       invalidateAll()
       toast.info(`Removed ${user.name} from your connections`)

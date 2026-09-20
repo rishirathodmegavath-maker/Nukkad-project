@@ -2003,7 +2003,7 @@ export default function PersonProfilePage() {
   })
 
   const connectMutation = useMutation({
-    mutationFn: () => toggleConnect(id!),
+    mutationFn: () => toggleConnect(id!, user?.connectionStatus),
     onSuccess: (updated) => {
       invalidate()
       const messages: Record<string, string> = {

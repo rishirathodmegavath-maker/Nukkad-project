@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { UserPlus, UserCheck, Clock, X } from 'lucide-react'
 import type { ConnectionStatus } from '@/types'
 import { Button } from '@/components/ui/Button'
+import { MessageAction } from '@/components/domain/MessageAction'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import * as usersService from '@/services/users.service'
 import { toast } from '@/store/toast.store'
@@ -31,7 +32,7 @@ export function ConnectAction({ user, size = 'sm' }: ConnectActionProps) {
   }
 
   const connectMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, status),
     onSuccess: (updated) => {
       setStatus(updated.connectionStatus)
       invalidate()
@@ -79,23 +80,18 @@ export function ConnectAction({ user, size = 'sm' }: ConnectActionProps) {
     )
   }
 
+  // Already connected: offer a message. Removing the connection lives on their profile.
+  if (status === 'CONNECTED') return <MessageAction userId={user.id} size={size} />
+
   return (
     <Button
       size={size}
       variant={status === 'NONE' || !status ? 'primary' : 'secondary'}
       isLoading={connectMutation.isPending}
-      leftIcon={
-        status === 'CONNECTED' ? (
-          <UserCheck className="size-3.5" />
-        ) : status === 'PENDING_OUTGOING' ? (
-          <Clock className="size-3.5" />
-        ) : (
-          <UserPlus className="size-3.5" />
-        )
-      }
+      leftIcon={status === 'PENDING_OUTGOING' ? <Clock className="size-3.5" /> : <UserPlus className="size-3.5" />}
       onClick={() => connectMutation.mutate()}
     >
-      {status === 'CONNECTED' ? 'Connected' : status === 'PENDING_OUTGOING' ? 'Requested' : 'Connect'}
+      {status === 'PENDING_OUTGOING' ? 'Requested' : 'Connect'}
     </Button>
   )
 }
