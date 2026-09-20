@@ -1,6 +1,8 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { getStoredSession } from '@/lib/session'
 import AdminLoginPage from '@/pages/admin/AdminLoginPage'
+import AdminForgotPasswordPage from '@/pages/admin/AdminForgotPasswordPage'
+import AdminResetPasswordPage from '@/pages/admin/AdminResetPasswordPage'
 import { AdminPortalShell } from '@/pages/admin/AdminPortalShell'
 import AdminLayout from '@/pages/admin/AdminLayout'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
@@ -29,6 +31,11 @@ export function AdminPortalRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<AdminLoginPage />} />
+      {/* Public and outside the guard on purpose: the person using them is locked out. The reset page
+          must also work in a browser that still holds an old session (the emailed link can be opened
+          anywhere), and confirming a reset ends every session anyway. */}
+      <Route path="/forgot-password" element={<AdminForgotPasswordPage />} />
+      <Route path="/reset-password" element={<AdminResetPasswordPage />} />
       <Route element={<AdminPortalGuard />}>
         <Route element={<AdminPortalShell />}>
           <Route path="/admin" element={<AdminLayout />}>

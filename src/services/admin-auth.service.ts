@@ -27,6 +27,31 @@ export async function adminLogin(email: string, password: string): Promise<Sessi
   return session
 }
 
+/** Whether the server has emailed password reset switched on (it stays off until a mail provider is
+ *  set up). Public — the sign-in screens ask before anyone is signed in. */
+export async function getAdminPasswordResetEnabled(): Promise<boolean> {
+  const status = await apiClient.get<{ enabled: boolean }>('/admin/auth/password-reset/status')
+  return status.enabled === true
+}
+
+/** Emails the admin a one-time reset link. The server answers identically whether or not the address
+ *  belongs to an administrator, so the caller must never claim an email was actually sent. */
+export async function requestAdminPasswordReset(email: string): Promise<void> {
+  await apiClient.post('/admin/auth/password-reset/request', { email })
+}
+
+export async function confirmAdminPasswordReset(token: string, newPassword: string): Promise<void> {
+  await apiClient.post('/admin/auth/password-reset/confirm', { token, newPassword })
+}
+
+/** Changes the signed-in admin's password. The server ends every session — including this one — so the
+ *  local session is cleared too and the caller sends the admin back to sign in. */
+export async function changeAdminPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.post('/admin/auth/change-password', { currentPassword, newPassword })
+  clearSession()
+  queryClient.clear()
+}
+
 export async function adminLogout(): Promise<void> {
   const session = getStoredSession()
   try {
