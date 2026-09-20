@@ -1,4 +1,4 @@
-export type PostType = 'text' | 'startup_update' | 'idea' | 'opportunity' | 'event'
+export type PostType = 'text' | 'startup_update' | 'idea' | 'opportunity' | 'event' | 'discussion' | 'build_update' | 'question' | 'milestone'
 
 export type AttachmentKind = 'image' | 'video' | 'pdf'
 

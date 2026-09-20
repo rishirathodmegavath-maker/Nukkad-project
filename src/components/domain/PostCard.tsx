@@ -596,7 +596,15 @@ export function PostCard({ post }: { post: Post }) {
           ) : (
             <Skeleton className="h-4 w-28" />
           )}
-          <p className="text-[11px] font-medium text-fg-muted mt-0.5">{formatRelativeTime(post.createdAt)}</p>
+          <p className="text-[11px] font-medium text-fg-muted mt-0.5 flex items-center gap-2">
+            {formatRelativeTime(post.createdAt)}
+            {meta && !post.relatedId && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-surface-sunken px-1.5 py-0.5 text-[11px] font-semibold text-fg-secondary">
+                <meta.icon className="size-3" />
+                {meta.label}
+              </span>
+            )}
+          </p>
         </div>
         <DropdownMenu
           trigger={

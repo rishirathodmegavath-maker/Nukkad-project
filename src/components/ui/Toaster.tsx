@@ -56,7 +56,7 @@ export function Toaster() {
     <>
       <MessageToastBanner />
       {toasts.length > 0 && (
-        <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 w-full max-w-sm">
+        <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col gap-2 sm:left-auto sm:max-w-sm lg:bottom-5 lg:right-5">
           {toasts.map((t) => {
             const { icon: Icon, classes } = toneStyles[t.tone]
             return (

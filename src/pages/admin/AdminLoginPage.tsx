@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2.5 mb-8 justify-center">
           <Logo size="md" />
-          <span className="text-xl font-bold tracking-tight text-fg">Buildadda</span>
+          <span className="text-xl font-bold tracking-tight text-fg">BuildAdda</span>
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-surface p-6 shadow-sm">

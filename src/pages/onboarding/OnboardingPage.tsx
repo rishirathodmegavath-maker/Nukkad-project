@@ -59,7 +59,7 @@ export default function OnboardingPage() {
     },
     onSuccess: () => {
       markOnboardingComplete()
-      toast.success('Profile set up — welcome to Buildadda!')
+      toast.success('Profile set up — welcome to BuildAdda!')
       navigate('/')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save profile setup'),
@@ -84,7 +84,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         <div className="flex items-center gap-2 justify-center mb-8">
           <Logo />
-          <span className="text-lg font-bold tracking-tight text-fg">Buildadda</span>
+          <span className="text-lg font-bold tracking-tight text-fg">BuildAdda</span>
         </div>
 
         <div className="flex items-center gap-2 mb-8">
@@ -99,7 +99,7 @@ export default function OnboardingPage() {
               <Sparkles className="size-7" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-fg">Welcome to Buildadda{firstName ? `, ${firstName}` : ''}!</h1>
+              <h1 className="text-xl font-bold text-fg">Welcome to BuildAdda{firstName ? `, ${firstName}` : ''}!</h1>
               <p className="text-sm text-fg-muted mt-1.5 max-w-sm">
                 Let's set up your profile so we can connect you with the right people, ideas and opportunities.
               </p>
@@ -182,7 +182,7 @@ export default function OnboardingPage() {
             </div>
 
             <Textarea
-              label="Your goals on Buildadda"
+              label="Your goals on BuildAdda"
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
               placeholder="What are you hoping to build or find?"

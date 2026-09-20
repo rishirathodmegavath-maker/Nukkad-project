@@ -97,7 +97,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Log in to keep building on Buildadda."
+      subtitle="Log in to keep building on BuildAdda."
       footer={
         <>
           New here?{' '}
@@ -156,7 +156,7 @@ export default function LoginPage() {
             <p>{googleNotice.message}</p>
             {googleNotice.action === 'signup' && (
               <Link to="/signup" className="inline-block mt-1.5">
-                <Button size="sm">Create Buildadda account</Button>
+                <Button size="sm">Create BuildAdda account</Button>
               </Link>
             )}
           </div>

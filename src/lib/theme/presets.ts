@@ -10,7 +10,7 @@ export interface ThemePresetDef {
 // Every base colour below is pre-verified (>= 4.5:1 white-text contrast, WCAG AA) so no preset
 // ever needs runtime auto-correction — see the contrast check performed before picking these.
 export const THEME_PRESETS: ThemePresetDef[] = [
-  { id: 'NUKKAD_INDIGO', label: 'Buildadda Indigo', baseHex: '#4f46e5' },
+  { id: 'NUKKAD_INDIGO', label: 'BuildAdda Indigo', baseHex: '#4f46e5' },
   { id: 'OCEAN_BLUE', label: 'Ocean Blue', baseHex: '#2563eb' },
   { id: 'TEAL', label: 'Teal', baseHex: '#0f766e' },
   { id: 'EMERALD', label: 'Emerald', baseHex: '#047857' },

@@ -166,7 +166,7 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
         <div>
           <p className="text-sm font-medium text-fg mb-1.5">Keywords</p>
           <TagInput value={keywordTags} onChange={setKeywordTags} placeholder="Add a keyword and press Enter…" />
-          <p className="text-xs text-fg-muted mt-1">Helps people find you when searching Buildadda — e.g. "fintech", "B2B", "climate".</p>
+          <p className="text-xs text-fg-muted mt-1">Helps people find you when searching BuildAdda — e.g. "fintech", "B2B", "climate".</p>
         </div>
 
         <SectionHeading title="Visibility" />
@@ -181,7 +181,7 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
             />
             <span>
               <span className="font-medium">Public</span>
-              <span className="block text-xs text-fg-muted">Anyone, including people without a Buildadda account, can view this startup.</span>
+              <span className="block text-xs text-fg-muted">Anyone, including people without a BuildAdda account, can view this startup.</span>
             </span>
           </label>
           <label className="flex items-start gap-2.5 text-sm text-fg cursor-pointer">
@@ -193,8 +193,8 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
               className="mt-0.5 size-4 accent-brand-600"
             />
             <span>
-              <span className="font-medium">Buildadda Members</span>
-              <span className="block text-xs text-fg-muted">Only people signed in to Buildadda can view this startup.</span>
+              <span className="font-medium">BuildAdda Members</span>
+              <span className="block text-xs text-fg-muted">Only people signed in to BuildAdda can view this startup.</span>
             </span>
           </label>
         </div>

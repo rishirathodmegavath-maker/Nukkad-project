@@ -5,7 +5,8 @@ import { Send, Image, FileText, X, Video, Bookmark, Sparkles, Plus, FileType2 } 
 import { listFeed, listSavedPosts, createPost, uploadAttachment } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PostCard } from '@/components/domain/PostCard'
-import { typeMeta } from '@/lib/postTypeMeta'
+import { typeMeta, memberPostKinds } from '@/lib/postTypeMeta'
+import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
 import { PillTabs } from '@/components/ui/Tabs'
@@ -147,6 +148,16 @@ const SAVED_TYPE_FILTERS: { key: string; label: string }[] = [
   { key: 'idea', label: 'Ideas' },
   { key: 'opportunity', label: 'Opportunities' },
   { key: 'event', label: 'Events' },
+  { key: 'discussion', label: 'Discussions' },
+  { key: 'build_update', label: 'Build updates' },
+  { key: 'question', label: 'Questions' },
+  { key: 'milestone', label: 'Milestones' },
+]
+
+/** Filter chips on the main feed: everything, or one kind of member post. */
+const FEED_KIND_FILTERS: { key: string; label: string }[] = [
+  { key: 'all', label: 'All' },
+  ...memberPostKinds.map((k) => ({ key: k.key, label: k.label === 'Update' ? 'Updates' : `${k.label}s` })),
 ]
 
 /** Dedicated saved-posts view: queries the user's saves directly (server-side paginated, sorted and
@@ -228,26 +239,29 @@ export default function FeedPage() {
   const setTab = (next: string) => setSearchParams(next === 'saved' ? { tab: 'saved' } : {})
   const [isComposerOpen, setIsComposerOpen] = useState(false)
   const [content, setContent] = useState('')
+  const [postType, setPostType] = useState<PostType>('text')
+  const [kindFilter, setKindFilter] = useState('all')
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [postPhase, setPostPhase] = useState<UploadPhase>('idle')
   const mediaInputRef = useRef<HTMLInputElement>(null)
   const docInputRef = useRef<HTMLInputElement>(null)
 
   const { data: posts, isLoading, isError, refetch } = useQuery({
-    queryKey: ['feed'],
-    queryFn: () => listFeed(),
+    queryKey: ['feed', kindFilter],
+    queryFn: () => listFeed(undefined, undefined, kindFilter === 'all' ? undefined : (kindFilter as PostType)),
     enabled: tab === 'all',
   })
 
   const postMutation = useMutation({
     mutationFn: async () => {
       const attachments = await Promise.all(pendingFiles.map((p) => uploadAttachment(p.file)))
-      return createPost(content.trim(), 'text', undefined, attachments)
+      return createPost(content.trim(), postType, undefined, attachments)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
       pendingFiles.forEach((p) => p.previewUrl && URL.revokeObjectURL(p.previewUrl))
       setContent('')
+      setPostType('text')
       setPendingFiles([])
       setIsComposerOpen(false)
       setPostPhase('done')
@@ -322,12 +336,33 @@ export default function FeedPage() {
         </button>
       )}
 
+      {tab === 'all' && <PillTabs items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} className="self-start" />}
+
       <Modal
         open={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
         title="Create post"
       >
         <div className="flex flex-col gap-3">
+          <div role="radiogroup" aria-label="Post type" className="flex flex-wrap gap-1.5">
+            {memberPostKinds.map((kind) => (
+              <button
+                key={kind.key}
+                type="button"
+                role="radio"
+                aria-checked={postType === kind.key}
+                onClick={() => setPostType(kind.key)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer',
+                  postType === kind.key
+                    ? 'border-brand-600 bg-brand-600 text-white'
+                    : 'border-border/80 bg-surface text-fg-secondary hover:bg-surface-hover hover:text-fg',
+                )}
+              >
+                {kind.label}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-3">
             <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
             <div className="flex-1 flex flex-col gap-2 min-w-0">
@@ -337,7 +372,7 @@ export default function FeedPage() {
                 autoFocus
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Share an update, ask for feedback, or celebrate a milestone…"
+                placeholder={memberPostKinds.find((k) => k.key === postType)?.placeholder}
                 rows={4}
                 className="w-full resize-none rounded-xl border border-border/80 bg-surface-sunken/40 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:bg-surface focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted leading-relaxed"
               />
@@ -466,8 +501,12 @@ export default function FeedPage() {
       ) : (
         <EmptyState
           icon={<Sparkles className="size-6" />}
-          title="Your feed is waiting for your voice"
-          description="Be the first to share an update, showcase a project, or ask a question to the community."
+          title={kindFilter === 'all' ? 'Your feed is waiting for your voice' : `No ${memberPostKinds.find((k) => k.key === kindFilter)?.emptyHint ?? 'posts'} yet`}
+          description={
+            kindFilter === 'all'
+              ? 'Be the first to share an update, showcase a project, or ask a question to the community.'
+              : 'Be the first — pick this type when you write a post.'
+          }
         />
       )}
     </div>

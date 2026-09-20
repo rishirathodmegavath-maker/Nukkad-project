@@ -1,12 +1,12 @@
 /* ==========================================================================
    NUKKAD DESIGN TOKENS
    Original Human-Crafted Visual System:
-   Authentic Buildadda Indigo brand, Saffron/Amber accent, Warm Slate Neutrals,
+   Authentic BuildAdda Indigo brand, Saffron/Amber accent, Warm Slate Neutrals,
    and balanced modern elevation.
    ========================================================================== */
 
 :root {
-  /* ---- Brand (Authentic Buildadda Indigo) ---- */
+  /* ---- Brand (Authentic BuildAdda Indigo) ---- */
   --color-brand-50: #eef2ff;
   --color-brand-100: #e0e7ff;
   --color-brand-200: #c7d2fe;

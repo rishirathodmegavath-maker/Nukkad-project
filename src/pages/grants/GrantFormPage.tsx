@@ -127,7 +127,7 @@ export default function GrantFormPage() {
         description={
           isEdit
             ? 'Update the details below.'
-            : 'Share a government scheme, accelerator program, or funding opportunity with the Buildadda community.'
+            : 'Share a government scheme, accelerator program, or funding opportunity with the BuildAdda community.'
         }
       />
       <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">

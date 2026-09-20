@@ -538,7 +538,7 @@ function ProjectFormModal({
   return (
     <Modal open={open} onClose={onClose} title={initial ? 'Edit project' : 'Add project'} size="md">
       <div className="flex flex-col gap-4">
-        <Input label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Buildadda Matching Engine" />
+        <Input label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. BuildAdda Matching Engine" />
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What does this project do and what was your role?" />
         <div>
           <p className="text-sm font-medium text-fg mb-1.5">Technologies</p>
@@ -1053,7 +1053,7 @@ function PublicationFormModal({
   return (
     <Modal open={open} onClose={onClose} title={initial ? 'Edit publication' : 'Add publication'} size="md">
       <div className="flex flex-col gap-4">
-        <Input label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Scaling real-time systems at Buildadda" />
+        <Input label="Title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Scaling real-time systems at BuildAdda" />
         <div className="grid sm:grid-cols-2 gap-4">
           <Input label="Publisher / Conference" value={publisher} onChange={(e) => setPublisher(e.target.value)} placeholder="e.g. IEEE, Medium" />
           <Input label="Publish date" type="date" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} />
@@ -1201,7 +1201,7 @@ function WriteRecommendationModal({
   return (
     <Modal open={open} onClose={onClose} title={`Write a recommendation for ${subjectName}`} size="md">
       <div className="flex flex-col gap-4">
-        <Input label="Relationship" value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="e.g. Worked together at Buildadda" />
+        <Input label="Relationship" value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="e.g. Worked together at BuildAdda" />
         <Textarea label="Recommendation" value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder={`What was it like collaborating with ${subjectName}?`} />
         <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
           <Button variant="ghost" onClick={onClose}>
@@ -1816,7 +1816,7 @@ function ProfileCompletenessModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Complete your profile" description="Strengthen your credibility across the Buildadda network." size="md">
+    <Modal open={open} onClose={onClose} title="Complete your profile" description="Strengthen your credibility across the BuildAdda network." size="md">
       <div className="flex flex-col divide-y divide-border/60">
         {items.map((item) =>
           item.done ? (
@@ -2446,7 +2446,7 @@ export default function PersonProfilePage() {
                   </p>
                   {user.goals && (
                     <div className="mt-4 pt-4 border-t border-border/60">
-                      <h3 className="font-bold text-xs uppercase tracking-wider text-fg-muted mb-1.5">Goals on Buildadda</h3>
+                      <h3 className="font-bold text-xs uppercase tracking-wider text-fg-muted mb-1.5">Goals on BuildAdda</h3>
                       <p className="text-sm text-fg-secondary leading-relaxed">{user.goals}</p>
                     </div>
                   )}

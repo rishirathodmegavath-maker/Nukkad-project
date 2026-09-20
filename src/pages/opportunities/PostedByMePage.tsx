@@ -49,7 +49,7 @@ export default function PostedByMePage() {
         <EmptyState
           icon={<Briefcase className="size-5" />}
           title="You haven't posted any opportunities"
-          description="Post a job, internship, or founding role to reach the Buildadda community."
+          description="Post a job, internship, or founding role to reach the BuildAdda community."
           action={
             <Link to="/opportunities/new">
               <Button size="sm">Post an opportunity</Button>

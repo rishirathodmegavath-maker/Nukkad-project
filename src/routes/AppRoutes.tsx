@@ -118,6 +118,11 @@ export function AppRoutes() {
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/resources/:id" element={<ResourceDetailPage />} />
 
+          {/* Programs are curated on the Startup Programs shelf of the Resources library. */}
+          <Route path="/programs" element={<Navigate to="/resources?category=programs" replace />} />
+          <Route path="/spark" element={<Navigate to="/resources?category=programs&q=spark" replace />} />
+          <Route path="/ignite" element={<Navigate to="/resources?category=programs&q=ignite" replace />} />
+
           <Route path="/grants" element={<GrantsListPage />} />
           <Route path="/grants/new" element={<GrantFormPage />} />
           <Route path="/grants/:id/edit" element={<GrantFormPage />} />

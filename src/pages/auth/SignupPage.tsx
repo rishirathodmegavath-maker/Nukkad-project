@@ -93,7 +93,7 @@ export default function SignupPage() {
           <CheckCircle2 className="size-10 text-success-500" />
           <p className="text-sm text-fg">
             We've sent a verification link to <span className="font-medium">{registeredEmail}</span>. Verify your
-            email to activate your Buildadda account.
+            email to activate your BuildAdda account.
           </p>
           <Button variant="secondary" size="sm" isLoading={isResending} onClick={handleResend}>
             Resend verification email
@@ -105,11 +105,11 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
-      title="Create your Buildadda account"
+      title="Create your BuildAdda account"
       subtitle="Join builders discovering ideas, teams and opportunities."
       footer={
         <>
-          Already on Buildadda?{' '}
+          Already on BuildAdda?{' '}
           <Link to="/login" className="font-medium text-brand-600 hover:text-brand-700">
             Log in
           </Link>
@@ -172,7 +172,7 @@ export default function SignupPage() {
           Create account
         </Button>
         <p className="text-xs text-fg-muted text-center">
-          By continuing you agree to Buildadda's Terms and Privacy Policy.
+          By continuing you agree to BuildAdda's Terms and Privacy Policy.
         </p>
       </form>
     </AuthLayout>

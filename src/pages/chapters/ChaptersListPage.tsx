@@ -58,7 +58,7 @@ export default function ChaptersListPage() {
     <div>
       <PageHeader
         title="Chapters"
-        description="Find your local Buildadda community — meetups, chapter resources and leadership."
+        description="Find your local BuildAdda community — meetups, chapter resources and leadership."
         action={
           <Link to="/chapters/new">
             <Button leftIcon={<Plus className="size-4" />}>Create a chapter</Button>

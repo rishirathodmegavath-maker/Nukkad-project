@@ -16,5 +16,5 @@ interface LogoProps {
 /** Brand mark. The artwork is already a self-contained rounded square, so it is shown as-is — no chip,
  *  stroke, shadow or tint behind it (per the logo pack's usage rules). */
 export function Logo({ size = 'sm', className }: LogoProps) {
-  return <img src={logoUrl} alt="Buildadda" className={cn('shrink-0', sizeClasses[size], className)} />
+  return <img src={logoUrl} alt="BuildAdda" className={cn('shrink-0', sizeClasses[size], className)} />
 }

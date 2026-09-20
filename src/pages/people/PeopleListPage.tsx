@@ -112,7 +112,7 @@ export default function PeopleListPage() {
 
   return (
     <div>
-      <PageHeader title="Networks" description="Discover builders, designers, operators and investors — and grow your network on Buildadda." />
+      <PageHeader title="Networks" description="Discover builders, designers, operators and investors — and grow your network on BuildAdda." />
 
       <Tabs
         items={[
