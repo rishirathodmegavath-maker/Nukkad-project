@@ -1,35 +1,77 @@
-import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { FileText, Link2, Video, StickyNote, LayoutTemplate, ExternalLink, Bookmark, Pencil, Trash2, ChevronRight } from 'lucide-react'
-import { getResource, toggleSaveResource, deleteResource } from '@/services/resources.service'
-import { useUser } from '@/hooks/useUser'
+import { ExternalLink, Bookmark, Download, ChevronRight } from 'lucide-react'
+import { getResource, listResources, toggleSaveResource, downloadResource } from '@/services/resources.service'
+import { ResourceCard } from '@/components/domain/ResourceCard'
+import { ResourceThumbnail } from '@/components/domain/ResourceThumbnail'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
-import { Modal } from '@/components/ui/Modal'
-import { ResourceEditModal } from '@/components/domain/ResourceEditModal'
-import { cn, resolveResourceHref } from '@/lib/utils'
+import { RESOURCE_TYPES, categoryMeta, fileExtension, formatDuration, hostedKind, youtubeId } from '@/lib/resource-catalog'
+import { cn, formatRelativeTime, resolveResourceHref } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { Resource } from '@/types'
 
-const typeIcon: Record<Resource['type'], typeof FileText> = {
-  Document: FileText,
-  Link: Link2,
-  Video: Video,
-  Note: StickyNote,
-  Template: LayoutTemplate,
+/** The big picture at the top: a playable video where one exists, otherwise the resource's image. */
+function ResourceMedia({ resource }: { resource: Resource }) {
+  const youtube = youtubeId(resource.url)
+  const kind = hostedKind(resource)
+
+  if (youtube) {
+    return (
+      <div className="aspect-video overflow-hidden rounded-2xl border border-border/80 bg-black shadow-xs">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtube}`}
+          title={resource.title}
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+          loading="lazy"
+          className="size-full border-0"
+        />
+      </div>
+    )
+  }
+  if (kind === 'video' && resource.previewable) {
+    return (
+      <video
+        controls
+        preload="metadata"
+        poster={resource.thumbnailUrl}
+        src={resource.url}
+        className="aspect-video w-full rounded-2xl border border-border/80 bg-black shadow-xs"
+      >
+        Your browser can't play this video — use Download instead.
+      </video>
+    )
+  }
+  if (kind === 'image' && !resource.thumbnailUrl) {
+    return <img src={resource.url} alt={resource.title} className="max-h-[32rem] w-full rounded-2xl border border-border/80 bg-surface-sunken object-contain shadow-xs" />
+  }
+  return <ResourceThumbnail resource={resource} className="aspect-video rounded-2xl border border-border/80 shadow-xs" />
 }
 
+function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5 text-sm">
+      <dt className="shrink-0 text-fg-muted">{label}</dt>
+      <dd className="min-w-0 text-right font-medium text-fg">{children}</dd>
+    </div>
+  )
+}
+
+/**
+ * Members can open, download and save a resource — never edit or delete it (the library is curated by
+ * admins). "Open" shows a hosted file in the browser without downloading it (PDF, image, video, text);
+ * "Download" saves it to the device. Files a browser can't display (Word, Excel, ZIP, ...) only get
+ * Download, and a link resource only gets an "open the link" button.
+ */
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [editOpen, setEditOpen] = useState(false)
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   const { data: resource, isLoading, isError, refetch } = useQuery({
     queryKey: ['resource', id],
@@ -37,7 +79,12 @@ export default function ResourceDetailPage() {
     enabled: !!id,
   })
 
-  const { data: uploader } = useUser(resource?.uploaderUserId)
+  const category = resource?.category
+  const { data: more } = useQuery({
+    queryKey: ['resources', 'more-in', category],
+    queryFn: () => listResources({ category, size: 4 }),
+    enabled: !!category,
+  })
 
   const saveMutation = useMutation({
     mutationFn: () => toggleSaveResource(id!),
@@ -49,24 +96,16 @@ export default function ResourceDetailPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteResource(id!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['resources'] })
-      if (resource?.chapterId) queryClient.invalidateQueries({ queryKey: ['chapter', resource.chapterId] })
-      toast.info('Resource deleted')
-      navigate(resource?.chapterId ? `/chapters/${resource.chapterId}` : '/resources')
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Could not delete resource')
-      setConfirmDeleteOpen(false)
-    },
+  const downloadMutation = useMutation({
+    mutationFn: () => downloadResource(resource!),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not download this file'),
   })
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="aspect-video w-full max-w-3xl rounded-2xl" />
+        <Skeleton className="h-8 w-2/3" />
       </div>
     )
   }
@@ -75,60 +114,57 @@ export default function ResourceDetailPage() {
     return <ErrorState title="Couldn’t load this resource" onRetry={refetch} />
   }
 
-  const Icon = typeIcon[resource.type]
+  const type = RESOURCE_TYPES[resource.type] ?? RESOURCE_TYPES.Link
+  const TypeIcon = type.icon
+  const shelf = categoryMeta(resource.category)
   const resolved = resolveResourceHref(resource.url)
+  const isFile = !!resource.fileName
+  const duration = formatDuration(resource.durationMinutes)
+  const related = (more ?? []).filter((r) => r.id !== resource.id).slice(0, 3)
+  const linkLabel = youtubeId(resource.url) ? 'Watch on YouTube' : type.action
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-      {/* Breadcrumb Bar */}
-      <div className="flex items-center gap-2 text-xs font-medium text-fg-muted">
-        <Link to="/resources" className="hover:text-fg transition-colors">
+    <div className="flex flex-col gap-8">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-medium text-fg-muted">
+        <Link to="/resources" className="transition-colors hover:text-fg">
           Resources
         </Link>
-        <ChevronRight className="size-3.5" />
-        <span className="text-fg truncate max-w-sm">{resource.title}</span>
-      </div>
+        {shelf && (
+          <>
+            <ChevronRight className="size-3.5 shrink-0" />
+            <Link to={`/resources?category=${shelf.key}`} className="transition-colors hover:text-fg">
+              {shelf.label}
+            </Link>
+          </>
+        )}
+        <ChevronRight className="size-3.5 shrink-0" />
+        <span className="max-w-xs truncate text-fg">{resource.title}</span>
+      </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div className="flex items-center gap-3">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">
-                  <Icon className="size-5" />
-                </span>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-fg tracking-tight leading-snug">{resource.title}</h1>
-                  <Badge tone="neutral" className="mt-1">{resource.type}</Badge>
-                </div>
-              </div>
-              {resource.canManage && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="secondary" size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditOpen(true)}>
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger-subtle"
-                    size="sm"
-                    leftIcon={<Trash2 className="size-3.5" />}
-                    onClick={() => setConfirmDeleteOpen(true)}
-                  >
-                    Delete
-                  </Button>
-                </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex min-w-0 flex-col gap-5">
+          <ResourceMedia resource={resource} />
+
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-surface-sunken px-2 py-0.5 text-xs font-medium leading-none text-fg-secondary">
+                <TypeIcon className="size-3" />
+                {resource.type}
+              </span>
+              {shelf && (
+                <Link to={`/resources?category=${shelf.key}`}>
+                  <Badge tone="brand">{shelf.label}</Badge>
+                </Link>
               )}
+              {resource.featured && <Badge tone="accent">Featured</Badge>}
             </div>
-
-            {resource.chapterName && (
-              <Link to={`/chapters/${resource.chapterId}`} className="text-sm font-semibold text-fg hover:underline mb-2 inline-block">
-                Chapter: {resource.chapterName}
-              </Link>
+            <h1 className="text-2xl font-black leading-snug tracking-tight text-fg sm:text-3xl">{resource.title}</h1>
+            {resource.provider && <p className="mt-1 text-sm font-medium text-fg-muted">{resource.provider}</p>}
+            {resource.description && (
+              <p className="mt-4 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-fg-secondary sm:text-base">{resource.description}</p>
             )}
-
-            <p className="text-sm sm:text-base text-fg-secondary leading-relaxed mt-3 whitespace-pre-line">{resource.description}</p>
-
             {resource.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-5">
+              <div className="mt-5 flex flex-wrap gap-1.5">
                 {resource.tags.map((tag) => (
                   <Badge key={tag} tone="neutral">
                     {tag}
@@ -136,70 +172,98 @@ export default function ResourceDetailPage() {
                 ))}
               </div>
             )}
+          </div>
 
-            <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border/60">
-              {!resolved.href ? (
-                <Button leftIcon={<ExternalLink className="size-4" />} disabled>
-                  No destination set
+          <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-5">
+            {isFile ? (
+              <>
+                {resource.previewable && (
+                  <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                    <Button leftIcon={<ExternalLink className="size-4" />}>Open</Button>
+                  </a>
+                )}
+                <Button
+                  variant={resource.previewable ? 'secondary' : undefined}
+                  isLoading={downloadMutation.isPending}
+                  leftIcon={<Download className="size-4" />}
+                  onClick={() => downloadMutation.mutate()}
+                >
+                  Download
                 </Button>
-              ) : resolved.external ? (
-                <a href={resolved.href} target="_blank" rel="noopener noreferrer">
-                  <Button leftIcon={<ExternalLink className="size-4" />}>Open resource</Button>
-                </a>
-              ) : (
-                <Link to={resolved.href}>
-                  <Button leftIcon={<ExternalLink className="size-4" />}>Open resource</Button>
-                </Link>
-              )}
-              <Button
-                variant="secondary"
-                isLoading={saveMutation.isPending}
-                leftIcon={<Bookmark className={cn('size-4', resource.isSaved && 'fill-current text-amber-500')} />}
-                onClick={() => saveMutation.mutate()}
-              >
-                {resource.isSaved ? 'Saved' : 'Save'}
+              </>
+            ) : !resolved.href ? (
+              <Button leftIcon={<ExternalLink className="size-4" />} disabled>
+                No destination set
               </Button>
-            </div>
-          </Card>
-        </div>
-
-        <div className="flex flex-col gap-6">
-          {uploader && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
-              <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Shared by</h2>
-              <Link to={`/people/${uploader.id}`} className="flex items-center gap-2.5 group">
-                <Avatar src={uploader.avatarUrl} name={uploader.name} size="md" />
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-fg group-hover:underline truncate">{uploader.name}</p>
-                  <p className="text-xs text-fg-muted truncate">{uploader.headline}</p>
-                </div>
+            ) : resolved.external ? (
+              <a href={resolved.href} target="_blank" rel="noopener noreferrer">
+                <Button leftIcon={<ExternalLink className="size-4" />}>{linkLabel}</Button>
+              </a>
+            ) : (
+              <Link to={resolved.href}>
+                <Button leftIcon={<ExternalLink className="size-4" />}>{linkLabel}</Button>
               </Link>
-            </Card>
+            )}
+            <Button
+              variant="secondary"
+              isLoading={saveMutation.isPending}
+              leftIcon={<Bookmark className={cn('size-4', resource.isSaved && 'fill-current text-amber-500')} />}
+              onClick={() => saveMutation.mutate()}
+            >
+              {resource.isSaved ? 'Saved' : 'Save'}
+            </Button>
+          </div>
+
+          {isFile && !resource.previewable && (
+            <p className="-mt-2 text-xs text-fg-muted">This file type can’t be previewed in the browser — download it to open it.</p>
           )}
         </div>
+
+        <aside>
+          <Card className="rounded-2xl border border-border/80 bg-surface p-5 shadow-xs">
+            <h2 className="text-sm font-bold tracking-tight text-fg">About this resource</h2>
+            <dl className="mt-2 divide-y divide-border/60">
+              <DetailRow label="Type">{resource.type}</DetailRow>
+              {shelf && (
+                <DetailRow label="Shelf">
+                  <Link to={`/resources?category=${shelf.key}`} className="hover:underline">
+                    {shelf.label}
+                  </Link>
+                </DetailRow>
+              )}
+              {resource.provider && <DetailRow label="Source">{resource.provider}</DetailRow>}
+              {duration && <DetailRow label="Duration">{duration}</DetailRow>}
+              {isFile && <DetailRow label="Format">{fileExtension(resource.fileName).toUpperCase()}</DetailRow>}
+              {resource.chapterName && (
+                <DetailRow label="Chapter">
+                  <Link to={`/chapters/${resource.chapterId}`} className="hover:underline">
+                    {resource.chapterName}
+                  </Link>
+                </DetailRow>
+              )}
+              <DetailRow label="Added">{formatRelativeTime(resource.createdAt)}</DetailRow>
+            </dl>
+          </Card>
+        </aside>
       </div>
 
-      <ResourceEditModal open={editOpen} onClose={() => setEditOpen(false)} resource={resource} />
-
-      <Modal
-        open={confirmDeleteOpen}
-        onClose={() => setConfirmDeleteOpen(false)}
-        title="Delete this resource?"
-        description={`"${resource.title}" will be removed for everyone. This can't be undone.`}
-        size="sm"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setConfirmDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" isLoading={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>
-              Delete resource
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-fg-muted">This action is permanent.</p>
-      </Modal>
+      {shelf && related.length > 0 && (
+        <section aria-labelledby="more-heading">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <h2 id="more-heading" className="text-xl font-bold tracking-tight text-fg">
+              More in {shelf.label}
+            </h2>
+            <Link to={`/resources?category=${shelf.key}`} className="text-sm font-semibold text-fg-brand hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {related.map((r) => (
+              <ResourceCard key={r.id} resource={r} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

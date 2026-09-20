@@ -18,7 +18,6 @@ import {
   Briefcase,
   Calendar,
   FolderOpen,
-  FolderPlus,
 } from 'lucide-react'
 import {
   getChapter,
@@ -52,7 +51,6 @@ import { Modal } from '@/components/ui/Modal'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { ChapterEditModal } from '@/components/domain/ChapterEditModal'
 import { AddChapterMemberModal } from '@/components/domain/AddChapterMemberModal'
-import { ShareResourceModal } from '@/components/domain/ShareResourceModal'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
@@ -173,7 +171,6 @@ export default function ChapterDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false)
   const [addMemberOpen, setAddMemberOpen] = useState(false)
-  const [addResourceOpen, setAddResourceOpen] = useState(false)
 
   const removeMemberMutation = useMutation({
     mutationFn: (userId: string) => removeChapterMember(id!, userId),
@@ -602,26 +599,13 @@ export default function ChapterDetailPage() {
 
       {tab === 'resources' && (
         <div>
-          {isPresident && (
-            <div className="flex justify-end mb-4">
-              <Button size="sm" leftIcon={<FolderPlus className="size-3.5" />} onClick={() => setAddResourceOpen(true)}>
-                Add resource
-              </Button>
-            </div>
-          )}
+          {/* Resources are curated by the Buildadda team (admin panel), so presidents no longer add them here. */}
           <TabSection
             query={resourcesQuery}
             emptyState={
               <EmptyState
-                title="No resources shared with this chapter yet"
-                description="Templates, guides, and slide decks shared by members will appear here."
-                action={
-                  isPresident ? (
-                    <Button size="sm" leftIcon={<FolderPlus className="size-3.5" />} onClick={() => setAddResourceOpen(true)}>
-                      Add resource
-                    </Button>
-                  ) : undefined
-                }
+                title="No resources for this chapter yet"
+                description="Templates, guides and slide decks from the Buildadda team will appear here."
               />
             }
           >
@@ -681,12 +665,6 @@ export default function ChapterDetailPage() {
         existingMemberIds={(membersQuery.data ?? []).map((u) => u.id)}
         open={addMemberOpen}
         onClose={() => setAddMemberOpen(false)}
-      />
-      <ShareResourceModal
-        open={addResourceOpen}
-        onClose={() => setAddResourceOpen(false)}
-        lockedChapterId={chapter.id}
-        lockedChapterName={chapter.name}
       />
       <Modal
         open={confirmDeleteOpen}
