@@ -1329,7 +1329,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
           )}
         </div>
 
-        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 sm:px-8 py-4">
+        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-8 py-4">
           {/* min-h-full + justify-end anchors a short conversation to the bottom, right above the
               composer, instead of pinning it to the top and leaving a large dead gap above the
               input — matches how every mainstream chat app lays out a thread with few messages.
@@ -1530,11 +1530,17 @@ export default function MessagesPage() {
   }, [conversationId, navigate, refetch])
 
   return (
-    <div className="h-[calc(100dvh-8rem)] flex rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+    // Sized to the space the app shell actually leaves, so the page itself never scrolls — only the
+    // message history / conversation list inside do. Below lg the shell adds 4rem sticky header +
+    // 1.5rem top padding and reserves 7rem at the bottom (main's pb-28) for the fixed 4rem bottom nav:
+    // the box ends 0.5rem above that nav (10rem = 4 + 1.5 + 4 + 0.5), and -mb-10 hands back the 2.5rem
+    // of reserved space that would otherwise push the page 2.5rem past the viewport. From lg up there
+    // is no bottom nav and the shell uses 2rem of padding top and bottom (8rem).
+    <div className="h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
       {/* Left conversation list */}
       <div
         className={cn(
-          'w-full sm:w-[320px] lg:w-[360px] shrink-0 border-r border-border/70 overflow-y-auto p-3 flex-col',
+          'w-full sm:w-[320px] lg:w-[360px] shrink-0 border-r border-border/70 overflow-y-auto overscroll-contain p-3 flex-col',
           conversationId ? 'hidden sm:flex' : 'flex',
         )}
       >
