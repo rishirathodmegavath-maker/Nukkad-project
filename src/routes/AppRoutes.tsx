@@ -5,6 +5,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import LoginPage from '@/pages/auth/LoginPage'
 import SignupPage from '@/pages/auth/SignupPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import GoogleCallbackPage from '@/pages/auth/GoogleCallbackPage'
 import VerifyEmailPage from '@/pages/auth/VerifyEmailPage'
 import { GOOGLE_CALLBACK_PATH } from '@/lib/google-auth'
@@ -64,6 +65,11 @@ export function AppRoutes() {
       {/* Unguarded: this is the landing page for Google's OAuth redirect, reached mid-login
           before any session exists — neither PublicOnlyRoute nor ProtectedRoute apply. */}
       <Route path={GOOGLE_CALLBACK_PATH} element={<GoogleCallbackPage />} />
+
+      {/* Unguarded, not PublicOnlyRoute: an emailed reset link should work even if the clicking
+          browser happens to still hold an old session (e.g. a different device/tab than the one
+          that's locked out) — confirming a reset revokes every session anyway. */}
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
