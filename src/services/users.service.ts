@@ -359,8 +359,14 @@ export async function removeCoverPhoto(): Promise<User> {
   return mapUser(await apiClient.delete<UserDto>('/users/me/cover'))
 }
 
-export async function toggleConnect(userId: string): Promise<User> {
-  await apiClient.post(`/users/${userId}/connect`)
+/**
+ * Connect / accept / cancel / disconnect — the server decides which from the real state. Pass the
+ * status the screen is showing as `expected`: if the connection has changed since (the other person
+ * accepted, declined or cancelled), the server refuses with 409 CONNECTION_STATE_CHANGED instead of
+ * doing something the user never asked for.
+ */
+export async function toggleConnect(userId: string, expected?: ConnectionStatus): Promise<User> {
+  await apiClient.post(`/users/${userId}/connect${expected ? `?expected=${expected}` : ''}`)
   const updated = await getUser(userId)
   if (!updated) throw new Error('User not found')
   return updated

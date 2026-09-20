@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { MatchReasons } from '@/components/domain/MatchReasons'
+import { MessageAction } from '@/components/domain/MessageAction'
 import * as usersService from '@/services/users.service'
 import { toast } from '@/store/toast.store'
 
@@ -24,7 +25,7 @@ export function PersonCard({
 }) {
   const queryClient = useQueryClient()
   const connectMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, user.connectionStatus),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       const messages: Record<string, string> = {
@@ -108,32 +109,26 @@ export function PersonCard({
               Accept
             </Button>
           </div>
+        ) : user.connectionStatus === 'CONNECTED' ? (
+          // Already connected: the useful next step is a message. Removing the connection is done
+          // from their profile, so one stray tap here can no longer disconnect two people.
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <MessageAction userId={user.id} />
+          </div>
         ) : (
           <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
             <Button
               size="sm"
               variant={user.connectionStatus === 'NONE' || !user.connectionStatus ? 'primary' : 'secondary'}
               isLoading={connectMutation.isPending}
-              leftIcon={
-                user.connectionStatus === 'CONNECTED' ? (
-                  <UserCheck className="size-3.5" />
-                ) : user.connectionStatus === 'PENDING_OUTGOING' ? (
-                  <Clock className="size-3.5" />
-                ) : (
-                  <UserPlus className="size-3.5" />
-                )
-              }
+              leftIcon={user.connectionStatus === 'PENDING_OUTGOING' ? <Clock className="size-3.5" /> : <UserPlus className="size-3.5" />}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
                 connectMutation.mutate()
               }}
             >
-              {user.connectionStatus === 'CONNECTED'
-                ? 'Connected'
-                : user.connectionStatus === 'PENDING_OUTGOING'
-                ? 'Requested'
-                : 'Connect'}
+              {user.connectionStatus === 'PENDING_OUTGOING' ? 'Requested' : 'Connect'}
             </Button>
           </div>
         )}

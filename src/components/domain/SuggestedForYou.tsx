@@ -11,7 +11,7 @@ function SuggestionRow({ user }: { user: User }) {
   const queryClient = useQueryClient()
 
   const connectMutation = useMutation({
-    mutationFn: () => usersService.toggleConnect(user.id),
+    mutationFn: () => usersService.toggleConnect(user.id, user.connectionStatus ?? 'NONE'),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       const messages: Record<string, string> = {
