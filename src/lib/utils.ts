@@ -146,7 +146,7 @@ export function downloadIcsFile(event: {
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Buildadda//Event Calendar//EN',
+    'PRODID:-//BuildAdda//Event Calendar//EN',
     'BEGIN:VEVENT',
     `SUMMARY:${event.title.replace(/\n/g, '\\n')}`,
     `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,

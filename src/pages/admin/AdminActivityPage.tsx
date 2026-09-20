@@ -22,7 +22,7 @@ interface TypeMeta {
 const icon = 'size-4'
 
 const TYPE_META: Record<AdminActivityType, TypeMeta> = {
-  USER_JOINED: { icon: <UserPlus className={icon} />, verb: 'joined Buildadda', to: (a) => (a.targetId ? `/admin/users/${a.targetId}` : null) },
+  USER_JOINED: { icon: <UserPlus className={icon} />, verb: 'joined BuildAdda', to: (a) => (a.targetId ? `/admin/users/${a.targetId}` : null) },
   STARTUP_CREATED: { icon: <Rocket className={icon} />, verb: 'A startup was registered', to: () => '/admin/startups' },
   IDEA_POSTED: { icon: <Lightbulb className={icon} />, verb: 'posted an idea', to: () => '/admin/ideas' },
   OPPORTUNITY_POSTED: { icon: <Briefcase className={icon} />, verb: 'posted an opportunity', to: () => '/admin/opportunities' },
@@ -75,7 +75,7 @@ export default function AdminActivityPage() {
       <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-surface-sunken px-3.5 py-3 text-sm text-fg-muted mb-5">
         <Lock className="size-4 shrink-0 mt-0.5" />
         <span>
-          Everything being created across Buildadda, newest first. Private messages, connections and the text of
+          Everything being created across BuildAdda, newest first. Private messages, connections and the text of
           applications are never shown here — they stay encrypted and out of the admin panel.
         </span>
       </div>

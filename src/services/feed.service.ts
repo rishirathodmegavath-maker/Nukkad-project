@@ -59,8 +59,8 @@ export function mapPost(dto: PostDto): Post {
   }
 }
 
-export async function listFeed(authorId?: string, size?: number): Promise<Post[]> {
-  const dtos = await getPage<PostDto>('/feed', { authorId, size })
+export async function listFeed(authorId?: string, size?: number, type?: PostType): Promise<Post[]> {
+  const dtos = await getPage<PostDto>('/feed', { authorId, size, type })
   return dtos.map(mapPost)
 }
 

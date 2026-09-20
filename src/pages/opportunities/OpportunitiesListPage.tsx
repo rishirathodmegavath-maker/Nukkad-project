@@ -74,7 +74,7 @@ export default function OpportunitiesListPage() {
     <div>
       <PageHeader
         title="Opportunities"
-        description="Jobs, internships, founding roles and co-founder openings from across Buildadda."
+        description="Jobs, internships, founding roles and co-founder openings from across BuildAdda."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Link to="/opportunities/mine">
@@ -137,7 +137,7 @@ export default function OpportunitiesListPage() {
         <EmptyState
           icon={<Briefcase className="size-5" />}
           title="No opportunities posted yet"
-          description="Be the first to post a job, internship, or founding role for the Buildadda community."
+          description="Be the first to post a job, internship, or founding role for the BuildAdda community."
           action={
             <Link to="/opportunities/new">
               <Button size="sm" leftIcon={<Plus className="size-3.5" />}>

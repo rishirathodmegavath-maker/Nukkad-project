@@ -1,4 +1,4 @@
-import { BookOpenCheck, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, Presentation, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
+import { BookOpenCheck, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, Presentation, Rocket, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Resource, ResourceCategory, ResourceType } from '@/types'
 
@@ -38,6 +38,14 @@ export const RESOURCE_CATEGORIES: CategoryMeta[] = [
     icon: BookOpenCheck,
     chip: 'bg-emerald-500/10 text-emerald-500',
     gradient: 'from-emerald-500/25 via-emerald-500/10 to-teal-500/10',
+  },
+  {
+    key: 'programs',
+    label: 'Startup Programs',
+    blurb: 'Cohorts, mentorship and community',
+    icon: Rocket,
+    chip: 'bg-amber-500/10 text-amber-500',
+    gradient: 'from-amber-500/25 via-amber-500/10 to-orange-500/10',
   },
   {
     key: 'tools',

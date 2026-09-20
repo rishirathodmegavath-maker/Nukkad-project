@@ -483,7 +483,7 @@ function AppearanceSection() {
     setRestoringDefault(true)
     try {
       await resetToDefault()
-      toast.success('Restored Buildadda default appearance')
+      toast.success('Restored BuildAdda default appearance')
     } finally {
       setRestoringDefault(false)
     }
@@ -499,7 +499,7 @@ function AppearanceSection() {
 
       <Card>
         <h2 className="font-semibold text-fg mb-1">Appearance</h2>
-        <p className="text-sm text-fg-muted mb-3">Choose how Buildadda looks on this device.</p>
+        <p className="text-sm text-fg-muted mb-3">Choose how BuildAdda looks on this device.</p>
         <div className="flex items-center justify-between gap-3 py-3">
           <span className="text-sm font-medium text-fg">Theme</span>
           <PrivacyPillGroup<ThemePreference>
@@ -527,7 +527,7 @@ function AppearanceSection() {
 
       <Card>
         <h2 className="font-semibold text-fg mb-1">Custom colour</h2>
-        <p className="text-sm text-fg-muted mb-4">Or choose your own — Buildadda generates a complete, accessible palette from it automatically.</p>
+        <p className="text-sm text-fg-muted mb-4">Or choose your own — BuildAdda generates a complete, accessible palette from it automatically.</p>
         <ColorPickerPanel />
       </Card>
 
@@ -541,7 +541,7 @@ function AppearanceSection() {
         onClick={handleRestoreDefault}
         className="self-start text-xs font-medium text-fg-muted hover:text-fg cursor-pointer disabled:opacity-50"
       >
-        Reset to Buildadda Default
+        Reset to BuildAdda Default
       </button>
     </div>
   )

@@ -2,7 +2,7 @@
 export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' | 'Article' | 'Guide' | 'Course' | 'Tool' | 'Deck'
 
 /** The shelves of the library. Slugs match the backend's ResourceCategory. */
-export type ResourceCategory = 'free-learning' | 'templates' | 'playbooks' | 'tools' | 'government'
+export type ResourceCategory = 'free-learning' | 'templates' | 'playbooks' | 'programs' | 'tools' | 'government'
 
 export interface Resource {
   id: string
@@ -24,7 +24,7 @@ export interface Resource {
   chapterName?: string
   tags: string[]
   isSaved: boolean
-  /** Set only for a file hosted on Buildadda (the name a download is saved as); absent for an external link. */
+  /** Set only for a file hosted on BuildAdda (the name a download is saved as); absent for an external link. */
   fileName?: string
   /** A hosted file the browser can show inline (PDF, image, video, plain text) instead of only downloading. */
   previewable: boolean

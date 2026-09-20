@@ -73,7 +73,7 @@ export default function StartupsListPage() {
     <div>
       <PageHeader
         title="Startups"
-        description="See what’s being built across the Buildadda network."
+        description="See what’s being built across the BuildAdda network."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -137,7 +137,7 @@ export default function StartupsListPage() {
           <EmptyState
             icon={<Rocket className="size-5" />}
             title="No startup yet"
-            description="Already building or running something — here or out in the world (think Swiggy, Zomato)? Add it to Buildadda."
+            description="Already building or running something — here or out in the world (think Swiggy, Zomato)? Add it to BuildAdda."
             action={
               <div className="flex flex-col items-center gap-2">
                 <Link to="/startups/new" onClick={() => setExistingStartupOpen(false)}>

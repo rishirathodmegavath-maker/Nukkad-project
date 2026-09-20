@@ -26,7 +26,7 @@ export function AdminPortalShell() {
         <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-3 px-4 py-3 lg:px-8">
           <div className="flex items-center gap-2.5">
             <Logo size="sm" />
-            <span className="text-base font-bold tracking-tight text-fg">Buildadda</span>
+            <span className="text-base font-bold tracking-tight text-fg">BuildAdda</span>
             <span className="rounded-md bg-brand-600/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300">
               Admin
             </span>

@@ -21,7 +21,7 @@ const GRID = 'grid sm:grid-cols-2 xl:grid-cols-3 gap-5'
  * The resource library. The front page shows the shelves, a "featured" row and what's new; picking a shelf
  * (or searching) switches to a browsable, filterable, paged grid. All state lives in the URL
  * (`?category=free-learning&type=Video&q=deck&page=1`), so a shelf can be linked to and the back button works.
- * Resources are curated by the Buildadda team, so there is no upload action anywhere here.
+ * Resources are curated by the BuildAdda team, so there is no upload action anywhere here.
  */
 export default function ResourcesPage() {
   const [params, setParams] = useSearchParams()
@@ -113,7 +113,7 @@ export default function ResourcesPage() {
             </nav>
             <h1 className="text-3xl font-black tracking-tight text-fg">{meta ? meta.label : 'All resources'}</h1>
             <p className="mt-1.5 max-w-2xl text-sm text-fg-muted">
-              {meta ? meta.blurb : 'Everything the Buildadda team has put in the library.'}
+              {meta ? meta.blurb : 'Everything the BuildAdda team has put in the library.'}
             </p>
           </div>
         ) : (
@@ -121,7 +121,7 @@ export default function ResourcesPage() {
             <h1 className="text-4xl font-black tracking-tight text-fg sm:text-5xl">Resources</h1>
             <p className="mt-1 text-xl font-semibold text-fg sm:text-2xl">Learn. Build. Grow.</p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-fg-muted">
-              Templates, guides, courses and tools curated by the Buildadda team to help you at every stage of your startup journey.
+              Templates, guides, courses and tools curated by the BuildAdda team to help you at every stage of your startup journey.
             </p>
           </div>
         )}
@@ -196,7 +196,7 @@ export default function ResourcesPage() {
               description={
                 qParam || type
                   ? 'Try a different search, or clear the filters.'
-                  : 'The Buildadda team is adding to this shelf. Check back soon.'
+                  : 'The BuildAdda team is adding to this shelf. Check back soon.'
               }
               action={
                 qParam || type || category ? (
@@ -210,7 +210,7 @@ export default function ResourcesPage() {
         </>
       ) : (
         <>
-          <section aria-label="Browse by shelf" className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          <section aria-label="Browse by shelf" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             {RESOURCE_CATEGORIES.map((c) => {
               const Icon = c.icon
               return (
@@ -234,7 +234,7 @@ export default function ResourcesPage() {
           <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-brand-500/20 bg-brand-500/10 p-5 sm:flex-row sm:items-center sm:p-6">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-fg">Learn from the best. Build with the right people.</h2>
-              <p className="mt-1 text-sm text-fg-secondary">Free to read, open and download — everything here is picked by the Buildadda team.</p>
+              <p className="mt-1 text-sm text-fg-secondary">Free to read, open and download — everything here is picked by the BuildAdda team.</p>
             </div>
             <Button size="lg" rightIcon={<ArrowRight className="size-4" />} onClick={() => update({ category: 'all' })}>
               Start exploring
@@ -249,7 +249,7 @@ export default function ResourcesPage() {
             <EmptyState
               icon={<FolderOpen className="size-5" />}
               title="No resources yet"
-              description="The Buildadda team is putting together templates, guides and links for builders. Check back soon."
+              description="The BuildAdda team is putting together templates, guides and links for builders. Check back soon."
             />
           ) : (
             <>

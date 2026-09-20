@@ -599,13 +599,13 @@ export default function ChapterDetailPage() {
 
       {tab === 'resources' && (
         <div>
-          {/* Resources are curated by the Buildadda team (admin panel), so presidents no longer add them here. */}
+          {/* Resources are curated by the BuildAdda team (admin panel), so presidents no longer add them here. */}
           <TabSection
             query={resourcesQuery}
             emptyState={
               <EmptyState
                 title="No resources for this chapter yet"
-                description="Templates, guides and slide decks from the Buildadda team will appear here."
+                description="Templates, guides and slide decks from the BuildAdda team will appear here."
               />
             }
           >

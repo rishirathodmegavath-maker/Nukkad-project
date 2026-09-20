@@ -281,7 +281,7 @@ export default function PostOpportunityPage() {
         description={
           isEdit
             ? 'Update the details below.'
-            : 'Share a job, internship, founding role, or co-founder opening with the Buildadda community.'
+            : 'Share a job, internship, founding role, or co-founder opening with the BuildAdda community.'
         }
       />
       <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">

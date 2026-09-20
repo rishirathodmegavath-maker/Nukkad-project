@@ -106,7 +106,7 @@ export default function SearchResultsPage() {
       />
 
       {!trimmed ? (
-        <EmptyState icon={<SearchIcon className="size-5" />} title="Search Buildadda" description="Type something in the search bar above to get started." />
+        <EmptyState icon={<SearchIcon className="size-5" />} title="Search BuildAdda" description="Type something in the search bar above to get started." />
       ) : (
         <>
           <ResultSection

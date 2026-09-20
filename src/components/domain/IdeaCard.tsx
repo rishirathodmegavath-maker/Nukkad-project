@@ -40,7 +40,7 @@ export function IdeaCard({ idea, reasons }: { idea: Idea; reasons?: string[] }) 
 
         {/* Problem pitch */}
         <p className="text-sm text-fg-secondary line-clamp-2 leading-relaxed mb-4">
-          {idea.problem?.trim() || idea.solution?.trim() || 'Early idea being explored on Buildadda.'}
+          {idea.problem?.trim() || idea.solution?.trim() || 'Early idea being explored on BuildAdda.'}
         </p>
 
         {/* Help Needed Badges */}

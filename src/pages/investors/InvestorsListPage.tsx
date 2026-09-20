@@ -240,7 +240,7 @@ export default function InvestorsListPage() {
           ) : (
             <EmptyState
               icon={<Landmark className="size-5" />}
-              title="No investors on Buildadda yet"
+              title="No investors on BuildAdda yet"
               description="Once investors activate a profile, they'll show up here for founders to discover."
             />
           )}
