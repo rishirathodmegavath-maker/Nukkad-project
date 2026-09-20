@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -23,6 +23,7 @@ const CONTRIBUTION_AREAS: ContributionArea[] = [
 
 export default function PostIdeaPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [problem, setProblem] = useState('')
   const [solution, setSolution] = useState('')
@@ -48,7 +49,10 @@ export default function PostIdeaPage() {
         helpNeeded,
       }),
     onSuccess: (idea) => {
-      toast.success('Your idea is live!')
+      // New ideas go through admin review first, so don't claim it's live. Refresh the lists so the
+      // owner's pending idea shows up (with its status) in "My ideas" straight away.
+      queryClient.invalidateQueries({ queryKey: ['ideas'] })
+      toast.success('Submitted for review — it’ll be public once approved. Track it under “My ideas”.')
       navigate(`/ideas/${idea.id}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not post idea'),

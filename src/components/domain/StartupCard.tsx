@@ -3,6 +3,7 @@ import { TrendingUp, ArrowRight, Lock } from 'lucide-react'
 import type { Startup } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { formatRelativeTime } from '@/lib/utils'
 
 const stageTone: Record<Startup['stage'], BadgeTone> = {
@@ -61,6 +62,7 @@ export function StartupCard({ startup }: { startup: Startup }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              <ModerationBadge status={startup.moderationStatus} />
               <Badge tone={stageTone[startup.stage] ?? 'neutral'} size="sm">
                 {startup.stage}
               </Badge>

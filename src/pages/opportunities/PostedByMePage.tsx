@@ -39,7 +39,7 @@ export default function PostedByMePage() {
 
   return (
     <div>
-      <PageHeader title="Posted by Me" description="Opportunities you've published and their applicants." />
+      <PageHeader title="Posted by Me" description="Opportunities you've posted — including ones still waiting for review — and their applicants." />
 
       {isLoading ? (
         <CardSkeletonGrid count={4} />

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { TagInput } from '@/components/ui/TagInput'
 import { Button } from '@/components/ui/Button'
@@ -16,6 +16,7 @@ const STAGES: StartupStage[] = ['Idea', 'MVP', 'Early Traction', 'Growth', 'Scal
 
 export default function RegisterStartupPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: currentUser } = useCurrentUser()
   const [name, setName] = useState('')
   const [tagline, setTagline] = useState('')
@@ -41,7 +42,10 @@ export default function RegisterStartupPage() {
         chapterId: chapterId || undefined,
       }),
     onSuccess: (startup) => {
-      toast.success('Startup created — add more details any time from its profile')
+      // New startups go through admin review first. Refresh the lists so it shows up (with its
+      // status) under "My Startup" straight away.
+      queryClient.invalidateQueries({ queryKey: ['startups'] })
+      toast.success('Submitted for review — it’ll be public once approved. You can keep adding details from its profile.')
       navigate(`/startups/${startup.id}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not register your startup'),
