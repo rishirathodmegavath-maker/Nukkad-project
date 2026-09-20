@@ -441,6 +441,11 @@ function CommentsSection({ post }: { post: Post }) {
           <div className="flex items-center gap-2.5 pt-1">
             <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="xs" />
             <input
+              // Scoped to this post: a comment box renders once per post in the feed, so a
+              // hardcoded id would collide across cards (invalid duplicate-id HTML, and worse for
+              // autofill/accessibility than having no id at all).
+              id={`comment-input-${post.id}`}
+              name={`comment-input-${post.id}`}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
