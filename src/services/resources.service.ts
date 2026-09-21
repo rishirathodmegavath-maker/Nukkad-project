@@ -76,6 +76,19 @@ export async function listResources(filters: ResourceFilters = {}): Promise<Reso
   return dtos.map(mapResource)
 }
 
+/**
+ * A varied selection for the front page: one resource from each shelf and type in turn (a video, an essay, a
+ * template, a tool ...) instead of only the newest uploads, so a bulk upload of one kind can't fill the page.
+ * `preferFeatured` puts the ones the team featured first inside each group.
+ */
+export async function listResourceMix(options: { size?: number; preferFeatured?: boolean } = {}): Promise<Resource[]> {
+  const query = new URLSearchParams()
+  if (options.size !== undefined) query.set('size', String(options.size))
+  if (options.preferFeatured) query.set('preferFeatured', 'true')
+  const dtos = await apiClient.get<ResourceDto[]>(`/resources/mix?${query.toString()}`)
+  return dtos.map(mapResource)
+}
+
 /** One page of the library, with the totals a pager needs. */
 export async function listResourcesPage(filters: ResourceFilters, page: number): Promise<Page<Resource>> {
   const result = await getPagedResult<ResourceDto>('/resources', { ...toParams(filters), page })

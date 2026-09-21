@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, ChevronRight, FolderOpen, Search, X } from 'lucide-react'
-import { listResources, listResourcesPage } from '@/services/resources.service'
+import { listResourceMix, listResourcesPage } from '@/services/resources.service'
 import { ResourceCard } from '@/components/domain/ResourceCard'
 import { Button } from '@/components/ui/Button'
 import { buttonClasses } from '@/components/ui/button-styles'
@@ -72,14 +72,16 @@ export default function ResourcesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text])
 
+  // Both rows are a mix (one from each shelf and type in turn), not simply the newest uploads: a bulk upload of one
+  // kind of thing (say, a batch of essays) would otherwise fill the whole front page.
   const featured = useQuery({
-    queryKey: ['resources', 'featured'],
-    queryFn: () => listResources({ featured: true, size: 3 }),
+    queryKey: ['resources', 'mix', 'picked'],
+    queryFn: () => listResourceMix({ size: 6, preferFeatured: true }),
     enabled: !browsing,
   })
   const latest = useQuery({
-    queryKey: ['resources', 'latest'],
-    queryFn: () => listResources({ size: 12 }),
+    queryKey: ['resources', 'mix', 'latest'],
+    queryFn: () => listResourceMix({ size: 12 }),
     enabled: !browsing,
   })
   const filters = useMemo(() => ({ query: qParam || undefined, type, category, size: PAGE_SIZE }), [qParam, type, category])
@@ -258,8 +260,8 @@ export default function ResourcesPage() {
                 <section aria-labelledby="featured-heading">
                   <div className="mb-4 flex items-baseline justify-between gap-3">
                     <div>
-                      <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Featured resources</h2>
-                      <p className="text-sm text-fg-muted">Handpicked for you</p>
+                      <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Picked for you</h2>
+                      <p className="text-sm text-fg-muted">A mix of videos, essays, templates and more from across the library</p>
                     </div>
                     <Link to="/resources?category=all" className="inline-flex items-center gap-1 text-sm font-semibold text-fg-brand hover:underline">
                       View all <ArrowRight className="size-3.5" />
@@ -275,9 +277,12 @@ export default function ResourcesPage() {
               {latestList.length > 0 && (
                 <section aria-labelledby="latest-heading">
                   <div className="mb-4 flex items-baseline justify-between gap-3">
-                    <h2 id="latest-heading" className="text-xl font-bold tracking-tight text-fg">
-                      {featuredList.length > 0 ? 'New in the library' : 'Latest resources'}
-                    </h2>
+                    <div>
+                      <h2 id="latest-heading" className="text-xl font-bold tracking-tight text-fg">
+                        {featuredList.length > 0 ? 'New in the library' : 'Latest resources'}
+                      </h2>
+                      <p className="text-sm text-fg-muted">The newest from each shelf</p>
+                    </div>
                     <Link to="/resources?category=all" className="inline-flex items-center gap-1 text-sm font-semibold text-fg-brand hover:underline">
                       View all <ArrowRight className="size-3.5" />
                     </Link>
