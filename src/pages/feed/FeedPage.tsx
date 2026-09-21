@@ -1,36 +1,20 @@
-import { useRef, useState, useEffect, type ChangeEvent } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Send, Image, FileText, X, Video, Bookmark, Sparkles, Plus, FileType2 } from 'lucide-react'
-import { listFeed, listSavedPosts, createPost, uploadAttachment } from '@/services/feed.service'
+import { useQuery } from '@tanstack/react-query'
+import { Video, Bookmark, Sparkles, Plus, FileText } from 'lucide-react'
+import { listFeed, listSavedPosts } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PostCard } from '@/components/domain/PostCard'
+import { CreatePostModal } from '@/components/domain/CreatePostModal'
 import { typeMeta, memberPostKinds } from '@/lib/postTypeMeta'
-import { cn } from '@/lib/utils'
+import { DocumentIcon } from '@/components/domain/DocumentIcon'
 import { Avatar } from '@/components/ui/Avatar'
-import { Modal } from '@/components/ui/Modal'
 import { PillTabs, Tabs } from '@/components/ui/Tabs'
 import { Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { UploadButton, UploadSpinnerOverlay, type UploadPhase } from '@/components/ui/UploadButton'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
-import { toast } from '@/store/toast.store'
 import type { Post, PostType, SavedPostsSort } from '@/types'
-
-const MAX_ATTACHMENTS = 10
-
-interface PendingFile {
-  file: File
-  previewUrl?: string
-}
-
-function pickKind(file: File): 'image' | 'video' | 'pdf' | null {
-  if (file.type.startsWith('image/')) return 'image'
-  if (file.type.startsWith('video/')) return 'video'
-  if (file.type === 'application/pdf') return 'pdf'
-  return null
-}
 
 const FEED_TABS = [
   { key: 'all', label: 'Feed' },
@@ -47,7 +31,7 @@ function SavedPostThumbnail({ post }: { post: Post }) {
   const [imageFailed, setImageFailed] = useState(false)
   const image = imageFailed ? undefined : post.attachments.find((a) => a.kind === 'image')
   const video = post.attachments.find((a) => a.kind === 'video')
-  const pdf = post.attachments.find((a) => a.kind === 'pdf')
+  const doc = post.attachments.find((a) => a.kind === 'pdf' || a.kind === 'file')
   const meta = typeMeta[post.type]
 
   if (image) {
@@ -72,13 +56,13 @@ function SavedPostThumbnail({ post }: { post: Post }) {
       </div>
     )
   }
-  if (pdf) {
+  if (doc) {
     return (
       <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-surface">
         <span className="flex size-9 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 border border-accent-500/20 shrink-0">
-          <FileType2 className="size-4.5" />
+          <DocumentIcon fileName={doc.fileName} className="size-4.5" />
         </span>
-        <p className="text-xs font-semibold text-fg-secondary truncate max-w-full">{pdf.fileName ?? 'Document.pdf'}</p>
+        <p className="text-xs font-semibold text-fg-secondary truncate max-w-full">{doc.fileName ?? 'Document'}</p>
       </div>
     )
   }
@@ -143,21 +127,16 @@ function SavedPostsGrid({ posts }: { posts: Post[] }) {
 
 const SAVED_TYPE_FILTERS: { key: string; label: string }[] = [
   { key: 'all', label: 'All types' },
-  { key: 'text', label: 'Text' },
+  ...memberPostKinds.map((k) => ({ key: k.key, label: k.filterLabel })),
+  // Older kinds that are no longer written from the Create a Post dialog but can still be saved.
   { key: 'startup_update', label: 'Startup updates' },
-  { key: 'idea', label: 'Ideas' },
   { key: 'opportunity', label: 'Opportunities' },
-  { key: 'event', label: 'Events' },
-  { key: 'discussion', label: 'Discussions' },
-  { key: 'build_update', label: 'Build updates' },
-  { key: 'question', label: 'Questions' },
-  { key: 'milestone', label: 'Milestones' },
 ]
 
 /** Filter chips on the main feed: everything, or one kind of member post. */
 const FEED_KIND_FILTERS: { key: string; label: string }[] = [
   { key: 'all', label: 'All' },
-  ...memberPostKinds.map((k) => ({ key: k.key, label: k.label === 'Update' ? 'Updates' : `${k.label}s` })),
+  ...memberPostKinds.map((k) => ({ key: k.key, label: k.filterLabel })),
 ]
 
 /** Dedicated saved-posts view: queries the user's saves directly (server-side paginated, sorted and
@@ -232,89 +211,18 @@ function SavedPostsTab() {
 }
 
 export default function FeedPage() {
-  const queryClient = useQueryClient()
   const { data: currentUser } = useCurrentUser()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') === 'saved' ? 'saved' : 'all'
   const setTab = (next: string) => setSearchParams(next === 'saved' ? { tab: 'saved' } : {})
   const [isComposerOpen, setIsComposerOpen] = useState(false)
-  const [content, setContent] = useState('')
-  const [postType, setPostType] = useState<PostType>('text')
   const [kindFilter, setKindFilter] = useState('all')
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
-  const [postPhase, setPostPhase] = useState<UploadPhase>('idle')
-  const mediaInputRef = useRef<HTMLInputElement>(null)
-  const docInputRef = useRef<HTMLInputElement>(null)
 
   const { data: posts, isLoading, isError, refetch } = useQuery({
     queryKey: ['feed', kindFilter],
     queryFn: () => listFeed(undefined, undefined, kindFilter === 'all' ? undefined : (kindFilter as PostType)),
     enabled: tab === 'all',
   })
-
-  const postMutation = useMutation({
-    mutationFn: async () => {
-      const attachments = await Promise.all(pendingFiles.map((p) => uploadAttachment(p.file)))
-      return createPost(content.trim(), postType, undefined, attachments)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
-      pendingFiles.forEach((p) => p.previewUrl && URL.revokeObjectURL(p.previewUrl))
-      setContent('')
-      setPostType('text')
-      setPendingFiles([])
-      setIsComposerOpen(false)
-      setPostPhase('done')
-      setTimeout(() => setPostPhase('idle'), 1200)
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Could not create post')
-      setPostPhase('idle')
-    },
-  })
-
-  function handlePost() {
-    setPostPhase('uploading')
-    postMutation.mutate()
-  }
-
-  function addFiles(e: ChangeEvent<HTMLInputElement>) {
-    const all = Array.from(e.target.files ?? [])
-    const selected = all.filter((f) => pickKind(f) !== null)
-    const rejected = all.length - selected.length
-    if (rejected > 0) {
-      toast.error(
-        rejected === 1
-          ? 'That file type is not supported. Attach an image, video, or PDF.'
-          : `${rejected} files were skipped — only images, videos, and PDFs are supported.`,
-      )
-    }
-    setPendingFiles((prev) => {
-      const combined = [
-        ...prev,
-        ...selected.map((file) => ({
-          file,
-          previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
-        })),
-      ]
-      if (combined.length > MAX_ATTACHMENTS) {
-        toast.error(`You can attach up to ${MAX_ATTACHMENTS} files`)
-        return combined.slice(0, MAX_ATTACHMENTS)
-      }
-      return combined
-    })
-    e.target.value = ''
-  }
-
-  function removeFile(index: number) {
-    setPendingFiles((prev) => {
-      const removed = prev[index]
-      if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl)
-      return prev.filter((_, i) => i !== index)
-    })
-  }
-
-  const canPost = (content.trim().length > 0 || pendingFiles.length > 0) && !postMutation.isPending
 
   return (
     <div className="max-w-[620px] mx-auto flex flex-col gap-6">
@@ -328,7 +236,7 @@ export default function FeedPage() {
         >
           <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
           <span className="flex-1 min-w-0 truncate text-sm text-fg-muted">
-            Share an update, ask for feedback, or celebrate a milestone…
+            Share an update, ask for feedback, or celebrate an achievement…
           </span>
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
             <Plus className="size-4.5" />
@@ -336,144 +244,9 @@ export default function FeedPage() {
         </button>
       )}
 
-      {tab === 'all' && <PillTabs tone="soft" label="Filter by post type" items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} className="self-start" />}
+      {tab === 'all' && <PillTabs tone="soft" scrollable label="Filter by post type" items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} />}
 
-      <Modal
-        open={isComposerOpen}
-        onClose={() => setIsComposerOpen(false)}
-        title="Create post"
-      >
-        <div className="flex flex-col gap-3">
-          <div role="radiogroup" aria-label="Post type" className="flex flex-wrap gap-1.5">
-            {memberPostKinds.map((kind) => (
-              <button
-                key={kind.key}
-                type="button"
-                role="radio"
-                aria-checked={postType === kind.key}
-                onClick={() => setPostType(kind.key)}
-                className={cn(
-                  'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer',
-                  postType === kind.key
-                    ? 'border-brand-600 bg-brand-600 text-white'
-                    : 'border-border/80 bg-surface text-fg-secondary hover:bg-surface-hover hover:text-fg',
-                )}
-              >
-                {kind.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-3">
-            <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
-            <div className="flex-1 flex flex-col gap-2 min-w-0">
-              <textarea
-                id="feed-post-composer"
-                name="feed-post-composer"
-                autoFocus
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={memberPostKinds.find((k) => k.key === postType)?.placeholder}
-                rows={4}
-                className="w-full resize-none rounded-lg border border-border/80 bg-surface-sunken/40 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:bg-surface focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted leading-relaxed"
-              />
-
-              {pendingFiles.length > 0 && (
-                <div className="flex flex-wrap gap-2.5 pt-1">
-                  {pendingFiles.map((p, i) => {
-                    const kind = pickKind(p.file)
-                    return (
-                      <div
-                        key={i}
-                        className="relative size-18 rounded-xl overflow-hidden border border-border/80 bg-surface-sunken shrink-0 shadow-2xs group"
-                      >
-                        {p.previewUrl ? (
-                          <img src={p.previewUrl} alt="" className="size-full object-cover" />
-                        ) : (
-                          <div className="size-full flex flex-col items-center justify-center gap-1 p-1 text-center bg-surface-sunken">
-                            {kind === 'video' ? (
-                              <Video className="size-5 text-brand-600 dark:text-brand-400" />
-                            ) : (
-                              <FileText className="size-5 text-accent-500" />
-                            )}
-                            <span className="text-xs font-medium text-fg-muted truncate w-full px-1">
-                              {p.file.name}
-                            </span>
-                          </div>
-                        )}
-                        <UploadSpinnerOverlay phase={postPhase} />
-                        {postPhase === 'idle' && (
-                          <button
-                            type="button"
-                            onClick={() => removeFile(i)}
-                            className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-neutral-900/80 text-white hover:bg-neutral-900 cursor-pointer transition-colors shadow-xs"
-                            aria-label="Remove attachment"
-                          >
-                            <X className="size-3" />
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between gap-2 pt-1 mt-1 border-t border-border/60">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => mediaInputRef.current?.click()}
-                    aria-label="Add photo or video"
-                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
-                  >
-                    <Image className="size-4 text-brand-600 dark:text-brand-400 shrink-0" />
-                    <span className="hidden sm:inline">Photo/Video</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => docInputRef.current?.click()}
-                    aria-label="Add document (PDF)"
-                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
-                  >
-                    <FileText className="size-4 text-accent-500 shrink-0" />
-                    <span className="hidden sm:inline">Document (PDF)</span>
-                  </button>
-                  <input
-                    ref={mediaInputRef}
-                    type="file"
-                    id="feed-media-upload"
-                    name="feed-media-upload"
-                    accept="image/*,video/*"
-                    multiple
-                    hidden
-                    onChange={addFiles}
-                  />
-                  <input
-                    ref={docInputRef}
-                    type="file"
-                    id="feed-doc-upload"
-                    name="feed-doc-upload"
-                    accept="application/pdf"
-                    multiple
-                    hidden
-                    onChange={addFiles}
-                  />
-                </div>
-                <UploadButton
-                  size="md"
-                  className="shrink-0"
-                  phase={postPhase}
-                  idleLabel="Post"
-                  leftIcon={postPhase === 'idle' ? <Send className="size-3.5" /> : undefined}
-                  uploadingLabel={pendingFiles.length > 0 ? 'Uploading…' : 'Posting…'}
-                  doneLabel="Posted"
-                  disabled={!canPost}
-                  onClick={handlePost}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      <CreatePostModal open={isComposerOpen} onClose={() => setIsComposerOpen(false)} />
 
       {tab === 'saved' ? (
         <SavedPostsTab />

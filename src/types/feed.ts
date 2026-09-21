@@ -1,6 +1,26 @@
-export type PostType = 'text' | 'startup_update' | 'idea' | 'opportunity' | 'event' | 'discussion' | 'build_update' | 'question' | 'milestone'
+export type PostType =
+  | 'text'
+  | 'startup_update'
+  | 'idea'
+  | 'opportunity'
+  | 'event'
+  | 'discussion'
+  | 'build_update'
+  | 'question'
+  | 'milestone' // shown as "Achievement"
+  | 'feedback'
+  | 'cofounder'
+  | 'announcement'
+  | 'resource'
+  | 'hiring'
+  | 'fundraising'
+  | 'product_launch'
 
-export type AttachmentKind = 'image' | 'video' | 'pdf'
+/** Who may read a post: everyone, or only the author and the author's connections. */
+export type PostVisibility = 'PUBLIC' | 'CONNECTIONS'
+
+/** `file` is a Word / PowerPoint / Excel document (PDFs keep their own kind). */
+export type AttachmentKind = 'image' | 'video' | 'pdf' | 'file'
 
 export interface PostAttachment {
   id: string
@@ -23,6 +43,9 @@ export interface Post {
   commentsDisabled?: boolean
   createdAt: string
   attachments: PostAttachment[]
+  visibility: PostVisibility
+  /** An http(s) link the author attached; shown as a link card. */
+  linkUrl?: string
   /** Only set on results from the dedicated saved-posts listing — when this post was saved. */
   savedAt?: string
   removedByAdmin?: boolean
