@@ -2,7 +2,14 @@
 export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' | 'Article' | 'Guide' | 'Course' | 'Tool' | 'Deck'
 
 /** The shelves of the library. Slugs match the backend's ResourceCategory. */
-export type ResourceCategory = 'free-learning' | 'templates' | 'playbooks' | 'programs' | 'tools' | 'government'
+export type ResourceCategory =
+  | 'free-learning'
+  | 'templates'
+  | 'playbooks' // shown as "Startup Essays"; the slug is unchanged so resources already filed here keep working
+  | 'startup-blocks'
+  | 'programs'
+  | 'tools'
+  | 'government'
 
 export interface Resource {
   id: string

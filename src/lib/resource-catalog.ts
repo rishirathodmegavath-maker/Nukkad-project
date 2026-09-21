@@ -1,4 +1,4 @@
-import { BookOpenCheck, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, Presentation, Rocket, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
+import { Blocks, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, PenLine, Presentation, Rocket, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Resource, ResourceCategory, ResourceType } from '@/types'
 
@@ -32,12 +32,21 @@ export const RESOURCE_CATEGORIES: CategoryMeta[] = [
     gradient: 'from-rose-500/25 via-rose-500/10 to-orange-500/10',
   },
   {
+    // Stored as "playbooks" (see the ResourceCategory type); the shelf is called Startup Essays.
     key: 'playbooks',
-    label: 'Playbooks',
-    blurb: 'Step-by-step guides for builders',
-    icon: BookOpenCheck,
+    label: 'Startup Essays',
+    blurb: 'Essays and long reads for founders',
+    icon: PenLine,
     chip: 'bg-emerald-500/10 text-emerald-500',
     gradient: 'from-emerald-500/25 via-emerald-500/10 to-teal-500/10',
+  },
+  {
+    key: 'startup-blocks',
+    label: 'Startup Blocks',
+    blurb: 'Ready-made building blocks for startups',
+    icon: Blocks,
+    chip: 'bg-sky-500/10 text-sky-500',
+    gradient: 'from-sky-500/25 via-sky-500/10 to-blue-500/10',
   },
   {
     key: 'programs',
