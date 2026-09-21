@@ -122,6 +122,32 @@ export async function setStartupRemoved(id: string, removed: boolean, reason?: s
   return apiClient.patch<AdminStartupRow>(`/admin/startups/${id}/removed`, { removed, reason })
 }
 
+export interface AdminCreateStartupInput {
+  name: string
+  tagline?: string
+  sector?: string
+  stage: string
+  problem?: string
+  solution?: string
+  needs: string[]
+  chapterId?: string
+  /** A member to make the founder. Without it the admin's own account owns the startup. */
+  founderEmail?: string
+}
+
+/** Adds a startup from the admin panel. It is live at once, like one a member registers. */
+export async function createAdminStartup(input: AdminCreateStartupInput): Promise<AdminStartupRow> {
+  return apiClient.post<AdminStartupRow>('/admin/startups', {
+    ...input,
+    tagline: input.tagline || undefined,
+    sector: input.sector || undefined,
+    problem: input.problem || undefined,
+    solution: input.solution || undefined,
+    chapterId: input.chapterId || undefined,
+    founderEmail: input.founderEmail || undefined,
+  })
+}
+
 export interface AdminOpportunityRow {
   id: string
   title: string
