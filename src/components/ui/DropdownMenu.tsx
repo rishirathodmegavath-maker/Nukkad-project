@@ -63,11 +63,16 @@ export function DropdownMenu({ trigger, children, align = 'right', className, op
       setOpen(false)
     }
     const onScrollOrResize = () => setOpen(false)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', onOutside)
+    document.addEventListener('keydown', onKey)
     window.addEventListener('scroll', onScrollOrResize, true)
     window.addEventListener('resize', onScrollOrResize)
     return () => {
       document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('keydown', onKey)
       window.removeEventListener('scroll', onScrollOrResize, true)
       window.removeEventListener('resize', onScrollOrResize)
     }
