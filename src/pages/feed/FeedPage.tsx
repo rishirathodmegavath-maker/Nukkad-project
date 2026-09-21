@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Video, Bookmark, Sparkles, Plus, FileText } from 'lucide-react'
+import { Video, Bookmark, Sparkles, Plus, FileText, Hash, X } from 'lucide-react'
 import { listFeed, listSavedPosts } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PostCard } from '@/components/domain/PostCard'
@@ -210,23 +210,42 @@ function SavedPostsTab() {
   )
 }
 
-export default function FeedPage() {
+/**
+ * The feed. With `fixedKind` it is a page for one kind of post (Discussions): no Feed/Saved tabs and no kind filters,
+ * and the composer starts on that kind. Either way `?tag=` narrows it to posts using a hashtag.
+ */
+export default function FeedPage({ fixedKind }: { fixedKind?: PostType } = {}) {
   const { data: currentUser } = useCurrentUser()
   const [searchParams, setSearchParams] = useSearchParams()
-  const tab = searchParams.get('tab') === 'saved' ? 'saved' : 'all'
+  const tab = !fixedKind && searchParams.get('tab') === 'saved' ? 'saved' : 'all'
+  const tag = (searchParams.get('tag') ?? '').replace(/^#/, '').trim().toLowerCase()
   const setTab = (next: string) => setSearchParams(next === 'saved' ? { tab: 'saved' } : {})
+  const clearTag = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('tag')
+    setSearchParams(next)
+  }
   const [isComposerOpen, setIsComposerOpen] = useState(false)
-  const [kindFilter, setKindFilter] = useState('all')
+  const [pickedKind, setPickedKind] = useState('all')
+  const kindFilter = fixedKind ?? pickedKind
+  const fixedMeta = fixedKind ? memberPostKinds.find((k) => k.key === fixedKind) : undefined
 
   const { data: posts, isLoading, isError, refetch } = useQuery({
-    queryKey: ['feed', kindFilter],
-    queryFn: () => listFeed(undefined, undefined, kindFilter === 'all' ? undefined : (kindFilter as PostType)),
+    queryKey: ['feed', kindFilter, tag],
+    queryFn: () => listFeed(undefined, undefined, kindFilter === 'all' ? undefined : (kindFilter as PostType), tag || undefined),
     enabled: tab === 'all',
   })
 
   return (
     <div className="max-w-[620px] mx-auto flex flex-col gap-6">
-      <Tabs label="Feed view" items={FEED_TABS} value={tab} onChange={setTab} />
+      {fixedKind ? (
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-fg">Discussions</h1>
+          <p className="mt-1 text-sm text-fg-muted">Start a conversation with builders across BuildAdda, or join one that is already going.</p>
+        </header>
+      ) : (
+        <Tabs label="Feed view" items={FEED_TABS} value={tab} onChange={setTab} />
+      )}
 
       {tab === 'all' && (
         <button
@@ -236,7 +255,7 @@ export default function FeedPage() {
         >
           <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
           <span className="flex-1 min-w-0 truncate text-sm text-fg-muted">
-            Share an update, ask for feedback, or celebrate an achievement…
+            {fixedMeta ? 'Start a discussion…' : 'Share an update, ask for feedback, or celebrate an achievement…'}
           </span>
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
             <Plus className="size-4.5" />
@@ -244,9 +263,30 @@ export default function FeedPage() {
         </button>
       )}
 
-      {tab === 'all' && <PillTabs tone="soft" scrollable label="Filter by post type" items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} />}
+      {tab === 'all' && !fixedKind && (
+        <PillTabs tone="soft" scrollable label="Filter by post type" items={FEED_KIND_FILTERS} value={pickedKind} onChange={setPickedKind} />
+      )}
 
-      <CreatePostModal open={isComposerOpen} onClose={() => setIsComposerOpen(false)} />
+      {tab === 'all' && tag && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-brand-500/20 bg-brand-500/10 px-4 py-2.5">
+          <p className="flex min-w-0 items-center gap-2 text-sm text-fg">
+            <Hash className="size-4 shrink-0 text-fg-brand" aria-hidden="true" />
+            <span className="truncate">
+              Posts tagged <span className="font-bold">#{tag}</span>
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={clearTag}
+            aria-label={`Stop filtering by #${tag}`}
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg cursor-pointer"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
+      <CreatePostModal open={isComposerOpen} onClose={() => setIsComposerOpen(false)} initialType={fixedKind} />
 
       {tab === 'saved' ? (
         <SavedPostsTab />
@@ -271,18 +311,36 @@ export default function FeedPage() {
             <PostCard key={post.id} post={post} />
           ))}
         </div>
+      ) : tag ? (
+        <EmptyState
+          icon={<Hash className="size-6" />}
+          title={`No posts tagged #${tag} yet`}
+          description="Add the tag to a post and it will show up here."
+          action={
+            <Button size="sm" variant="secondary" onClick={clearTag}>
+              Show everything
+            </Button>
+          }
+        />
       ) : (
         <EmptyState
           icon={<Sparkles className="size-6" />}
-          title={kindFilter === 'all' ? 'Your feed is waiting for your voice' : `No ${memberPostKinds.find((k) => k.key === kindFilter)?.emptyHint ?? 'posts'} yet`}
+          title={
+            fixedMeta
+              ? 'No discussions yet'
+              : kindFilter === 'all'
+                ? 'Your feed is waiting for your voice'
+                : `No ${memberPostKinds.find((k) => k.key === kindFilter)?.emptyHint ?? 'posts'} yet`
+          }
           description={
-            kindFilter === 'all'
-              ? 'Be the first to share an update, showcase a project, or ask a question to the community.'
-              : 'Be the first — pick this type when you write a post.'
+            fixedMeta
+              ? 'Be the first to start one.'
+              : kindFilter === 'all'
+                ? 'Be the first to share an update, showcase a project, or ask a question to the community.'
+                : 'Be the first — pick this type when you write a post.'
           }
         />
       )}
     </div>
   )
 }
-

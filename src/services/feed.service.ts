@@ -64,9 +64,22 @@ export function mapPost(dto: PostDto): Post {
   }
 }
 
-export async function listFeed(authorId?: string, size?: number, type?: PostType): Promise<Post[]> {
-  const dtos = await getPage<PostDto>('/feed', { authorId, size, type })
+/** `tag` (a hashtag without the "#") keeps only posts that use it. */
+export async function listFeed(authorId?: string, size?: number, type?: PostType, tag?: string): Promise<Post[]> {
+  const dtos = await getPage<PostDto>('/feed', { authorId, size, type, tag })
   return dtos.map(mapPost)
+}
+
+export interface TrendingTopic {
+  /** Lowercase, without the "#". */
+  tag: string
+  /** How many recent posts used it. */
+  postCount: number
+}
+
+/** The hashtags most used lately in posts the viewer may read (the server counts only those). */
+export async function listTrendingTopics(limit = 5): Promise<TrendingTopic[]> {
+  return apiClient.get<TrendingTopic[]>(`/feed/trending-topics?limit=${limit}`)
 }
 
 export interface ListSavedPostsParams {

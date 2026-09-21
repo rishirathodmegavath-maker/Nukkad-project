@@ -11,6 +11,8 @@ import {
   FolderOpen,
   LayoutDashboard,
   HandCoins,
+  MessagesSquare,
+  Building2,
 } from 'lucide-react'
 
 export const navSections = [
@@ -30,15 +32,17 @@ export const navSections = [
       { to: '/startups', label: 'Startups', icon: Rocket, end: false },
       { to: '/opportunities', label: 'Opportunities', icon: Briefcase, end: false },
       { to: '/grants', label: 'Grants', icon: HandCoins, end: false },
+      { to: '/investors', label: 'Investors', icon: Landmark, end: false },
+      { to: '/events', label: 'Events', icon: CalendarDays, end: false },
+      { to: '/resources', label: 'Resources', icon: FolderOpen, end: false },
     ],
   },
   {
     title: 'Community',
     items: [
       { to: '/chapters', label: 'Chapters', icon: MapPin, end: false },
-      { to: '/investors', label: 'Investors', icon: Landmark, end: false },
-      { to: '/events', label: 'Events', icon: CalendarDays, end: false },
-      { to: '/resources', label: 'Resources', icon: FolderOpen, end: false },
+      { to: '/discussions', label: 'Discussions', icon: MessagesSquare, end: false },
+      { to: '/jobs', label: 'Jobs', icon: Building2, end: false },
     ],
   },
 ] as const

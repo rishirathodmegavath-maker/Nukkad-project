@@ -64,11 +64,11 @@ function KindTile({ kind, selected, onSelect }: { kind: PostKind; selected: bool
  * The "Create a Post" dialog: pick what kind of post it is, write it, and optionally add photos or video, a link,
  * or a file (PDF / Word / PowerPoint / Excel), choose who can see it, and post. The same dialog is opened from the
  * Home page and the Feed. Its state lives here, so a half-written post survives closing and reopening the dialog
- * until it is posted.
+ * until it is posted. initialType preselects a kind (the Discussions page opens on Discussion).
  */
-export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CreatePostModal({ open, onClose, initialType }: { open: boolean; onClose: () => void; initialType?: PostType }) {
   const queryClient = useQueryClient()
-  const [type, setType] = useState<PostType>('text')
+  const [type, setType] = useState<PostType>(initialType ?? 'text')
   const [showMore, setShowMore] = useState(false)
   const [content, setContent] = useState('')
   const [pending, setPending] = useState<PendingFile[]>([])
@@ -102,7 +102,7 @@ export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () 
       queryClient.invalidateQueries({ queryKey: ['feed'] })
       pending.forEach(revokePreview)
       setContent('')
-      setType('text')
+      setType(initialType ?? 'text')
       setPending([])
       setLink(null)
       setLinkDraft('')
@@ -291,7 +291,7 @@ export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () 
                     <img src={p.previewUrl} alt="" className="size-full object-cover" />
                   ) : (
                     <div className="flex size-full flex-col items-center justify-center gap-1 bg-surface-sunken p-1 text-center">
-                      {p.kind === 'video' ? <Video className="size-5 text-brand-600 dark:text-brand-400" /> : <DocumentIcon fileName={p.file.name} className="size-5 text-accent-500" />}
+                      {p.kind === 'video' ? <Video className="size-5 text-fg-brand" /> : <DocumentIcon fileName={p.file.name} className="size-5 text-accent-500" />}
                       <span className="w-full truncate px-1 text-xs font-medium text-fg-muted">{p.file.name}</span>
                     </div>
                   )}
@@ -358,7 +358,7 @@ export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () 
               </button>
             </div>
             {linkError && (
-              <p role="alert" className="mt-1.5 text-xs font-medium text-danger-600 dark:text-danger-400">
+              <p role="alert" className="mt-1.5 text-xs font-medium text-danger-500">
                 {linkError}
               </p>
             )}
@@ -367,7 +367,7 @@ export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () 
 
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={TOOLBAR_BUTTON} onClick={() => mediaInputRef.current?.click()} disabled={busy} aria-label="Add photo or video">
-            <Image className="size-4 text-brand-600 dark:text-brand-400" aria-hidden="true" />
+            <Image className="size-4 text-fg-brand" aria-hidden="true" />
             Add Photo
           </button>
           <button
@@ -378,7 +378,7 @@ export function CreatePostModal({ open, onClose }: { open: boolean; onClose: () 
             aria-expanded={linkOpen}
             aria-label="Add a link"
           >
-            <Link2 className="size-4 text-brand-600 dark:text-brand-400" aria-hidden="true" />
+            <Link2 className="size-4 text-fg-brand" aria-hidden="true" />
             Add Link
           </button>
           <button type="button" className={TOOLBAR_BUTTON} onClick={() => fileInputRef.current?.click()} disabled={busy} aria-label="Add a file (PDF, Word, PowerPoint or Excel)">
