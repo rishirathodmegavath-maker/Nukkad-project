@@ -247,7 +247,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
 
         <div>
           <p className="mb-1.5 text-sm font-medium text-fg">Tags</p>
-          <TagInput value={tags} onChange={setTags} placeholder="Add a tag and press Enter…" />
+          <TagInput value={tags} onChange={setTags} placeholder="Add a tag and press Enter…" maxLength={50} />
         </div>
       </div>
     </Modal>

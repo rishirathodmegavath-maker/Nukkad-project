@@ -206,7 +206,7 @@ export default function GrantFormPage() {
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Eligible sectors</p>
             <p className="text-xs text-fg-muted mb-2">Leave empty to make this open to every sector.</p>
-            <TagInput value={eligibleSectors} onChange={setEligibleSectors} placeholder="Add a sector and press Enter…" />
+            <TagInput value={eligibleSectors} onChange={setEligibleSectors} placeholder="Add a sector and press Enter…" maxLength={100} />
           </div>
 
           <Input

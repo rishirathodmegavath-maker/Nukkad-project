@@ -141,7 +141,7 @@ export function StartupEditModal({ open, onClose, startup }: { open: boolean; on
         />
         <div>
           <p className="text-sm font-medium text-fg mb-1.5">What are you looking for?</p>
-          <TagInput value={needs} onChange={setNeeds} placeholder="e.g. Engineers, Funding, Mentors…" />
+          <TagInput value={needs} onChange={setNeeds} placeholder="e.g. Engineers, Funding, Mentors…" maxLength={100} />
         </div>
 
         <SectionHeading title="Traction" hint="Whatever you can share — exact numbers, ranges, or a short note all work." />

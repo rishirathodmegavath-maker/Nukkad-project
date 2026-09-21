@@ -121,15 +121,15 @@ export default function InvestorProfileFormPage() {
 
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Sectors</p>
-            <TagInput value={sectors} onChange={setSectors} placeholder="Add a sector and press Enter…" />
+            <TagInput value={sectors} onChange={setSectors} placeholder="Add a sector and press Enter…" maxLength={100} />
           </div>
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Stage preference</p>
-            <TagInput value={stages} onChange={setStages} placeholder="e.g. Idea, MVP, Growth…" />
+            <TagInput value={stages} onChange={setStages} placeholder="e.g. Idea, MVP, Growth…" maxLength={50} />
           </div>
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Geography</p>
-            <TagInput value={geographies} onChange={setGeographies} placeholder="Add a region and press Enter…" />
+            <TagInput value={geographies} onChange={setGeographies} placeholder="Add a region and press Enter…" maxLength={100} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

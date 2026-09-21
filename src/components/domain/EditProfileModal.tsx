@@ -133,7 +133,7 @@ export function EditProfileModal({ open, onClose, user }: { open: boolean; onClo
 
         <div>
           <p className="text-sm font-medium text-fg mb-1.5">Skills</p>
-          <TagInput value={skills} onChange={setSkills} placeholder="Add a skill and press Enter…" />
+          <TagInput value={skills} onChange={setSkills} placeholder="Add a skill and press Enter…" maxLength={100} />
         </div>
 
         <div>
