@@ -211,7 +211,7 @@ export default function ResourcesPage() {
         </>
       ) : (
         <>
-          <section aria-label="Browse by shelf" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <section aria-label="Browse by shelf" className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {RESOURCE_CATEGORIES.map((c) => {
               const Icon = c.icon
               return (
