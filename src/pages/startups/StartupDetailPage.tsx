@@ -360,14 +360,6 @@ export default function StartupDetailPage() {
         <span className="text-fg truncate max-w-sm">{startup.name}</span>
       </div>
 
-      {canManage && startup.moderationStatus === 'PENDING' && (
-        <Card className="border border-warning-500/30 bg-warning-500/5 flex items-center gap-3">
-          <Badge tone="warning">Pending review</Badge>
-          <p className="text-sm text-fg-secondary">
-            This startup is waiting on admin approval and isn't visible to anyone else yet.
-          </p>
-        </Card>
-      )}
       {canManage && startup.moderationStatus === 'REJECTED' && (
         <Card className="border border-danger-500/30 bg-danger-500/5 flex items-center gap-3">
           <Badge tone="danger">Not approved</Badge>

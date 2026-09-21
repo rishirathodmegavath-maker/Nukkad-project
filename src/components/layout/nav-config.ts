@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   HandCoins,
   MessagesSquare,
-  Building2,
 } from 'lucide-react'
 
 export const navSections = [
@@ -42,7 +41,6 @@ export const navSections = [
     items: [
       { to: '/chapters', label: 'Chapters', icon: MapPin, end: false },
       { to: '/discussions', label: 'Discussions', icon: MessagesSquare, end: false },
-      { to: '/jobs', label: 'Jobs', icon: Building2, end: false },
     ],
   },
 ] as const
