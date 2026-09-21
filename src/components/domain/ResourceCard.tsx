@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Resource } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 import { ResourceThumbnail } from '@/components/domain/ResourceThumbnail'
-import { RESOURCE_TYPES, formatDuration } from '@/lib/resource-catalog'
+import { RESOURCE_TYPES, formatDuration, hostedKind } from '@/lib/resource-catalog'
 import { toggleSaveResource } from '@/services/resources.service'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
@@ -78,7 +78,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
         )}
 
         <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-semibold text-fg-brand">
-          {resource.fileName ? 'View resource' : type.action}
+          {hostedKind(resource) === 'video' ? 'Watch video' : resource.fileName ? 'View resource' : type.action}
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
