@@ -15,7 +15,7 @@ export function FieldWrap({ label, hint, error, required, className, children }:
   return (
     <label className={cn('flex flex-col gap-1.5', className)}>
       {label && (
-        <span className="text-xs font-semibold uppercase tracking-wider text-fg-secondary">
+        <span className="text-sm font-medium text-fg-secondary">
           {label}
           {required && <span className="text-danger-500 ml-1">*</span>}
         </span>

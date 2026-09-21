@@ -23,7 +23,7 @@ export function AdminPortalShell() {
   return (
     <div className="min-h-screen bg-canvas">
       <header className="border-b border-border/70 bg-surface">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-3 px-4 py-3 lg:px-8">
+        <div className="max-w-[1400px] mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-8">
           <div className="flex items-center gap-2.5">
             <Logo size="sm" />
             <span className="text-base font-bold tracking-tight text-fg">BuildAdda</span>

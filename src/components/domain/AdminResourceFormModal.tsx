@@ -165,7 +165,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
         {editing ? (
           hostedFile ? (
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-fg-secondary">Uploaded file</p>
+              <p className="mb-1.5 text-sm font-medium text-fg-secondary">Uploaded file</p>
               <p className="break-all rounded-lg border border-border/80 bg-surface-sunken px-3 py-2 text-sm text-fg">{resource.fileName}</p>
               <p className="mt-1.5 text-xs text-fg-muted">To replace the file, delete this resource and add it again with the new file.</p>
             </div>
@@ -175,7 +175,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
         ) : (
           <>
             <div>
-              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-fg-secondary">Content</p>
+              <p className="mb-1.5 text-sm font-medium text-fg-secondary">Content</p>
               <PillTabs
                 items={[
                   { key: 'link', label: 'Link' },

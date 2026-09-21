@@ -8,6 +8,7 @@ import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { Select } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -67,17 +68,7 @@ export default function AdminResourcesPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-        <p className="text-sm text-fg-muted max-w-xl">
-          Members can browse, open, download and save resources but cannot add or change them. Everything in the library is added here.
-        </p>
-        <Button leftIcon={<Plus className="size-4" />} onClick={() => setForm({})}>
-          Add resource
-        </Button>
-      </div>
-
-      <SearchFilterBar query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search resources by title or tag…" />
-      <div className="mb-4 flex flex-wrap gap-3">
+      <SearchFilterBar inline query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search resources by title or tag…">
         <Select aria-label="Filter by type" value={type} onChange={(e) => { setType(e.target.value); setPage(0) }} className="w-44">
           <option value="">All types</option>
           {RESOURCE_TYPE_ORDER.map((t) => (
@@ -94,7 +85,10 @@ export default function AdminResourcesPage() {
             </option>
           ))}
         </Select>
-      </div>
+        <Button className="sm:ml-auto" leftIcon={<Plus className="size-4" />} onClick={() => setForm({})}>
+          Add resource
+        </Button>
+      </SearchFilterBar>
 
       {isLoading ? (
         <div className="flex flex-col gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}</div>
@@ -120,22 +114,25 @@ export default function AdminResourcesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs font-semibold text-fg-muted uppercase tracking-wide">
-                    <th className="px-4 py-3">Title</th>
-                    <th className="px-4 py-3">Shelf</th>
-                    <th className="px-4 py-3">Source</th>
-                    <th className="px-4 py-3">Chapter</th>
-                    <th className="px-4 py-3">Added</th>
-                    <th className="px-4 py-3" />
+                    <th className="w-full min-w-[13rem] px-3 py-3">Title</th>
+                    <th className="px-3 py-3">Shelf</th>
+                    <th className="px-3 py-3">Source</th>
+                    <th className="px-3 py-3">Chapter</th>
+                    <th className="px-3 py-3">Added</th>
+                    <th className="bg-surface px-3 py-3 md:sticky md:right-0" />
                   </tr>
                 </thead>
                 <tbody>
                   {data.content.map((resource) => (
-                    <tr key={resource.id} className="border-b border-border/60 last:border-0 hover:bg-surface-hover transition-colors">
-                      <td className="px-4 py-3 font-medium text-fg max-w-sm">
+                    <tr key={resource.id} className="group border-b border-border/60 last:border-0 hover:bg-surface-hover transition-colors">
+                      {/* w-full + max-w-0: the title column takes the spare width (and truncates), so the
+                          other columns and the actions sit together instead of drifting apart. min-w keeps
+                          the title readable when the table is tight. */}
+                      <td className="w-full min-w-[13rem] max-w-0 px-3 py-3 font-medium text-fg">
                         <div className="flex items-center gap-3">
                           <ResourceThumbnail resource={resource} className="h-10 w-16 shrink-0 rounded-md" />
                           <div className="min-w-0">
-                            <span className="block truncate">{resource.title}</span>
+                            <span className="block truncate" title={resource.title}>{resource.title}</span>
                             <span className="mt-0.5 flex items-center gap-1.5">
                               <Badge tone="neutral">{resource.type}</Badge>
                               {resource.featured && <Badge tone="accent">Featured</Badge>}
@@ -143,24 +140,40 @@ export default function AdminResourcesPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{categoryMeta(resource.category)?.label ?? '—'}</td>
-                      <td className="px-4 py-3 text-fg-muted truncate max-w-xs">{sourceLabel(resource)}</td>
-                      <td className="px-4 py-3 text-fg-muted">{resource.chapterName ?? 'All members'}</td>
-                      <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(resource.createdAt)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-3 py-3 text-fg-muted whitespace-nowrap">{categoryMeta(resource.category)?.label ?? '—'}</td>
+                      <td className="px-3 py-3 text-fg-muted truncate max-w-[9rem]" title={sourceLabel(resource)}>
+                        {sourceLabel(resource)}
+                      </td>
+                      <td className="px-3 py-3 text-fg-muted whitespace-nowrap">{resource.chapterName ?? 'All members'}</td>
+                      <td className="px-3 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(resource.createdAt)}</td>
+                      <td className="bg-surface px-3 py-3 text-right transition-colors group-hover:bg-surface-hover md:sticky md:right-0">
                         <div className="flex items-center justify-end gap-2">
                           <a
                             href={resource.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline"
+                            aria-label={`Open ${resource.title} in a new tab`}
+                            className={buttonClasses({ variant: 'secondary', size: 'sm' })}
                           >
-                            Open <ExternalLink className="size-3" />
+                            <ExternalLink className="size-3.5" aria-hidden="true" />
+                            Open
                           </a>
-                          <Button size="sm" variant="secondary" leftIcon={<Pencil className="size-3.5" />} onClick={() => setForm({ resource })}>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            aria-label={`Edit ${resource.title}`}
+                            leftIcon={<Pencil className="size-3.5" />}
+                            onClick={() => setForm({ resource })}
+                          >
                             Edit
                           </Button>
-                          <Button size="sm" variant="danger-subtle" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setDeleting(resource)}>
+                          <Button
+                            size="sm"
+                            variant="danger-subtle"
+                            aria-label={`Delete ${resource.title}`}
+                            leftIcon={<Trash2 className="size-3.5" />}
+                            onClick={() => setDeleting(resource)}
+                          >
                             Delete
                           </Button>
                         </div>
