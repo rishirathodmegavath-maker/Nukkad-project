@@ -53,6 +53,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
+import { SectionAction } from '@/components/domain/SectionAction'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
@@ -193,7 +195,7 @@ function ExperienceFormModal({
           {!isCurrent && <Input label="End date" type="month" value={endDate} onChange={(e) => setEndDate(e.target.value)} />}
         </div>
         <label className="flex items-center gap-2 text-sm text-fg cursor-pointer select-none">
-          <input type="checkbox" id="experience-current-role" name="experience-current-role" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} className="rounded accent-brand-500 size-4" />
+          <input type="checkbox" id="experience-current-role" name="experience-current-role" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} className="rounded-md accent-brand-500 size-4" />
           I currently work here
         </label>
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What were your key responsibilities and impact?" />
@@ -231,7 +233,7 @@ function ExperienceSection({ user, isSelf }: { user: User; isSelf: boolean }) {
   if (!isSelf && experiences.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -240,15 +242,10 @@ function ExperienceSection({ user, isSelf }: { user: User; isSelf: boolean }) {
           <h2 className="font-bold text-base text-fg">Experience</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Experience" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add Experience
-          </button>
+            }} />
         )}
       </div>
 
@@ -264,7 +261,7 @@ function ExperienceSection({ user, isSelf }: { user: User; isSelf: boolean }) {
                   <span className="text-xs text-fg-muted">at</span>
                   <span className="font-semibold text-fg text-sm">{exp.company}</span>
                   {exp.isCurrent && (
-                    <Badge tone="neutral" className="text-[10px]">
+                    <Badge tone="neutral" className="text-xs">
                       Current
                     </Badge>
                   )}
@@ -411,7 +408,7 @@ function EducationSection({ user, isSelf }: { user: User; isSelf: boolean }) {
   if (!isSelf && education.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -420,15 +417,10 @@ function EducationSection({ user, isSelf }: { user: User; isSelf: boolean }) {
           <h2 className="font-bold text-base text-fg">Education</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Education" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add Education
-          </button>
+            }} />
         )}
       </div>
 
@@ -588,7 +580,7 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
   if (!isSelf && projects.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -597,15 +589,10 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
           <h2 className="font-bold text-base text-fg">Built Projects</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Built Projects" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add Project
-          </button>
+            }} />
         )}
       </div>
 
@@ -619,7 +606,7 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-bold text-fg text-sm sm:text-base">{project.title}</p>
-                    <Badge tone="neutral" className="text-[10px]">
+                    <Badge tone="neutral" className="text-xs">
                       {PROJECT_TYPE_LABELS[project.projectType]}
                     </Badge>
                   </div>
@@ -651,7 +638,7 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
               {project.technologies.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {project.technologies.map((t) => (
-                    <Badge key={t} tone="neutral" className="text-[11px]">
+                    <Badge key={t} tone="neutral" className="text-xs">
                       {t}
                     </Badge>
                   ))}
@@ -772,7 +759,7 @@ function AchievementsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
   if (!isSelf && achievements.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -781,15 +768,10 @@ function AchievementsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
           <h2 className="font-bold text-base text-fg">Achievements & Honors</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Achievements & Honors" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add
-          </button>
+            }} />
         )}
       </div>
 
@@ -934,7 +916,7 @@ function CertificationsSection({ user, isSelf }: { user: User; isSelf: boolean }
   if (!isSelf && certifications.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -943,15 +925,10 @@ function CertificationsSection({ user, isSelf }: { user: User; isSelf: boolean }
           <h2 className="font-bold text-base text-fg">Certifications</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Certifications" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add
-          </button>
+            }} />
         )}
       </div>
 
@@ -1093,7 +1070,7 @@ function PublicationsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
   if (!isSelf && publications.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -1102,15 +1079,10 @@ function PublicationsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
           <h2 className="font-bold text-base text-fg">Publications & Articles</h2>
         </div>
         {isSelf && (
-          <button
-            onClick={() => {
+          <SectionAction label="Add" section="Publications & Articles" icon={Plus} onClick={() => {
               setEditing(undefined)
               setFormOpen(true)
-            }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-fg-secondary hover:text-fg hover:bg-surface-hover px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="size-3.5" /> Add
-          </button>
+            }} />
         )}
       </div>
 
@@ -1242,7 +1214,7 @@ function RecommendationsSection({ user, isSelf }: { user: User; isSelf: boolean 
   if (recommendations.length === 0 && !canWrite) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-surface-sunken text-fg-secondary border border-border/60">
@@ -1305,7 +1277,7 @@ function PendingRecommendationsCard({ userId }: { userId: string }) {
   if (!pending || pending.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-brand-200 dark:border-brand-800 bg-brand-50/40 dark:bg-brand-950/20 shadow-xs mb-4">
+    <Card className="rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/40 dark:bg-brand-950/20 shadow-xs mb-4">
       <h2 className="font-bold text-fg text-sm mb-3">Pending Recommendations to Review</h2>
       <div className="flex flex-col gap-4 divide-y divide-border/60">
         {pending.map((r) => (
@@ -1333,7 +1305,7 @@ function IdeasSection({ userId }: { userId: string }) {
   if (!ideas || ideas.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400">
           <Lightbulb className="size-4" />
@@ -1350,12 +1322,12 @@ function IdeasSection({ userId }: { userId: string }) {
             <div>
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <div className="flex flex-wrap items-center gap-1">
-                  <Badge tone="neutral" className="text-[10px]">
+                  <Badge tone="neutral" className="text-xs">
                     {idea.stage}
                   </Badge>
                   <ModerationBadge status={idea.moderationStatus} />
                 </div>
-                <span className="text-[11px] text-fg-muted">{idea.category}</span>
+                <span className="text-xs text-fg-muted">{idea.category}</span>
               </div>
               <p className="font-bold text-sm text-fg leading-snug">{idea.title}</p>
               <p className="text-xs text-fg-muted line-clamp-2 mt-1">{idea.problem}</p>
@@ -1372,7 +1344,7 @@ function StartupsSection({ userId }: { userId: string }) {
   if (!startups || startups.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400">
           <Rocket className="size-4" />
@@ -1396,11 +1368,11 @@ function StartupsSection({ userId }: { userId: string }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="font-bold text-sm text-fg truncate">{startup.name}</p>
-                {startup.isRaising && <Badge tone="accent" dot className="text-[10px]">Raising</Badge>}
+                {startup.isRaising && <Badge tone="accent" dot className="text-xs">Raising</Badge>}
               </div>
               <p className="text-xs text-fg-muted line-clamp-2 mt-0.5">{startup.tagline}</p>
               <div className="flex flex-wrap items-center gap-1 mt-2">
-                <Badge tone="neutral" className="text-[10px]">{startup.stage}</Badge>
+                <Badge tone="neutral" className="text-xs">{startup.stage}</Badge>
                 <ModerationBadge status={startup.moderationStatus} />
               </div>
             </div>
@@ -1421,7 +1393,7 @@ function OpportunitiesPostedSection({ userId }: { userId: string }) {
   if (!opportunities || opportunities.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
           <Briefcase className="size-4" />
@@ -1438,12 +1410,12 @@ function OpportunitiesPostedSection({ userId }: { userId: string }) {
             <div>
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <div className="flex flex-wrap items-center gap-1">
-                  <Badge tone="neutral" className="text-[10px]">
+                  <Badge tone="neutral" className="text-xs">
                     {opp.type}
                   </Badge>
                   <ModerationBadge status={opp.moderationStatus} />
                 </div>
-                <span className="text-[11px] text-fg-muted">{opp.workMode}</span>
+                <span className="text-xs text-fg-muted">{opp.workMode}</span>
               </div>
               <p className="font-bold text-sm text-fg leading-snug">{opp.title}</p>
               <p className="text-xs text-fg-muted line-clamp-2 mt-1">{opp.organizationName}</p>
@@ -1460,7 +1432,7 @@ function ActivitySection({ userId }: { userId: string }) {
   if (!posts || posts.length === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center gap-2 mb-4">
         <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">
           <Activity className="size-4" />
@@ -1485,7 +1457,7 @@ function ActivitySection({ userId }: { userId: string }) {
                 </div>
               )}
               {post.attachments.length > 1 && (
-                <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5">
+                <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold px-2 py-0.5">
                   +{post.attachments.length - 1}
                 </span>
               )}
@@ -1502,7 +1474,7 @@ function MutualConnectionsStrip({ userId }: { userId: string }) {
   if (!data || data.totalCount === 0) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center gap-3">
         <div className="flex -space-x-2 shrink-0">
           {data.users.slice(0, 3).map((u) => (
@@ -1547,7 +1519,7 @@ function SkillChip({ skill, user, isSelf }: { skill: string; user: User; isSelf:
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium border cursor-pointer transition-all active:scale-95 disabled:opacity-60',
+        'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium border cursor-pointer transition-all active:scale-95 disabled:opacity-60',
         endorsedByViewer
           ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
           : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
@@ -1561,13 +1533,11 @@ function SkillChip({ skill, user, isSelf }: { skill: string; user: User; isSelf:
 
 function SkillsCard({ user, isSelf, onEdit }: { user: User; isSelf: boolean; onEdit?: () => void }) {
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-bold text-sm text-fg">Skills & Endorsements</h2>
+        <h2 className="font-bold text-base text-fg">Skills & Endorsements</h2>
         {isSelf && onEdit && (
-          <button onClick={onEdit} className="text-xs font-semibold text-fg-secondary hover:text-fg cursor-pointer">
-            Edit
-          </button>
+          <SectionAction label="Edit" section="Skills & Endorsements" onClick={onEdit} />
         )}
       </div>
       {user.skills.length === 0 ? (
@@ -1588,13 +1558,11 @@ function LinksCard({ user, isSelf, onEdit }: { user: User; isSelf: boolean; onEd
   if (links.length === 0 && !isSelf) return null
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs">
+    <Card className="border border-border/80 shadow-xs">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-bold text-sm text-fg">Social & Web Links</h2>
+        <h2 className="font-bold text-base text-fg">Social & Web Links</h2>
         {isSelf && (
-          <button onClick={onEdit} className="flex items-center gap-1 text-xs font-semibold text-fg-secondary hover:text-fg cursor-pointer">
-            <Pencil className="size-3" /> Edit
-          </button>
+          <SectionAction label="Edit" section="Social & Web Links" onClick={onEdit} />
         )}
       </div>
       {links.length === 0 ? (
@@ -1651,7 +1619,7 @@ function ProfileCompletenessBanner({
 
   return (
     <>
-      <div className="flex flex-col gap-4 px-5 py-4 rounded-2xl border border-border/80 bg-surface-sunken/60 hover:bg-surface-sunken transition-all shadow-xs mb-3">
+      <div className="flex flex-col gap-4 px-5 py-4 rounded-xl border border-border/80 bg-surface-sunken/60 hover:bg-surface-sunken transition-all shadow-xs mb-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0 flex-1">
             <svg width="58" height="58" viewBox="0 0 58 58" className="shrink-0">
@@ -1904,7 +1872,7 @@ function PrivacySettingsModal({ open, onClose }: { open: boolean; onClose: () =>
                     type="button"
                     onClick={() => setOverrides((prev) => ({ ...prev, [section]: opt.value }))}
                     className={cn(
-                      'rounded-xl px-2.5 py-1 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                      'rounded-lg px-2.5 py-1 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                       active ? 'bg-brand-600 text-white border-brand-600 shadow-xs' : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
                     )}
                   >
@@ -2091,10 +2059,10 @@ export default function PersonProfilePage() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-6 max-w-[1200px] mx-auto">
-        <Skeleton className="h-64 w-full rounded-3xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="lg:col-span-2 h-96 rounded-2xl" />
-          <Skeleton className="h-72 rounded-2xl" />
+          <Skeleton className="lg:col-span-2 h-96 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
         </div>
       </div>
     )
@@ -2122,7 +2090,7 @@ export default function PersonProfilePage() {
       )}
       {isSelf && <PendingRecommendationsCard userId={user.id} />}
 
-      <div className="relative rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+      <div className="relative rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
         {/* Cover Photo Banner (LinkedIn-style Background Image) */}
         <div className="relative h-44 sm:h-56 md:h-64 w-full bg-surface-sunken overflow-hidden group">
           {user.coverUrl ? (
@@ -2243,19 +2211,19 @@ export default function PersonProfilePage() {
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               {isSelf ? (
                 <>
-                  <Button variant="secondary" size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditOpen(true)}>
-                    Edit Profile
+                  <Button size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditOpen(true)}>
+                    Edit profile
                   </Button>
-                  <Button variant="outline" size="sm" leftIcon={<Lock className="size-3.5" />} onClick={() => setPrivacyOpen(true)}>
+                  <Button variant="secondary" size="sm" leftIcon={<Lock className="size-3.5" />} onClick={() => setPrivacyOpen(true)}>
                     Privacy
                   </Button>
                   {/* Only reachable from your own profile, not the site-wide navigation. */}
-                  <Button variant="outline" size="sm" leftIcon={<Wallet className="size-3.5" />} onClick={() => navigate('/wallet')}>
+                  <Button variant="secondary" size="sm" leftIcon={<Wallet className="size-3.5" />} onClick={() => navigate('/wallet')}>
                     Wallet
                   </Button>
-                  <Button variant="outline" size="sm" leftIcon={<Share2 className="size-3.5" />} onClick={handleShareProfile} aria-label="Share profile">
-                    Share
-                  </Button>
+                  <IconButton label="Share profile" onClick={handleShareProfile}>
+                    <Share2 className="size-4" />
+                  </IconButton>
                 </>
               ) : (
                 <>
@@ -2312,70 +2280,70 @@ export default function PersonProfilePage() {
                     Message
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<Share2 className="size-3.5" />}
-                    onClick={handleShareProfile}
-                  >
-                    Share
-                  </Button>
+                  <IconButton label="Share profile" onClick={handleShareProfile}>
+                    <Share2 className="size-4" />
+                  </IconButton>
                 </>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-black text-fg tracking-tight">{user.name}</h1>
-              {user.role && <Badge tone="brand" className="font-bold text-xs">{user.role}</Badge>}
-              {user.availability && <Badge tone="accent" dot className="font-semibold text-xs">{user.availability}</Badge>}
-            </div>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-fg tracking-tight">{user.name}</h1>
 
             {user.headline && (
-              <p className="text-sm sm:text-base text-fg-secondary font-medium leading-relaxed max-w-3xl">
-                {user.headline}
-              </p>
+              <p className="text-base text-fg-secondary font-medium leading-relaxed max-w-3xl">{user.headline}</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-2 text-xs sm:text-sm text-fg-muted font-medium">
+            {(user.role || user.availability) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {user.role && <Badge tone="brand" className="font-bold text-xs">{user.role}</Badge>}
+                {user.availability && <Badge tone="accent" dot className="font-semibold text-xs">{user.availability}</Badge>}
+              </div>
+            )}
+
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-fg-secondary">
               {user.location && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="size-3.5 text-fg-muted shrink-0" />
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
                   <span>{user.location}</span>
-                </span>
+                </li>
               )}
               {user.collegeOrCompany && (
-                <span className="flex items-center gap-1.5">
-                  <GraduationCap className="size-3.5 text-fg-muted shrink-0" />
+                <li className="flex items-center gap-1.5">
+                  <GraduationCap className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
                   <span>{user.collegeOrCompany}</span>
-                </span>
+                </li>
               )}
               {user.experienceYears !== undefined && user.experienceYears > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Briefcase className="size-3.5 text-fg-muted shrink-0" />
+                <li className="flex items-center gap-1.5">
+                  <Briefcase className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
                   <span>{user.experienceYears} {user.experienceYears === 1 ? 'yr' : 'yrs'} exp</span>
-                </span>
+                </li>
               )}
-              <button
-                type="button"
-                onClick={() => setConnectionsModalOpen(true)}
-                className="flex items-center gap-1.5 text-fg font-bold hover:underline underline-offset-2 cursor-pointer transition-colors"
-                aria-label={`View ${user.name}'s connections`}
-              >
-                <UserCheck className="size-3.5 shrink-0 text-fg-muted" />
-                <span>{user.connectionsCount} connection{user.connectionsCount === 1 ? '' : 's'}</span>
-              </button>
-            </div>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setConnectionsModalOpen(true)}
+                  className="flex items-center gap-1.5 hover:underline underline-offset-2 cursor-pointer transition-colors"
+                  aria-label={`View ${user.name}'s connections`}
+                >
+                  <UserCheck className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+                  <span>{user.connectionsCount} connection{user.connectionsCount === 1 ? '' : 's'}</span>
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-border/80 sticky top-16 z-20 bg-canvas/90 backdrop-blur-md py-2 overflow-x-auto no-scrollbar">
+      <div role="tablist" aria-label="Profile sections" className="flex items-center gap-1 border-b border-border/80 sticky top-16 z-20 bg-canvas/90 backdrop-blur-md py-2 overflow-x-auto no-scrollbar">
         <button
+          role="tab"
+          aria-selected={activeTab === 'overview'}
           onClick={() => setActiveTab('overview')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-all cursor-pointer whitespace-nowrap',
+            'flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all cursor-pointer whitespace-nowrap',
             activeTab === 'overview'
               ? 'bg-surface text-fg font-bold shadow-xs border border-border/80'
               : 'text-fg-muted hover:text-fg hover:bg-surface-hover font-medium',
@@ -2386,9 +2354,11 @@ export default function PersonProfilePage() {
         </button>
 
         <button
+          role="tab"
+          aria-selected={activeTab === 'ventures'}
           onClick={() => setActiveTab('ventures')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-all cursor-pointer whitespace-nowrap',
+            'flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all cursor-pointer whitespace-nowrap',
             activeTab === 'ventures'
               ? 'bg-surface text-fg font-bold shadow-xs border border-border/80'
               : 'text-fg-muted hover:text-fg hover:bg-surface-hover font-medium',
@@ -2400,9 +2370,11 @@ export default function PersonProfilePage() {
         </button>
 
         <button
+          role="tab"
+          aria-selected={activeTab === 'credentials'}
           onClick={() => setActiveTab('credentials')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-all cursor-pointer whitespace-nowrap',
+            'flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all cursor-pointer whitespace-nowrap',
             activeTab === 'credentials'
               ? 'bg-surface text-fg font-bold shadow-xs border border-border/80'
               : 'text-fg-muted hover:text-fg hover:bg-surface-hover font-medium',
@@ -2414,9 +2386,11 @@ export default function PersonProfilePage() {
         </button>
 
         <button
+          role="tab"
+          aria-selected={activeTab === 'activity'}
           onClick={() => setActiveTab('activity')}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-all cursor-pointer whitespace-nowrap',
+            'flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all cursor-pointer whitespace-nowrap',
             activeTab === 'activity'
               ? 'bg-surface text-fg font-bold shadow-xs border border-border/80'
               : 'text-fg-muted hover:text-fg hover:bg-surface-hover font-medium',
@@ -2432,13 +2406,11 @@ export default function PersonProfilePage() {
           {activeTab === 'overview' && (
             <>
               {(user.bio || user.goals || isSelf) && (
-                <Card className="rounded-2xl border border-border/80 shadow-xs">
+                <Card className="border border-border/80 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-bold text-base text-fg">About</h2>
                     {isSelf && (
-                      <button onClick={() => setEditOpen(true)} className="text-xs font-semibold text-fg-secondary hover:text-fg cursor-pointer">
-                        Edit
-                      </button>
+                      <SectionAction label="Edit" section="About" onClick={() => setEditOpen(true)} />
                     )}
                   </div>
                   <p className="text-sm text-fg-secondary leading-relaxed">
@@ -2491,13 +2463,11 @@ export default function PersonProfilePage() {
           <SkillsCard user={user} isSelf={isSelf} onEdit={() => setEditOpen(true)} />
 
           {(user.lookingFor.length > 0 || isSelf) && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs">
+            <Card className="border border-border/80 shadow-xs">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-bold text-sm text-fg">Looking For</h2>
+                <h2 className="font-bold text-base text-fg">Looking For</h2>
                 {isSelf && (
-                  <button onClick={() => setEditOpen(true)} className="text-xs font-semibold text-fg-secondary hover:text-fg cursor-pointer">
-                    Edit
-                  </button>
+                  <SectionAction label="Edit" section="Looking For" onClick={() => setEditOpen(true)} />
                 )}
               </div>
               {user.lookingFor.length === 0 ? (
@@ -2515,13 +2485,11 @@ export default function PersonProfilePage() {
           )}
 
           {((user.openTo?.length ?? 0) > 0 || isSelf) && (
-            <Card className="rounded-2xl border border-border/80 shadow-xs">
+            <Card className="border border-border/80 shadow-xs">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-bold text-sm text-fg">Open To</h2>
+                <h2 className="font-bold text-base text-fg">Open To</h2>
                 {isSelf && (
-                  <button onClick={() => setEditOpen(true)} className="text-xs font-semibold text-fg-secondary hover:text-fg cursor-pointer">
-                    Edit
-                  </button>
+                  <SectionAction label="Edit" section="Open To" onClick={() => setEditOpen(true)} />
                 )}
               </div>
               {(user.openTo?.length ?? 0) === 0 ? (

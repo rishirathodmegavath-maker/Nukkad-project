@@ -1,4 +1,6 @@
 export * from './Button'
+export * from './button-styles'
+export * from './IconButton'
 export * from './Badge'
 export * from './Avatar'
 export * from './Card'

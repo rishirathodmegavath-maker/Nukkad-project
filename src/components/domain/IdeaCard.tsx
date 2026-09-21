@@ -49,7 +49,7 @@ export function IdeaCard({ idea, reasons }: { idea: Idea; reasons?: string[] }) 
             {idea.helpNeeded.slice(0, 3).map((area) => (
               <span
                 key={area}
-                className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-md bg-surface-sunken text-fg-secondary border border-border/80 truncate max-w-full"
+                className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-surface-sunken text-fg-secondary border border-border/80 truncate max-w-full"
               >
                 {area}
               </span>

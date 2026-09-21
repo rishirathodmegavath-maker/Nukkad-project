@@ -141,6 +141,14 @@
   }
 }
 
+/* Hides the scrollbar on horizontally scrolling rows (tab strips) while keeping them scrollable. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;

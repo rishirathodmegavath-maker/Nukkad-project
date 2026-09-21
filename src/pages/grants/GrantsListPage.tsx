@@ -51,7 +51,7 @@ export default function GrantsListPage() {
           </Link>
         }
       />
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search grants by name or provider…">
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter grants by name or provider…">
         <div className="flex flex-wrap items-center gap-3">
           <PillTabs items={PROVIDER_TYPE_FILTERS} value={providerType} onChange={setProviderType} />
           <Select value={stage} onChange={(e) => setStage(e.target.value)} className="w-auto">

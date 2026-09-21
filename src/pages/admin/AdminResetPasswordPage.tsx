@@ -62,7 +62,7 @@ export default function AdminResetPasswordPage() {
           <span className="text-xl font-bold tracking-tight text-fg">BuildAdda</span>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-surface p-6 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-surface p-6 shadow-sm">
           {done ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">

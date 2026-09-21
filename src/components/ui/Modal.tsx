@@ -42,7 +42,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative w-full bg-surface rounded-2xl shadow-xl border border-border max-h-[90vh] flex flex-col animate-in overflow-hidden',
+          'relative w-full bg-surface rounded-xl shadow-xl border border-border max-h-[90vh] flex flex-col animate-in overflow-hidden',
           sizeClasses[size],
         )}
       >
@@ -55,7 +55,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
             <button
               onClick={onClose}
               aria-label="Close dialog"
-              className="text-fg-muted hover:text-fg hover:bg-surface-hover rounded-xl p-2 shrink-0 cursor-pointer transition-colors"
+              className="text-fg-muted hover:text-fg hover:bg-surface-hover rounded-lg p-2 shrink-0 cursor-pointer transition-colors"
             >
               <X className="size-4" />
             </button>

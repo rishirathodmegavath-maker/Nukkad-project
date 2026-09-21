@@ -5,6 +5,7 @@ import { ArrowRight, ChevronRight, FolderOpen, Search, X } from 'lucide-react'
 import { listResources, listResourcesPage } from '@/services/resources.service'
 import { ResourceCard } from '@/components/domain/ResourceCard'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { Select } from '@/components/ui/Input'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Pagination } from '@/components/ui/Pagination'
@@ -127,14 +128,14 @@ export default function ResourcesPage() {
         )}
       </header>
 
-      <div key="search" className="relative max-w-2xl">
+      <div key="search" role="search" aria-label="Search resources" className="relative max-w-2xl">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4.5 -translate-y-1/2 text-fg-muted" />
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Search resources (e.g. pitch deck, YC, template…)"
           aria-label="Search resources"
-          className="w-full rounded-2xl border border-border/80 bg-surface py-3 pl-11 pr-10 text-sm text-fg shadow-2xs outline-none transition-all placeholder:text-fg-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+          className="h-11 w-full rounded-lg border border-border/80 bg-surface pl-11 pr-10 text-sm text-fg shadow-2xs outline-none transition-all placeholder:text-fg-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
         />
         {text && (
           <button
@@ -217,7 +218,7 @@ export default function ResourcesPage() {
                 <Link
                   key={c.key}
                   to={`/resources?category=${c.key}`}
-                  className="group flex flex-col gap-3 rounded-2xl border border-border/80 bg-surface p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md"
+                  className="group flex flex-col gap-3 rounded-xl border border-border/80 bg-surface p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md"
                 >
                   <span className={cn('flex size-10 items-center justify-center rounded-xl', c.chip)}>
                     <Icon className="size-5" />
@@ -231,14 +232,14 @@ export default function ResourcesPage() {
             })}
           </section>
 
-          <section className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-brand-500/20 bg-brand-500/10 p-5 sm:flex-row sm:items-center sm:p-6">
+          <section className="flex flex-col items-start justify-between gap-4 rounded-xl border border-brand-500/20 bg-brand-500/10 p-5 sm:flex-row sm:items-center sm:p-6">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-fg">Learn from the best. Build with the right people.</h2>
               <p className="mt-1 text-sm text-fg-secondary">Free to read, open and download — everything here is picked by the BuildAdda team.</p>
             </div>
-            <Button size="lg" rightIcon={<ArrowRight className="size-4" />} onClick={() => update({ category: 'all' })}>
-              Start exploring
-            </Button>
+            <Link to="/resources?category=all" className={buttonClasses({ variant: 'secondary' })}>
+              Browse all resources <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </section>
 
           {frontLoading ? (
@@ -255,7 +256,7 @@ export default function ResourcesPage() {
             <>
               {featuredList.length > 0 && (
                 <section aria-labelledby="featured-heading">
-                  <div className="mb-4 flex items-end justify-between gap-3">
+                  <div className="mb-4 flex items-baseline justify-between gap-3">
                     <div>
                       <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Featured resources</h2>
                       <p className="text-sm text-fg-muted">Handpicked for you</p>
@@ -273,7 +274,7 @@ export default function ResourcesPage() {
               )}
               {latestList.length > 0 && (
                 <section aria-labelledby="latest-heading">
-                  <div className="mb-4 flex items-end justify-between gap-3">
+                  <div className="mb-4 flex items-baseline justify-between gap-3">
                     <h2 id="latest-heading" className="text-xl font-bold tracking-tight text-fg">
                       {featuredList.length > 0 ? 'New in the library' : 'Latest resources'}
                     </h2>

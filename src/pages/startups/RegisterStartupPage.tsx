@@ -66,7 +66,7 @@ export default function RegisterStartupPage() {
         title="Register your startup"
         description="Already building or running something — inside BuildAdda or out in the world? Bring it here so the community can follow, join, and support it."
       />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Startup name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Swiggy" maxLength={200} />

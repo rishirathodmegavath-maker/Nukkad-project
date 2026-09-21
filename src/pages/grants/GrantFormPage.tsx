@@ -115,7 +115,7 @@ export default function GrantFormPage() {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Skeleton className="h-10 w-2/3 rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     )
   }
@@ -130,7 +130,7 @@ export default function GrantFormPage() {
             : 'Share a government scheme, accelerator program, or funding opportunity with the BuildAdda community.'
         }
       />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input label="Grant / scheme name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Startup India Seed Fund" maxLength={200} />
 

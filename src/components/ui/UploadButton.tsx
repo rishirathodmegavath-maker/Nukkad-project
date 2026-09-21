@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { UploadCloud, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { ButtonSize, ButtonVariant } from '@/components/ui/Button'
+import { buttonClasses, type ButtonSize, type ButtonVariant } from '@/components/ui/button-styles'
 
 export type UploadPhase = 'idle' | 'uploading' | 'done'
 
@@ -20,37 +20,13 @@ interface UploadButtonProps {
   type?: 'button' | 'submit'
 }
 
-const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm border border-brand-700/20 font-medium',
-  secondary:
-    'bg-surface text-fg hover:bg-surface-hover hover:border-border-strong active:bg-surface-sunken border border-border font-medium shadow-sm',
-  accent:
-    'bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-700 shadow-sm border border-accent-600/20 font-medium',
-  outline:
-    'bg-transparent text-fg border border-border hover:bg-surface-hover hover:border-border-strong active:bg-surface-sunken',
-  ghost:
-    'bg-transparent text-fg-secondary hover:bg-surface-hover hover:text-fg active:bg-surface-sunken',
-  danger:
-    'bg-danger-500 text-white hover:bg-danger-600 active:bg-danger-700 shadow-sm border border-danger-600/20 font-medium',
-  'danger-subtle':
-    'bg-danger-100/60 text-danger-500 hover:bg-danger-100 hover:text-danger-600 border border-transparent font-medium',
-}
-
-const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-  md: 'h-9 px-4 text-sm gap-2 rounded-xl',
-  lg: 'h-11 px-5 text-sm gap-2.5 rounded-xl font-semibold',
-  icon: 'size-9 rounded-xl p-0',
-  'icon-sm': 'size-7.5 rounded-lg p-0',
-}
-
 /** On light (secondary/outline/ghost) fills a dark bar reads better than a white one. */
 const progressBarClasses: Record<ButtonVariant, string> = {
   primary: 'bg-white/30',
   secondary: 'bg-fg/12',
   accent: 'bg-white/30',
   outline: 'bg-fg/12',
+  soft: 'bg-fg/12',
   ghost: 'bg-fg/12',
   danger: 'bg-white/30',
   'danger-subtle': 'bg-danger-500/20',
@@ -87,13 +63,8 @@ export function UploadButton({
       layout
       disabled={disabled || phase !== 'idle'}
       onClick={onClick}
-      className={cn(
-        'relative inline-flex items-center justify-center font-medium overflow-hidden',
-        'disabled:cursor-not-allowed cursor-pointer select-none',
-        variantClasses[variant],
-        sizeClasses[size],
-        className,
-      )}
+      // Same look as every other button (one shared style table); the upload phases stay fully opaque while disabled.
+      className={cn(buttonClasses({ variant, size, className: 'disabled:opacity-100' }), 'relative overflow-hidden', className)}
       transition={{ layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
     >
       <AnimatePresence mode="popLayout" initial={false}>

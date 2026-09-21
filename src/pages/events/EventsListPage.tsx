@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, Plus } from 'lucide-react'
 import { listEvents } from '@/services/events.service'
@@ -9,11 +9,11 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { PillTabs } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 
 export default function EventsListPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const [upcomingOnly, setUpcomingOnly] = useState(true)
@@ -38,29 +38,39 @@ export default function EventsListPage() {
         title="Events"
         description="Demo nights, meetups, and your own meets — hosted by anyone."
         action={
-          <Button leftIcon={<Plus className="size-4" />} onClick={() => navigate('/events/new')}>
+          <Link to="/events/new" className={buttonClasses()}>
+            <Plus className="size-4" aria-hidden="true" />
             Start an event
-          </Button>
+          </Link>
         }
       />
-      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search events by title…">
-        <div className="flex flex-wrap items-center gap-4">
-          <PillTabs
-            items={[
-              { key: 'upcoming', label: 'Upcoming' },
-              { key: 'all', label: 'All events' },
-            ]}
-            value={upcomingOnly ? 'upcoming' : 'all'}
-            onChange={(k) => setUpcomingOnly(k === 'upcoming')}
-          />
-          <PillTabs
-            items={[
-              { key: 'all', label: 'All organizers' },
-              { key: 'mine', label: 'Hosted by me' },
-            ]}
-            value={mineOnly ? 'mine' : 'all'}
-            onChange={(k) => setMineOnly(k === 'mine')}
-          />
+      <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter events by title…">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-fg-muted">When</span>
+            <PillTabs
+              label="When"
+              items={[
+                { key: 'upcoming', label: 'Upcoming' },
+                { key: 'all', label: 'All events' },
+              ]}
+              value={upcomingOnly ? 'upcoming' : 'all'}
+              onChange={(k) => setUpcomingOnly(k === 'upcoming')}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-fg-muted">Organizer</span>
+            <PillTabs
+              tone="soft"
+              label="Organizer"
+              items={[
+                { key: 'all', label: 'All organizers' },
+                { key: 'mine', label: 'Hosted by me' },
+              ]}
+              value={mineOnly ? 'mine' : 'all'}
+              onChange={(k) => setMineOnly(k === 'mine')}
+            />
+          </div>
         </div>
       </SearchFilterBar>
 
@@ -71,7 +81,7 @@ export default function EventsListPage() {
       ) : events && events.length > 0 ? (
         <div className="grid sm:grid-cols-2 gap-4">
           {events.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard key={event.id} event={event} headingAs="h2" />
           ))}
         </div>
       ) : isFiltering ? (
@@ -91,9 +101,10 @@ export default function EventsListPage() {
           title="You haven't hosted any events yet"
           description="Events you organize will show up here."
           action={
-            <Button size="sm" leftIcon={<Plus className="size-3.5" />} onClick={() => navigate('/events/new')}>
-              Host an Event
-            </Button>
+            <Link to="/events/new" className={buttonClasses({ size: 'sm' })}>
+              <Plus className="size-3.5" aria-hidden="true" />
+              Host an event
+            </Link>
           }
         />
       ) : (
@@ -106,9 +117,10 @@ export default function EventsListPage() {
               : 'Events organized by members and university chapters will show up here.'
           }
           action={
-            <Button size="sm" leftIcon={<Plus className="size-3.5" />} onClick={() => navigate('/events/new')}>
-              Host an Event
-            </Button>
+            <Link to="/events/new" className={buttonClasses({ size: 'sm' })}>
+              <Plus className="size-3.5" aria-hidden="true" />
+              Host an event
+            </Link>
           }
         />
       )}

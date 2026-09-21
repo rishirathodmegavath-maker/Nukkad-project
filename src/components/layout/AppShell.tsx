@@ -3,7 +3,6 @@ import { DesktopSidebar, MobileDrawer } from './Sidebar'
 import { Topbar } from './Topbar'
 import { MobileNav } from './MobileNav'
 import { Toaster } from '@/components/ui/Toaster'
-import { MessengerWidget } from '@/components/domain/MessengerWidget'
 import { IncomingMessageToaster } from '@/components/domain/IncomingMessageToaster'
 import { useAppearanceSync } from '@/hooks/useAppearanceSync'
 
@@ -20,7 +19,6 @@ export function AppShell() {
         </main>
       </div>
       <MobileNav />
-      <MessengerWidget />
       <IncomingMessageToaster />
       <Toaster />
     </div>

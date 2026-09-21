@@ -128,7 +128,7 @@ export default function PeopleListPage() {
         <MyNetworkSection />
       ) : (
         <>
-          <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search by name, skill or headline…">
+          <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter by name, skill or headline…">
             <PillTabs
               items={LOOKING_FOR_FILTERS.map((f) => ({ key: f.key, label: f.label }))}
               value={lookingFor}

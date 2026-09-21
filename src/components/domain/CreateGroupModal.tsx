@@ -108,7 +108,7 @@ export function CreateGroupModal({ open, onClose }: CreateGroupModalProps) {
                   type="button"
                   onClick={() => toggle(user.id)}
                   className={cn(
-                    'flex items-center gap-3 p-2.5 rounded-xl border text-left cursor-pointer transition-all',
+                    'flex items-center gap-3 p-2.5 rounded-lg border text-left cursor-pointer transition-all',
                     selected ? 'border-brand-500 bg-brand-500/5' : 'border-border/70 hover:border-border-strong hover:bg-surface-hover/50',
                   )}
                 >

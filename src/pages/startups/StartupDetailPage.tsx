@@ -99,7 +99,7 @@ function TeamMemberRow({
             disabled={changingRole}
             onClick={() => onChangeRole(teamRole === 'ADMIN' ? 'MEMBER' : 'ADMIN')}
             title={teamRole === 'ADMIN' ? 'Demote to Member' : 'Promote to Admin'}
-            className="rounded-md px-1.5 py-1 text-[11px] font-semibold text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-50 cursor-pointer"
+            className="rounded-md px-1.5 py-1 text-xs font-semibold text-fg-secondary hover:bg-surface-hover hover:text-fg disabled:opacity-50 cursor-pointer"
           >
             {teamRole === 'ADMIN' ? 'Make Member' : 'Make Admin'}
           </button>
@@ -599,25 +599,25 @@ export default function StartupDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
               {startup.revenue && (
                 <div className="rounded-lg border border-border-subtle p-2.5">
-                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Revenue</p>
+                  <p className="text-xs uppercase tracking-wide text-fg-muted">Revenue</p>
                   <p className="text-sm font-semibold text-fg truncate">{startup.revenue}</p>
                 </div>
               )}
               {startup.customers && (
                 <div className="rounded-lg border border-border-subtle p-2.5">
-                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Customers</p>
+                  <p className="text-xs uppercase tracking-wide text-fg-muted">Customers</p>
                   <p className="text-sm font-semibold text-fg truncate">{startup.customers}</p>
                 </div>
               )}
               {startup.users && (
                 <div className="rounded-lg border border-border-subtle p-2.5">
-                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Users</p>
+                  <p className="text-xs uppercase tracking-wide text-fg-muted">Users</p>
                   <p className="text-sm font-semibold text-fg truncate">{startup.users}</p>
                 </div>
               )}
               {startup.growth && (
                 <div className="rounded-lg border border-border-subtle p-2.5">
-                  <p className="text-[11px] uppercase tracking-wide text-fg-muted">Growth</p>
+                  <p className="text-xs uppercase tracking-wide text-fg-muted">Growth</p>
                   <p className="text-sm font-semibold text-fg truncate">{startup.growth}</p>
                 </div>
               )}

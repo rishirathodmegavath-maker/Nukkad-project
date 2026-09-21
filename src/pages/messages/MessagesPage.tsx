@@ -124,7 +124,7 @@ function ConversationListItem({ conversation, active }: { conversation: Conversa
     <button
       onClick={() => navigate(`/messages/${conversation.id}`)}
       className={cn(
-        'flex items-center gap-3 w-full text-left px-3.5 py-3 rounded-xl border cursor-pointer transition-all',
+        'flex items-center gap-3 w-full text-left px-3.5 py-3 rounded-lg border cursor-pointer transition-all',
         active
           ? 'bg-surface-selected border-border-strong shadow-2xs'
           : 'border-border/70 hover:border-border-strong hover:bg-surface-hover hover:shadow-2xs',
@@ -707,7 +707,7 @@ function MessageSenderAvatar({ senderId, isGroup, otherUser }: { senderId: strin
 function GroupSenderLabel({ senderId }: { senderId: string }) {
   const { data: user } = useUser(senderId)
   if (!user) return null
-  return <p className="text-[11px] font-semibold text-fg-muted mb-0.5 ml-8">{user.name}</p>
+  return <p className="text-xs font-semibold text-fg-muted mb-0.5 ml-8">{user.name}</p>
 }
 
 function ReplyPreviewStrip({
@@ -747,7 +747,7 @@ function ReplyPreviewStrip({
         isOwn ? 'bg-black/10 border-white/50 hover:bg-black/15' : 'bg-fg/5 border-brand-400 hover:bg-fg/10',
       )}
     >
-      <p className={cn('text-[10px] font-medium truncate opacity-75', isOwn ? 'text-white/90' : 'text-fg-muted')}>{relationshipLabel}</p>
+      <p className={cn('text-xs font-medium truncate opacity-75', isOwn ? 'text-white/90' : 'text-fg-muted')}>{relationshipLabel}</p>
       <p className={cn('text-xs truncate', isOwn ? 'text-white/85' : 'text-fg')}>
         {replyTo.type === 'SHARED_POST' ? '📷 Shared a post' : replyTo.contentSnippet}
       </p>
@@ -907,7 +907,7 @@ function MessageRow({
           // nothing left to reply to, edit, or act on — no options menu, no reply-reveal here.
           <div
             className={cn(
-              'flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs italic text-fg-muted/70 bg-surface-sunken/50 border border-border/40 transition-shadow duration-500',
+              'flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs italic text-fg-muted/70 bg-surface-sunken/50 border border-border/40 transition-shadow duration-500',
               highlightedMessageId === msg.id && 'ring-2 ring-brand-500',
             )}
           >
@@ -956,7 +956,7 @@ function MessageRow({
                   {msg.content && (
                     <div
                       className={cn(
-                        'w-fit max-w-full rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words',
+                        'w-fit max-w-full rounded-xl px-4 py-2.5 text-sm leading-relaxed break-words',
                         isOwn ? 'bg-brand-600 text-white rounded-br-sm' : 'bg-surface-sunken text-fg rounded-bl-sm border border-border/60',
                       )}
                     >
@@ -982,7 +982,7 @@ function MessageRow({
                 {replyRevealIcon}
                 <div
                   className={cn(
-                    'w-fit min-w-0 max-w-full rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words transition-shadow duration-500',
+                    'w-fit min-w-0 max-w-full rounded-xl px-4 py-2.5 text-sm leading-relaxed break-words transition-shadow duration-500',
                     isOwn ? 'bg-brand-600 text-white rounded-br-sm shadow-2xs' : 'bg-surface-sunken text-fg rounded-bl-sm border border-border/60',
                     highlightedMessageId === msg.id && 'ring-2 ring-brand-500',
                   )}
@@ -1013,7 +1013,7 @@ function MessageRow({
           <p
             key={metaParts.join('|')}
             className={cn(
-              'text-[10px] px-1 animate-in fade-in duration-300',
+              'text-xs px-1 animate-in fade-in duration-300',
               msg.failed ? 'text-danger-500' : 'text-fg-muted/80',
             )}
           >
@@ -1352,7 +1352,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                 return (
                 <div key={gi} className="flex flex-col gap-0.5 mb-3">
                   <div className="flex justify-center mb-2">
-                    <span className="text-[11px] text-fg-muted font-medium">{formatDateTime(group.messages[0].createdAt)}</span>
+                    <span className="text-xs text-fg-muted font-medium">{formatDateTime(group.messages[0].createdAt)}</span>
                   </div>
                   {isGroup && !groupIsOwn && <GroupSenderLabel senderId={group.senderId} />}
                   {group.messages.map((msg, mi) => {
@@ -1416,16 +1416,18 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Write a message…"
+                aria-label="Write a message"
                 className="flex-1 rounded-full border border-border bg-surface-sunken/70 px-4 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted"
               />
-              <button
+              <Button
                 type="submit"
+                size="icon"
                 disabled={!draft.trim()}
                 aria-label={editingMessage ? 'Save edit' : 'Send message'}
-                className="flex size-10 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 cursor-pointer shrink-0 transition-all active:scale-95 shadow-xs"
+                className="size-10 rounded-full"
               >
                 {editingMessage ? <Check className="size-4" /> : <Send className="size-4" />}
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -1536,26 +1538,25 @@ export default function MessagesPage() {
     // the box ends 0.5rem above that nav (10rem = 4 + 1.5 + 4 + 0.5), and -mb-10 hands back the 2.5rem
     // of reserved space that would otherwise push the page 2.5rem past the viewport. From lg up there
     // is no bottom nav and the shell uses 2rem of padding top and bottom (8rem).
-    <div className="h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+    <div className="h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
       {/* Left conversation list */}
       <div
         className={cn(
-          'w-full sm:w-[320px] lg:w-[360px] shrink-0 border-r border-border/70 overflow-y-auto overscroll-contain p-3 flex-col',
+          'w-full sm:w-[320px] lg:w-[360px] shrink-0 border-r border-border/70 overflow-y-auto overscroll-contain p-2 flex-col',
           conversationId ? 'hidden sm:flex' : 'flex',
         )}
       >
-        <div className="flex items-center justify-between px-2 py-2 mb-1">
+        <div className="flex items-center justify-between px-1 py-2 mb-1">
           <h1 className="text-lg font-bold text-fg tracking-tight">Messages</h1>
-          <button
-            onClick={() => setShowCreateGroup(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 cursor-pointer"
-          >
-            <Users className="size-3.5" /> New group
-          </button>
+          <Button size="sm" variant="secondary" leftIcon={<Users className="size-3.5" />} onClick={() => setShowCreateGroup(true)}>
+            New group
+          </Button>
         </div>
         {conversations && conversations.length > 0 && (
-          <div className="px-2 pb-2.5">
+          <div className="px-1 pb-2.5">
             <PillTabs
+              tone="soft"
+              label="Filter conversations"
               items={[
                 { key: 'all', label: 'All', count: totalUnread > 0 ? totalUnread : undefined },
                 { key: 'direct', label: 'Direct', count: directUnread > 0 ? directUnread : undefined },
@@ -1607,7 +1608,7 @@ export default function MessagesPage() {
           <ChatPanel conversationId={conversationId} />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-fg-muted text-sm gap-2.5 p-6 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-surface-sunken text-fg-muted border border-border/60">
+            <div className="flex size-14 items-center justify-center rounded-xl bg-surface-sunken text-fg-muted border border-border/60">
               <MessageSquare className="size-6" />
             </div>
             <p className="font-semibold text-fg">Your Messages</p>

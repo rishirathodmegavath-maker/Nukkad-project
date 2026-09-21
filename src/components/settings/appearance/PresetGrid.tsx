@@ -30,7 +30,7 @@ export function PresetGrid() {
             >
               {isSelected && <Check className="size-4 text-white drop-shadow-sm" strokeWidth={3} />}
             </span>
-            <span className="text-[11px] font-medium text-fg-secondary text-center leading-tight">{p.label}</span>
+            <span className="text-xs font-medium text-fg-secondary text-center leading-tight">{p.label}</span>
           </button>
         )
       })}

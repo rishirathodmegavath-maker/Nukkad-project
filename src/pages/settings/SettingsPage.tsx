@@ -400,7 +400,7 @@ function PrivacyPillGroup<T extends string>({
           type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
-            'rounded-xl px-3 py-1.5 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+            'rounded-lg px-3 py-1.5 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
             value === opt.value
               ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
               : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',

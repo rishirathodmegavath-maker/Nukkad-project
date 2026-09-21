@@ -70,7 +70,7 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
           <p className="font-bold text-sm text-fg truncate">{user.name}</p>
           <p className="text-xs text-fg-muted truncate">{user.headline || user.role || 'Community Member'}</p>
           {user.location && (
-            <p className="text-[11px] text-fg-muted flex items-center gap-1 mt-0.5">
+            <p className="text-xs text-fg-muted flex items-center gap-1 mt-0.5">
               <MapPin className="size-3 text-fg-muted/80 shrink-0" />
               <span className="truncate">{user.location}</span>
             </p>
@@ -144,8 +144,8 @@ export function NetworkRowSkeleton() {
     <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border/60 animate-pulse">
       <div className="size-10 rounded-full bg-surface-sunken shrink-0" />
       <div className="flex-1 flex flex-col gap-1.5">
-        <div className="h-3.5 w-32 rounded bg-surface-sunken" />
-        <div className="h-3 w-48 rounded bg-surface-sunken" />
+        <div className="h-3.5 w-32 rounded-md bg-surface-sunken" />
+        <div className="h-3 w-48 rounded-md bg-surface-sunken" />
       </div>
     </div>
   )

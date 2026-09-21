@@ -77,7 +77,7 @@ export default function GrantDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="rounded-2xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
+          <Card className="rounded-xl border border-border/80 shadow-xs bg-surface p-6 sm:p-7">
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
                 <span className="flex size-11 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">

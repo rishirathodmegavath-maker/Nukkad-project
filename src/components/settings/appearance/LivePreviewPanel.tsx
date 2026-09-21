@@ -26,7 +26,7 @@ export function LivePreviewPanel() {
         <span className="size-2.5 rounded-full bg-danger-500/60" />
         <span className="size-2.5 rounded-full bg-warning-500/60" />
         <span className="size-2.5 rounded-full bg-success-500/60" />
-        <span className="ml-2 text-[11px] text-fg-muted">BuildAdda preview</span>
+        <span className="ml-2 text-xs text-fg-muted">BuildAdda preview</span>
       </div>
 
       <div className="flex bg-canvas">
@@ -35,7 +35,7 @@ export function LivePreviewPanel() {
             <span
               key={key}
               className={cn(
-                'flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-[11px] font-medium truncate',
+                'flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-xs font-medium truncate',
                 active ? 'bg-nav-active text-nav-fg-active' : 'text-nav-fg',
               )}
             >

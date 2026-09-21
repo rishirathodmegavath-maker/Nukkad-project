@@ -9,7 +9,7 @@ import { typeMeta, memberPostKinds } from '@/lib/postTypeMeta'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
-import { PillTabs } from '@/components/ui/Tabs'
+import { PillTabs, Tabs } from '@/components/ui/Tabs'
 import { Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { UploadButton, UploadSpinnerOverlay, type UploadPhase } from '@/components/ui/UploadButton'
@@ -33,8 +33,8 @@ function pickKind(file: File): 'image' | 'video' | 'pdf' | null {
 }
 
 const FEED_TABS = [
-  { key: 'all', label: 'All Feed' },
-  { key: 'saved', label: 'Saved Posts' },
+  { key: 'all', label: 'Feed' },
+  { key: 'saved', label: 'Saved' },
 ]
 
 /** Blank-card guard: image → video frame → PDF tile → related-entity chip → text → generic fallback.
@@ -78,7 +78,7 @@ function SavedPostThumbnail({ post }: { post: Post }) {
         <span className="flex size-9 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 border border-accent-500/20 shrink-0">
           <FileType2 className="size-4.5" />
         </span>
-        <p className="text-[11px] font-semibold text-fg-secondary truncate max-w-full">{pdf.fileName ?? 'Document.pdf'}</p>
+        <p className="text-xs font-semibold text-fg-secondary truncate max-w-full">{pdf.fileName ?? 'Document.pdf'}</p>
       </div>
     )
   }
@@ -88,7 +88,7 @@ function SavedPostThumbnail({ post }: { post: Post }) {
         <span className="flex size-9 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">
           <meta.icon className="size-4.5" />
         </span>
-        <p className="text-[11px] font-semibold text-fg-secondary">{meta.label}</p>
+        <p className="text-xs font-semibold text-fg-secondary">{meta.label}</p>
       </div>
     )
   }
@@ -104,7 +104,7 @@ function SavedPostThumbnail({ post }: { post: Post }) {
       <span className="flex size-9 items-center justify-center rounded-xl bg-surface-sunken text-fg-secondary border border-border/80 shrink-0">
         <FileText className="size-4.5" />
       </span>
-      <p className="text-[11px] font-semibold text-fg-secondary">View post</p>
+      <p className="text-xs font-semibold text-fg-secondary">View post</p>
     </div>
   )
 }
@@ -123,7 +123,7 @@ function SavedPostsGrid({ posts }: { posts: Post[] }) {
         >
           <SavedPostThumbnail post={post} />
           {post.attachments.length > 1 && (
-            <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5">
+            <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur-xs text-white text-xs font-semibold px-2 py-0.5">
               +{post.attachments.length - 1}
             </span>
           )}
@@ -131,7 +131,7 @@ function SavedPostsGrid({ posts }: { posts: Post[] }) {
             <Bookmark className="size-3.5 fill-current" />
           </span>
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <p className="text-[11px] font-semibold text-white truncate">
+            <p className="text-xs font-semibold text-white truncate">
               {post.content || typeMeta[post.type]?.label || 'View post'}
             </p>
           </div>
@@ -198,7 +198,7 @@ function SavedPostsTab() {
             <option value="oldestPost">Oldest post</option>
           </Select>
         </div>
-        <PillTabs items={SAVED_TYPE_FILTERS} value={typeFilter} onChange={setTypeFilter} />
+        <PillTabs tone="soft" label="Filter saved posts by type" items={SAVED_TYPE_FILTERS} value={typeFilter} onChange={setTypeFilter} />
       </div>
 
       {isLoading && page === 0 ? (
@@ -318,13 +318,13 @@ export default function FeedPage() {
 
   return (
     <div className="max-w-[620px] mx-auto flex flex-col gap-6">
-      <PillTabs items={FEED_TABS} value={tab} onChange={setTab} className="self-start" />
+      <Tabs label="Feed view" items={FEED_TABS} value={tab} onChange={setTab} />
 
       {tab === 'all' && (
         <button
           type="button"
           onClick={() => setIsComposerOpen(true)}
-          className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface p-4 text-left shadow-xs transition-all duration-150 hover:border-border-strong active:scale-[0.995] cursor-pointer"
+          className="flex items-center gap-3 rounded-lg border border-border/80 bg-surface p-4 text-left shadow-xs transition-all duration-150 hover:border-border-strong active:scale-[0.995] cursor-pointer"
         >
           <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
           <span className="flex-1 min-w-0 truncate text-sm text-fg-muted">
@@ -336,7 +336,7 @@ export default function FeedPage() {
         </button>
       )}
 
-      {tab === 'all' && <PillTabs items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} className="self-start" />}
+      {tab === 'all' && <PillTabs tone="soft" label="Filter by post type" items={FEED_KIND_FILTERS} value={kindFilter} onChange={setKindFilter} className="self-start" />}
 
       <Modal
         open={isComposerOpen}
@@ -374,7 +374,7 @@ export default function FeedPage() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={memberPostKinds.find((k) => k.key === postType)?.placeholder}
                 rows={4}
-                className="w-full resize-none rounded-xl border border-border/80 bg-surface-sunken/40 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:bg-surface focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted leading-relaxed"
+                className="w-full resize-none rounded-lg border border-border/80 bg-surface-sunken/40 px-3.5 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:bg-surface focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted leading-relaxed"
               />
 
               {pendingFiles.length > 0 && (
@@ -395,7 +395,7 @@ export default function FeedPage() {
                             ) : (
                               <FileText className="size-5 text-accent-500" />
                             )}
-                            <span className="text-[10px] font-medium text-fg-muted truncate w-full px-1">
+                            <span className="text-xs font-medium text-fg-muted truncate w-full px-1">
                               {p.file.name}
                             </span>
                           </div>
@@ -423,7 +423,7 @@ export default function FeedPage() {
                     type="button"
                     onClick={() => mediaInputRef.current?.click()}
                     aria-label="Add photo or video"
-                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
+                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
                   >
                     <Image className="size-4 text-brand-600 dark:text-brand-400 shrink-0" />
                     <span className="hidden sm:inline">Photo/Video</span>
@@ -432,7 +432,7 @@ export default function FeedPage() {
                     type="button"
                     onClick={() => docInputRef.current?.click()}
                     aria-label="Add document (PDF)"
-                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
+                    className="flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg text-xs font-semibold text-fg-secondary bg-surface-sunken/60 hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors shrink-0"
                   >
                     <FileText className="size-4 text-accent-500 shrink-0" />
                     <span className="hidden sm:inline">Document (PDF)</span>

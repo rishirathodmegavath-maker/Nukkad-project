@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/utils'
 export function InvestorCard({ investor, onRequestIntro }: { investor: InvestorProfile; onRequestIntro?: () => void }) {
   const name = investor.user?.name ?? 'Investor'
   return (
-    <Card interactive className="flex flex-col gap-3 rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
+    <Card interactive padding="sm" className="flex flex-col gap-3 border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
       <Link to={`/investors/${investor.id}`} className="flex items-start gap-3">
         <Avatar src={investor.user?.avatarUrl} name={name} size="lg" />
         <div className="min-w-0 flex-1">
@@ -41,7 +41,7 @@ export function InvestorCard({ investor, onRequestIntro }: { investor: InvestorP
       </div>
 
       {(investor.ticketMin !== undefined || investor.ticketMax !== undefined) && (
-        <p className="text-xs text-fg-muted font-medium pt-3 border-t border-border/60">
+        <p className="text-xs text-fg-muted font-medium">
           Ticket:{' '}
           <span className="text-fg font-semibold">{investor.ticketMin !== undefined ? formatCurrency(investor.ticketMin) : 'Any'}</span> –{' '}
           <span className="text-fg font-semibold">{investor.ticketMax !== undefined ? formatCurrency(investor.ticketMax) : 'Any'}</span>

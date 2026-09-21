@@ -4,17 +4,18 @@ import { navSections } from './nav-config'
 import { useUiStore } from '@/store/ui.store'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
+import { IconButton } from '@/components/ui/IconButton'
 
 function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; collapsed?: boolean }) {
   // The admin panel is a separate site (admin.…), so it never appears in the member navigation.
   const sections = navSections
 
   return (
-    <div className={cn('flex flex-col gap-5 py-2', collapsed ? 'px-2 items-center' : 'px-3')}>
+    <div className={cn('flex flex-col gap-5 py-2 [@media(max-height:900px)]:gap-3', collapsed ? 'px-2 items-center' : 'px-3')}>
       {sections.map((section) => (
         <div key={section.title} className={cn('flex flex-col gap-1', collapsed ? 'items-center w-full' : '')}>
           {!collapsed && (
-            <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-fg-muted/80">
+            <p className="px-3 text-xs font-bold uppercase tracking-wider text-fg-muted/80">
               {section.title}
             </p>
           )}
@@ -29,8 +30,8 @@ function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; c
                 title={collapsed ? label : undefined}
                 className={({ isActive }) =>
                   cn(
-                    'group relative flex items-center rounded-xl text-sm font-medium transition-all duration-150',
-                    collapsed ? 'size-10 justify-center' : 'gap-3 px-3 py-2.5',
+                    'group relative flex items-center rounded-lg text-sm font-medium transition-all duration-150',
+                    collapsed ? 'size-10 justify-center' : 'gap-3 px-3 py-2.5 [@media(max-height:900px)]:py-2',
                     isActive
                       ? 'bg-nav-active text-nav-fg-active font-semibold shadow-2xs'
                       : 'text-nav-fg hover:bg-surface-hover hover:text-fg',
@@ -51,7 +52,7 @@ function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; c
                     {isActive && (
                       <span
                         className={cn(
-                          'absolute rounded-r-full bg-brand-600 dark:bg-brand-400',
+                          'absolute rounded-r-full bg-fg-brand',
                           collapsed ? 'left-0 top-1.5 bottom-1.5 w-1' : 'left-0 top-2 bottom-2 w-1',
                         )}
                       />
@@ -81,7 +82,7 @@ export function DesktopSidebar() {
       <div
         className={cn(
           'flex items-center h-16 shrink-0 border-b border-border/60 transition-all',
-          collapsed ? 'justify-center px-2' : 'px-5',
+          collapsed ? 'justify-center px-2' : 'justify-between gap-2 px-5',
         )}
       >
         <Link to="/" className="flex items-center gap-2.5 min-w-0 rounded-lg transition-opacity hover:opacity-80" aria-label="Go to home">
@@ -92,30 +93,23 @@ export function DesktopSidebar() {
             </span>
           )}
         </Link>
+        {/* The toggle sits with the brand, next to the navigation it controls, not stranded at the bottom. */}
+        {!collapsed && (
+          <IconButton label="Collapse sidebar" aria-expanded={true} onClick={toggleSidebar}>
+            <PanelLeftClose className="size-[18px]" />
+          </IconButton>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-3 no-scrollbar">
+      <div className="flex-1 overflow-y-auto overscroll-contain py-3">
+        {collapsed && (
+          <div className="flex justify-center pb-2">
+            <IconButton label="Expand sidebar" aria-expanded={false} onClick={toggleSidebar}>
+              <PanelLeftOpen className="size-[18px]" />
+            </IconButton>
+          </div>
+        )}
         <NavSectionItems collapsed={collapsed} />
-      </div>
-
-      <div className="p-2 border-t border-border/60 shrink-0 flex items-center justify-center">
-        <button
-          onClick={toggleSidebar}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={cn(
-            'flex items-center gap-2 rounded-xl text-xs font-medium text-fg-secondary hover:text-fg hover:bg-surface-hover transition-colors cursor-pointer',
-            collapsed ? 'size-10 justify-center' : 'w-full px-3 py-2 justify-between',
-          )}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="size-4 text-fg-muted" />
-          ) : (
-            <>
-              <span className="text-fg-muted">Collapse sidebar</span>
-              <PanelLeftClose className="size-4 text-fg-muted" />
-            </>
-          )}
-        </button>
       </div>
     </aside>
   )

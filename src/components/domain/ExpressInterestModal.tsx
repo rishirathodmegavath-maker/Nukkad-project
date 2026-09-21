@@ -101,7 +101,7 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                 type="button"
                 onClick={() => setAreas((prev) => toggle(prev, option))}
                 className={cn(
-                  'rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                  'rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                   areas.includes(option)
                     ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                     : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
@@ -130,7 +130,7 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                   type="button"
                   onClick={() => setSkills((prev) => toggle(prev, skill))}
                   className={cn(
-                    'rounded-xl px-3 py-1.5 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                    'rounded-lg px-3 py-1.5 text-xs font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                     skills.includes(skill)
                       ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                       : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
@@ -158,7 +158,7 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                     name={`interest-experience-${exp.id}`}
                     checked={experienceIds.includes(exp.id)}
                     onChange={() => setExperienceIds((prev) => toggle(prev, exp.id))}
-                    className="size-4 rounded border-border accent-brand-600"
+                    className="size-4 rounded-md border-border accent-brand-600"
                   />
                   <span className="text-fg">
                     {exp.role} · <span className="text-fg-muted">{exp.company}</span>
@@ -184,7 +184,7 @@ function ApplyForm({ ideaId, ideaTitle, onClose }: { ideaId: string; ideaTitle: 
                     name={`interest-project-${project.id}`}
                     checked={projectIds.includes(project.id)}
                     onChange={() => setProjectIds((prev) => toggle(prev, project.id))}
-                    className="size-4 rounded border-border accent-brand-600"
+                    className="size-4 rounded-md border-border accent-brand-600"
                   />
                   <span className="text-fg">{project.title}</span>
                 </label>

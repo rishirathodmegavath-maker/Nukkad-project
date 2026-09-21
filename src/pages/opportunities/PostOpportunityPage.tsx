@@ -169,7 +169,7 @@ export default function PostOpportunityPage() {
     return (
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
         <Skeleton className="h-10 w-2/3 rounded-lg" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     )
   }
@@ -177,7 +177,7 @@ export default function PostOpportunityPage() {
   if (step === 'success' && published) {
     return (
       <div className="max-w-lg mx-auto text-center py-16 flex flex-col items-center gap-4">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+        <div className="flex size-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
           <CheckCircle2 className="size-7" />
         </div>
         <h1 className="text-xl font-bold text-fg">Submitted for review</h1>
@@ -199,7 +199,7 @@ export default function PostOpportunityPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <PageHeader title="Preview" description="This is how your opportunity will appear to other members." />
-        <Card className="rounded-2xl border border-border/80 shadow-xs p-6 sm:p-7 flex flex-col gap-4">
+        <Card className="rounded-xl border border-border/80 shadow-xs p-6 sm:p-7 flex flex-col gap-4">
           <Badge tone="neutral">{preview.type}</Badge>
           <div>
             <h2 className="text-xl font-black text-fg tracking-tight">{preview.title || 'Untitled opportunity'}</h2>
@@ -284,7 +284,7 @@ export default function PostOpportunityPage() {
             : 'Share a job, internship, founding role, or co-founder opening with the BuildAdda community.'
         }
       />
-      <Card className="rounded-2xl border border-border/80 shadow-sm p-5 sm:p-6">
+      <Card className="rounded-xl border border-border/80 shadow-sm p-5 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Select label="Opportunity type" required value={type} onChange={(e) => setType(e.target.value as OpportunityType)}>
             {TYPES.map((t) => (

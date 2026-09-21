@@ -29,10 +29,10 @@ export function ResourceCard({ resource }: { resource: Resource }) {
   })
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md focus-within:ring-2 focus-within:ring-brand-500/40">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-border/80 bg-surface shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md focus-within:ring-2 focus-within:ring-brand-500/40">
       <div className="relative">
         <ResourceThumbnail resource={resource} className="aspect-video" />
-        <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-surface/90 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-fg-secondary shadow-xs backdrop-blur-sm">
+        <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-surface/90 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-fg-secondary shadow-xs backdrop-blur-sm">
           <TypeIcon className="size-3.5" />
           {resource.type}
         </span>
@@ -49,7 +49,7 @@ export function ResourceCard({ resource }: { resource: Resource }) {
           <Bookmark className={cn('size-4', resource.isSaved && 'fill-current')} />
         </button>
         {duration && (
-          <span className="absolute bottom-3 right-3 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-white">
+          <span className="absolute bottom-3 right-3 rounded-md bg-black/70 px-1.5 py-0.5 text-xs font-medium tabular-nums text-white">
             {duration}
           </span>
         )}

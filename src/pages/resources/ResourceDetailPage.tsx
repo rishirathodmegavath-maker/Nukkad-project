@@ -22,7 +22,7 @@ function ResourceMedia({ resource }: { resource: Resource }) {
 
   if (youtube) {
     return (
-      <div className="aspect-video overflow-hidden rounded-2xl border border-border/80 bg-black shadow-xs">
+      <div className="aspect-video overflow-hidden rounded-xl border border-border/80 bg-black shadow-xs">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${youtube}`}
           title={resource.title}
@@ -42,16 +42,16 @@ function ResourceMedia({ resource }: { resource: Resource }) {
         preload="metadata"
         poster={resource.thumbnailUrl}
         src={resource.url}
-        className="aspect-video w-full rounded-2xl border border-border/80 bg-black shadow-xs"
+        className="aspect-video w-full rounded-xl border border-border/80 bg-black shadow-xs"
       >
         Your browser can't play this video — use Download instead.
       </video>
     )
   }
   if (kind === 'image' && !resource.thumbnailUrl) {
-    return <img src={resource.url} alt={resource.title} className="max-h-[32rem] w-full rounded-2xl border border-border/80 bg-surface-sunken object-contain shadow-xs" />
+    return <img src={resource.url} alt={resource.title} className="max-h-[32rem] w-full rounded-xl border border-border/80 bg-surface-sunken object-contain shadow-xs" />
   }
-  return <ResourceThumbnail resource={resource} className="aspect-video rounded-2xl border border-border/80 shadow-xs" />
+  return <ResourceThumbnail resource={resource} className="aspect-video rounded-xl border border-border/80 shadow-xs" />
 }
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }) {
@@ -104,7 +104,7 @@ export default function ResourceDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="aspect-video w-full max-w-3xl rounded-2xl" />
+        <Skeleton className="aspect-video w-full max-w-3xl rounded-xl" />
         <Skeleton className="h-8 w-2/3" />
       </div>
     )
@@ -220,7 +220,7 @@ export default function ResourceDetailPage() {
         </div>
 
         <aside>
-          <Card className="rounded-2xl border border-border/80 bg-surface p-5 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-surface p-5 shadow-xs">
             <h2 className="text-sm font-bold tracking-tight text-fg">About this resource</h2>
             <dl className="mt-2 divide-y divide-border/60">
               <DetailRow label="Type">{resource.type}</DetailRow>

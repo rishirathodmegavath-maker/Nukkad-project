@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/button-styles'
 import { formatCurrency } from '@/lib/utils'
 import type { Idea, InvestorType, Startup } from '@/types'
 
@@ -152,11 +153,15 @@ export default function InvestorsListPage() {
         title="Investor Marketplace"
         description="Discover investors, founders and ideas at every stage. Introductions only — no execution happens here."
         action={
-          !myInvestorProfile ? (
-            <Link to="/investors/activate">
-              <Button>Become an investor</Button>
+          myInvestorProfile ? (
+            <Link to={`/investors/${myInvestorProfile.id}`} className={buttonClasses({ variant: 'secondary' })}>
+              Your investor profile
             </Link>
-          ) : undefined
+          ) : (
+            <Link to="/investors/activate" className={buttonClasses()}>
+              Become an investor
+            </Link>
+          )
         }
       />
       <Tabs
@@ -172,30 +177,17 @@ export default function InvestorsListPage() {
 
       {tab === 'investors' && (
         <>
-          {myInvestorProfile && (
-            <Link to={`/investors/${myInvestorProfile.id}`}>
-              <Card interactive className="flex items-center justify-between gap-3 mb-6 border-brand-200 dark:border-brand-900 bg-brand-50/40 dark:bg-brand-950/20">
-                <div>
-                  <p className="text-xs font-bold text-brand-600 uppercase tracking-wide mb-0.5">Your investor profile</p>
-                  <p className="text-sm font-semibold text-fg">{myInvestorProfile.firmName || 'View your profile'}</p>
-                </div>
-                <Button size="sm" variant="secondary">
-                  View profile
-                </Button>
-              </Card>
-            </Link>
-          )}
-          <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search investors by name, firm or thesis…">
-            <div className="flex flex-wrap items-end gap-3">
-              <Select label="Type" value={investorType} onChange={(e) => setInvestorType(e.target.value)} className="w-40">
+          <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter investors by name, firm or thesis…">
+            <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <Select label="Type" value={investorType} onChange={(e) => setInvestorType(e.target.value)}>
                 <option value="">Any type</option>
                 {INVESTOR_TYPES.map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </Select>
-              <Input label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="e.g. AI" className="w-36" />
-              <Input label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} placeholder="e.g. Seed" className="w-36" />
-              <Input label="Location" value={geography} onChange={(e) => setGeography(e.target.value)} placeholder="e.g. Bangalore" className="w-40" />
+              <Input label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="e.g. AI" />
+              <Input label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} placeholder="e.g. Seed" />
+              <Input label="Location" value={geography} onChange={(e) => setGeography(e.target.value)} placeholder="e.g. Bangalore" />
               <Input
                 label="Cheque size (₹)"
                 type="number"
@@ -203,10 +195,9 @@ export default function InvestorsListPage() {
                 value={chequeSize}
                 onChange={(e) => setChequeSize(e.target.value)}
                 placeholder="e.g. 2000000"
-                className="w-40"
               />
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
+                <Button variant="ghost" size="sm" className="col-span-full justify-self-start" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
                   Clear filters
                 </Button>
               )}
@@ -266,7 +257,7 @@ export default function InvestorsListPage() {
       {tab === 'early' && (
         <div className="flex flex-col gap-8">
           <div>
-            <h2 className="text-sm font-semibold text-fg-secondary uppercase tracking-wide mb-3">Early-stage startups</h2>
+            <h2 className="text-base font-semibold text-fg mb-3">Early-stage startups</h2>
             {earlyStartupsQuery.isLoading ? (
               <CardSkeletonGrid count={3} />
             ) : earlyStartupsQuery.data && earlyStartupsQuery.data.length > 0 ? (
@@ -281,12 +272,12 @@ export default function InvestorsListPage() {
                 ))}
               </div>
             ) : (
-              <EmptyState title="No early-stage startups yet" />
+              <EmptyState as="h3" title="No early-stage startups yet" />
             )}
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-fg-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <h2 className="text-base font-semibold text-fg mb-3 flex items-center gap-1.5">
               <Sparkles className="size-3.5" /> Ideas & builders
             </h2>
             {earlyIdeasQuery.isLoading ? (
@@ -303,7 +294,7 @@ export default function InvestorsListPage() {
                 ))}
               </div>
             ) : (
-              <EmptyState title="No ideas posted yet" />
+              <EmptyState as="h3" title="No ideas posted yet" />
             )}
           </div>
 

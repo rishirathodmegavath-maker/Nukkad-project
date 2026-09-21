@@ -95,7 +95,7 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <div className="flex flex-col items-center gap-5 text-center py-6">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+            <div className="flex size-14 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
               <Sparkles className="size-7" />
             </div>
             <div>
@@ -146,7 +146,7 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => toggle(skills, setSkills, skill)}
                     className={cn(
-                      'rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                      'rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                       skills.includes(skill)
                         ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                         : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => toggle(lookingFor, setLookingFor, option)}
                     className={cn(
-                      'rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
+                      'rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-150 active:scale-[0.98]',
                       lookingFor.includes(option)
                         ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
                         : 'bg-surface text-fg-secondary border-border/80 hover:bg-surface-hover hover:border-border-strong hover:text-fg',
