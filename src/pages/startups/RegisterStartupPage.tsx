@@ -116,7 +116,7 @@ export default function RegisterStartupPage() {
 
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">What are you looking for?</p>
-            <TagInput value={needs} onChange={setNeeds} placeholder="e.g. Engineers, Funding, Mentors…" />
+            <TagInput value={needs} onChange={setNeeds} placeholder="e.g. Engineers, Funding, Mentors…" maxLength={100} />
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2 mt-2 border-t border-border/60">

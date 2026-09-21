@@ -352,12 +352,12 @@ export default function PostOpportunityPage() {
 
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Requirements</p>
-            <TagInput value={requirements} onChange={setRequirements} placeholder="Add a requirement and press Enter…" />
+            <TagInput value={requirements} onChange={setRequirements} placeholder="Add a requirement and press Enter…" maxLength={300} />
           </div>
 
           <div>
             <p className="text-sm font-medium text-fg mb-1.5">Required skills</p>
-            <TagInput value={requiredSkills} onChange={setRequiredSkills} placeholder="Add a skill and press Enter…" />
+            <TagInput value={requiredSkills} onChange={setRequiredSkills} placeholder="Add a skill and press Enter…" maxLength={300} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
