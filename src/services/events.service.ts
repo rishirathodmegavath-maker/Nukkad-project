@@ -1,4 +1,4 @@
-import { apiClient, getPage } from '@/lib/api-client'
+import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
 import type { EventStartupSummary, NukkadEvent, StartupEventSummary, User } from '@/types'
 
@@ -114,6 +114,12 @@ function toRequestBody(input: Partial<EventInput>) {
     capacity: input.capacity,
     startupIds: input.startupIds,
   }
+}
+
+/** Uploads a picture to use as an event cover and returns its URL; send that URL as `coverImageUrl` when saving the event. */
+export async function uploadEventCoverImage(file: File): Promise<string> {
+  const dto = await uploadFile<{ url: string }>('/events/cover-images', file)
+  return dto.url
 }
 
 export async function createEvent(input: EventInput): Promise<NukkadEvent> {

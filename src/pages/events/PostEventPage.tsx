@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { EventCoverField } from '@/components/domain/EventCoverField'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { getChapter } from '@/services/chapters.service'
@@ -44,6 +45,7 @@ export default function PostEventPage() {
   const [endAt, setEndAt] = useState(() => toLocalInputValue(new Date(Date.now() + 26 * 3600 * 1000)))
   const [capacityInput, setCapacityInput] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [coverUploading, setCoverUploading] = useState(false)
   const [startupIds, setStartupIds] = useState<string[]>([])
 
   function toggleStartup(startupId: string) {
@@ -156,13 +158,7 @@ export default function PostEventPage() {
             placeholder="e.g. 50"
           />
 
-          <Input
-            label="Cover image URL"
-            hint="Optional"
-            value={coverImageUrl}
-            onChange={(e) => setCoverImageUrl(e.target.value)}
-            placeholder="https://…"
-          />
+          <EventCoverField value={coverImageUrl} onChange={setCoverImageUrl} onUploadingChange={setCoverUploading} />
 
           {foundedStartups && foundedStartups.length > 0 && (
             <div>
@@ -194,7 +190,7 @@ export default function PostEventPage() {
             <Button variant="ghost" type="button" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button type="submit" size="lg" isLoading={mutation.isPending}>
+            <Button type="submit" size="lg" isLoading={mutation.isPending} disabled={coverUploading}>
               Create event
             </Button>
           </div>

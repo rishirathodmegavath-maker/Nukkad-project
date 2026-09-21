@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { EventCoverField } from '@/components/domain/EventCoverField'
 import { updateEvent } from '@/services/events.service'
 import { listMyFoundedStartups } from '@/services/startups.service'
 import { toast } from '@/store/toast.store'
@@ -25,6 +26,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
   const [endAt, setEndAt] = useState(toLocalInputValue(event.endAt))
   const [capacityInput, setCapacityInput] = useState(event.capacity ? String(event.capacity) : '')
   const [coverImageUrl, setCoverImageUrl] = useState(event.coverImageUrl ?? '')
+  const [coverUploading, setCoverUploading] = useState(false)
   const [startupIds, setStartupIds] = useState<string[]>(event.startups.map((s) => s.id))
 
   const { data: foundedStartups } = useQuery({
@@ -47,7 +49,8 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
         location: isOnline ? undefined : location,
         meetingUrl: isOnline ? meetingUrl : undefined,
         capacity: capacityInput ? Number(capacityInput) : undefined,
-        coverImageUrl: coverImageUrl.trim() || undefined,
+        // An empty string clears the cover; `undefined` would mean "leave it as it is".
+        coverImageUrl: coverImageUrl.trim(),
         startupIds,
       }),
     onSuccess: () => {
@@ -91,13 +94,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
           placeholder="e.g. 50"
         />
 
-        <Input
-          label="Cover image URL"
-          hint="Optional"
-          value={coverImageUrl}
-          onChange={(e) => setCoverImageUrl(e.target.value)}
-          placeholder="https://…"
-        />
+        <EventCoverField value={coverImageUrl} onChange={setCoverImageUrl} onUploadingChange={setCoverUploading} />
 
         {foundedStartups && foundedStartups.length > 0 && (
           <div>
@@ -128,7 +125,7 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button isLoading={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button isLoading={mutation.isPending} disabled={coverUploading} onClick={() => mutation.mutate()}>
             Save changes
           </Button>
         </div>
