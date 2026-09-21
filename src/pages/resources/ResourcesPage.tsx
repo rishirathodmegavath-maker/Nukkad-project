@@ -124,7 +124,7 @@ export default function ResourcesPage() {
             <h1 className="text-4xl font-black tracking-tight text-fg sm:text-5xl">Resources</h1>
             <p className="mt-1 text-xl font-semibold text-fg sm:text-2xl">Learn. Build. Grow.</p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-fg-muted">
-              Templates, guides, courses and tools curated by the BuildAdda team to help you at every stage of your startup journey.
+              Videos, pitch decks, guides, courses and tools curated by the BuildAdda team to help you at every stage of your startup journey.
             </p>
           </div>
         )}
@@ -252,7 +252,7 @@ export default function ResourcesPage() {
             <EmptyState
               icon={<FolderOpen className="size-5" />}
               title="No resources yet"
-              description="The BuildAdda team is putting together templates, guides and links for builders. Check back soon."
+              description="The BuildAdda team is putting together videos, pitch decks, guides and links for builders. Check back soon."
             />
           ) : (
             <>
@@ -261,7 +261,7 @@ export default function ResourcesPage() {
                   <div className="mb-4 flex items-baseline justify-between gap-3">
                     <div>
                       <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Picked for you</h2>
-                      <p className="text-sm text-fg-muted">A mix of videos, essays, templates and more from across the library</p>
+                      <p className="text-sm text-fg-muted">A mix of videos, essays, pitch decks and more from across the library</p>
                     </div>
                     <Link to="/resources?category=all" className="inline-flex items-center gap-1 text-sm font-semibold text-fg-brand hover:underline">
                       View all <ArrowRight className="size-3.5" />

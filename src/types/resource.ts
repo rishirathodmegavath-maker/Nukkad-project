@@ -4,9 +4,10 @@ export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' |
 /** The shelves of the library. Slugs match the backend's ResourceCategory. */
 export type ResourceCategory =
   | 'free-learning'
-  | 'templates'
-  | 'playbooks' // shown as "Startup Essays"; the slug is unchanged so resources already filed here keep working
-  | 'startup-blocks'
+  | 'videos'
+  | 'templates' // shown as "Pitch Deck"; the slug is unchanged so resources already filed here keep working
+  | 'playbooks' // shown as "Startup Essays"; same reason
+  | 'startup-blocks' // shown as "Startup Vlogs"; same reason
   | 'programs'
   | 'tools'
   | 'government'

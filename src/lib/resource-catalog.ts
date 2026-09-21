@@ -1,4 +1,4 @@
-import { Blocks, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, PenLine, Presentation, Rocket, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
+import { Clapperboard, CirclePlay, FileText, GraduationCap, Landmark, LayoutTemplate, Link2, PenLine, Presentation, Rocket, StickyNote, Video, Wrench, Newspaper, BookOpen } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Resource, ResourceCategory, ResourceType } from '@/types'
 
@@ -18,18 +18,27 @@ export const RESOURCE_CATEGORIES: CategoryMeta[] = [
   {
     key: 'free-learning',
     label: 'Free Learning',
-    blurb: 'Courses, videos, pitch decks and more',
+    blurb: 'Courses and free learning material',
     icon: GraduationCap,
     chip: 'bg-indigo-500/10 text-indigo-500',
     gradient: 'from-indigo-500/25 via-indigo-500/10 to-sky-500/10',
   },
   {
+    key: 'videos',
+    label: 'Videos',
+    blurb: 'Watch talks, lessons and how-tos',
+    icon: CirclePlay,
+    chip: 'bg-red-500/10 text-red-500',
+    gradient: 'from-red-500/25 via-red-500/10 to-orange-500/10',
+  },
+  {
+    // Stored as "templates" (see the ResourceCategory type); the shelf is called Pitch Deck.
     key: 'templates',
-    label: 'Templates',
-    blurb: 'Ready-to-use documents and models',
-    icon: LayoutTemplate,
-    chip: 'bg-rose-500/10 text-rose-500',
-    gradient: 'from-rose-500/25 via-rose-500/10 to-orange-500/10',
+    label: 'Pitch Deck',
+    blurb: 'Pitch decks and slide templates for founders',
+    icon: Presentation,
+    chip: 'bg-fuchsia-500/10 text-fuchsia-500',
+    gradient: 'from-fuchsia-500/25 via-fuchsia-500/10 to-pink-500/10',
   },
   {
     // Stored as "playbooks" (see the ResourceCategory type); the shelf is called Startup Essays.
@@ -41,10 +50,11 @@ export const RESOURCE_CATEGORIES: CategoryMeta[] = [
     gradient: 'from-emerald-500/25 via-emerald-500/10 to-teal-500/10',
   },
   {
+    // Stored as "startup-blocks" (see the ResourceCategory type); the shelf is called Startup Vlogs.
     key: 'startup-blocks',
-    label: 'Startup Blocks',
-    blurb: 'Ready-made building blocks for startups',
-    icon: Blocks,
+    label: 'Startup Vlogs',
+    blurb: 'Founder stories and behind-the-scenes vlogs',
+    icon: Clapperboard,
     chip: 'bg-sky-500/10 text-sky-500',
     gradient: 'from-sky-500/25 via-sky-500/10 to-blue-500/10',
   },
