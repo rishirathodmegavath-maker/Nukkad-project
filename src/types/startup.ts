@@ -136,9 +136,8 @@ export interface Startup {
   canManage: boolean
   /** Real percentage of optional profile fields actually filled in, computed server-side. */
   profileCompletionPercent: number
-  /** Pre-publish review gate — a brand-new startup starts PENDING and is invisible to public
-   *  discovery until an admin approves it; only its founders/admins and a platform admin can see
-   *  it before then. */
+  /** New startups go live as APPROVED with no review. REJECTED only appears on startups an admin rejected
+   *  before that changed; those stay hidden from everyone but their founders/admins and platform admins. */
   moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
   rejectionReason?: string
   createdAt: string

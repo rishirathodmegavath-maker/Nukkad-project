@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
         <StatCard icon={<Lightbulb className="size-5" />} label="Ideas" value={data.totalIdeas} to="/admin/ideas" />
         <StatCard icon={<Briefcase className="size-5" />} label="Open opportunities" value={data.openOpportunities} to="/admin/opportunities" />
         <StatCard icon={<Flag className="size-5" />} label="Reports pending" value={data.pendingReports} to="/admin/reports?status=OPEN" />
-        <StatCard icon={<ClipboardCheck className="size-5" />} label="Pending approvals" value={data.pendingModeration} to="/admin/startups?status=PENDING" />
+        <StatCard icon={<ClipboardCheck className="size-5" />} label="Pending approvals" value={data.pendingModeration} to="/admin/ideas?status=PENDING" />
         <StatCard icon={<Banknote className="size-5" />} label="Withdrawals pending" value={data.pendingWithdrawals} to="/admin/withdrawals?status=PENDING" />
         <StatCard icon={<Landmark className="size-5" />} label="Investor applications" value={data.pendingInvestorActivations} to="/admin/investor-activations?status=PENDING" />
       </div>

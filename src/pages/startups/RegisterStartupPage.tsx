@@ -42,10 +42,9 @@ export default function RegisterStartupPage() {
         chapterId: chapterId || undefined,
       }),
     onSuccess: (startup) => {
-      // New startups go through admin review first. Refresh the lists so it shows up (with its
-      // status) under "My Startup" straight away.
+      // A new startup goes live straight away. Refresh the lists so it shows up under "My Startup" and in browse.
       queryClient.invalidateQueries({ queryKey: ['startups'] })
-      toast.success('Submitted for review — it’ll be public once approved. You can keep adding details from its profile.')
+      toast.success('Your startup is live. You can keep adding details from its profile.')
       navigate(`/startups/${startup.id}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not register your startup'),

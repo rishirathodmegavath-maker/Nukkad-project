@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Rocket, ExternalLink } from 'lucide-react'
-import { listAdminStartups, reviewStartupModeration, setStartupRemoved } from '@/services/admin.service'
+import { listAdminStartups, setStartupRemoved } from '@/services/admin.service'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
-import { AdminReviewContentModal } from '@/components/domain/AdminReviewContentModal'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -17,8 +16,8 @@ import { Pagination } from '@/components/ui/Pagination'
 import { toast } from '@/store/toast.store'
 import { formatRelativeTime } from '@/lib/utils'
 
+// Startups are no longer reviewed before they go live; "Rejected" only remains on ones rejected earlier.
 function moderationBadge(status: ModerationStatus) {
-  if (status === 'PENDING') return <Badge tone="warning" className="ml-2">Pending review</Badge>
   if (status === 'REJECTED') return <Badge tone="danger" className="ml-2">Rejected</Badge>
   return null
 }
@@ -30,7 +29,6 @@ export default function AdminStartupsPage() {
   const [status, setStatus] = useState(searchParams.get('status') ?? '')
   const [page, setPage] = useState(Number(searchParams.get('page') ?? 0))
   const [target, setTarget] = useState<{ id: string; label: string; removed: boolean } | null>(null)
-  const [reviewing, setReviewing] = useState<{ id: string; label: string; approving: boolean } | null>(null)
   const queryClient = useQueryClient()
   const filters = useMemo(
     () => ({ q: q || undefined, includeRemoved, status: (status || undefined) as ModerationStatus | undefined, page, size: 20 }),
@@ -63,16 +61,6 @@ export default function AdminStartupsPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update this startup'),
   })
 
-  const reviewMutation = useMutation({
-    mutationFn: (reason: string) => reviewStartupModeration(reviewing!.id, reviewing!.approving, reason || undefined),
-    onSuccess: () => {
-      invalidate()
-      toast.success(reviewing?.approving ? 'Startup approved — now visible to the community' : 'Startup rejected')
-      setReviewing(null)
-    },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not review this startup'),
-  })
-
   return (
     <div>
       <SearchFilterBar query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search startups by name, sector, tagline…" />
@@ -90,7 +78,6 @@ export default function AdminStartupsPage() {
         </label>
         <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(0) }} className="w-52">
           <option value="">All review statuses</option>
-          <option value="PENDING">Pending review</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </Select>
@@ -135,16 +122,6 @@ export default function AdminStartupsPage() {
                           <Link to={`/startups/${startup.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
                             View <ExternalLink className="size-3" />
                           </Link>
-                          {startup.moderationStatus === 'PENDING' && (
-                            <>
-                              <Button size="sm" onClick={() => setReviewing({ id: startup.id, label: startup.name, approving: true })}>
-                                Approve
-                              </Button>
-                              <Button size="sm" variant="danger-subtle" onClick={() => setReviewing({ id: startup.id, label: startup.name, approving: false })}>
-                                Reject
-                              </Button>
-                            </>
-                          )}
                           <Button
                             size="sm"
                             variant={startup.removedByAdmin ? 'secondary' : 'danger-subtle'}
@@ -172,17 +149,6 @@ export default function AdminStartupsPage() {
           targetRemoved={!target.removed}
           isPending={removeMutation.isPending}
           onConfirm={(reason) => removeMutation.mutate(reason)}
-        />
-      )}
-
-      {reviewing && (
-        <AdminReviewContentModal
-          open
-          onClose={() => setReviewing(null)}
-          itemLabel={reviewing.label}
-          approving={reviewing.approving}
-          isPending={reviewMutation.isPending}
-          onConfirm={(reason) => reviewMutation.mutate(reason)}
         />
       )}
     </div>

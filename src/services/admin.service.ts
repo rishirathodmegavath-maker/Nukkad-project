@@ -122,10 +122,6 @@ export async function setStartupRemoved(id: string, removed: boolean, reason?: s
   return apiClient.patch<AdminStartupRow>(`/admin/startups/${id}/removed`, { removed, reason })
 }
 
-export async function reviewStartupModeration(id: string, approved: boolean, reason?: string): Promise<AdminStartupRow> {
-  return apiClient.patch<AdminStartupRow>(`/admin/startups/${id}/moderation`, { approved, reason })
-}
-
 export interface AdminOpportunityRow {
   id: string
   title: string
