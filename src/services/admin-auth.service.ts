@@ -27,6 +27,18 @@ export async function adminLogin(email: string, password: string): Promise<Sessi
   return session
 }
 
+export interface AdminIdentity {
+  id: string
+  email: string
+  name: string
+}
+
+/** Who is signed in to the admin portal, straight from the server: the stored session only remembers the
+ *  name from sign-in time and never had the email. */
+export async function getAdminIdentity(): Promise<AdminIdentity> {
+  return apiClient.get<AdminIdentity>('/admin/auth/me')
+}
+
 /** Whether the server has emailed password reset switched on (it stays off until a mail provider is
  *  set up). Public — the sign-in screens ask before anyone is signed in. */
 export async function getAdminPasswordResetEnabled(): Promise<boolean> {
