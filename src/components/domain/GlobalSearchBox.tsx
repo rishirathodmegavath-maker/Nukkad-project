@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Loader2, Users, Lightbulb, Rocket, Briefcase, CalendarDays, X } from 'lucide-react'
+import { Search, Loader2, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, X } from 'lucide-react'
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn, initials, formatDateOnly } from '@/lib/utils'
@@ -9,6 +9,8 @@ import type { Idea } from '@/types/idea'
 import type { Startup } from '@/types/startup'
 import type { Opportunity } from '@/types/opportunity'
 import type { NukkadEvent } from '@/types/event'
+import type { Grant } from '@/types/grant'
+import type { InvestorProfile } from '@/types/investor'
 
 type FlatItem =
   | { kind: 'person'; data: User }
@@ -16,6 +18,8 @@ type FlatItem =
   | { kind: 'startup'; data: Startup }
   | { kind: 'opportunity'; data: Opportunity }
   | { kind: 'event'; data: NukkadEvent }
+  | { kind: 'grant'; data: Grant }
+  | { kind: 'investor'; data: InvestorProfile }
   | { kind: 'search-all' }
 
 function routeFor(item: FlatItem, query: string): string {
@@ -30,6 +34,10 @@ function routeFor(item: FlatItem, query: string): string {
       return `/opportunities/${item.data.id}`
     case 'event':
       return `/events/${item.data.id}`
+    case 'grant':
+      return `/grants/${item.data.id}`
+    case 'investor':
+      return `/investors/${item.data.id}`
     case 'search-all':
       return `/search?q=${encodeURIComponent(query)}`
   }
@@ -91,6 +99,8 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
       ...suggestions.startups.map((data): FlatItem => ({ kind: 'startup', data })),
       ...suggestions.opportunities.map((data): FlatItem => ({ kind: 'opportunity', data })),
       ...suggestions.events.map((data): FlatItem => ({ kind: 'event', data })),
+      ...suggestions.grants.map((data): FlatItem => ({ kind: 'grant', data })),
+      ...suggestions.investors.map((data): FlatItem => ({ kind: 'investor', data })),
     ]
     if (trimmed) list.push({ kind: 'search-all' })
     return list
@@ -151,7 +161,7 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
 
   return (
     <div ref={containerRef} className={cn('relative', variant === 'desktop'
-        ? 'hidden sm:flex flex-1 max-w-xs lg:max-w-sm focus-within:max-w-md transition-[max-width] duration-200 motion-reduce:transition-none'
+        ? 'hidden sm:flex flex-1 max-w-xs lg:max-w-md xl:max-w-xl focus-within:max-w-xl transition-[max-width] duration-200 motion-reduce:transition-none'
         : 'flex-1 sm:hidden')}>
       <form onSubmit={handleSubmit} role="search" aria-label="Search BuildAdda" className="relative flex w-full items-center">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" />
@@ -163,8 +173,8 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search people, ideas, startups…"
-          aria-label="Search people, ideas, startups"
+          placeholder="Search people, ideas, startups, grants, investors…"
+          aria-label="Search people, ideas, startups, grants, investors"
           className="h-10 w-full rounded-lg border border-border/80 bg-surface-sunken/60 pl-10 pr-10 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted shadow-2xs"
         />
         {query && (
@@ -340,6 +350,75 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
                           <p className="text-xs text-fg-muted truncate">
                             {formatDateOnly(event.startAt)}
                             {event.location ? ` · ${event.location}` : ''}
+                          </p>
+                        </div>
+                      </SuggestionRow>
+                    )
+                  })}
+                </>
+              )}
+
+              {suggestions.grants.length > 0 && (
+                <>
+                  <CategoryHeading icon={<HandCoins className="size-3.5" />} label="Grants" />
+                  {suggestions.grants.map((grant, i) => {
+                    const idx =
+                      suggestions.people.length +
+                      suggestions.ideas.length +
+                      suggestions.startups.length +
+                      suggestions.opportunities.length +
+                      suggestions.events.length +
+                      i
+                    return (
+                      <SuggestionRow
+                        key={grant.id}
+                        active={highlightedIndex === idx}
+                        onSelect={() => goTo({ kind: 'grant', data: grant })}
+                        onHover={() => setHighlightedIndex(idx)}
+                      >
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-sunken border border-border/70 text-fg-secondary">
+                          <HandCoins className="size-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-fg truncate">{grant.name}</p>
+                          <p className="text-xs text-fg-muted truncate">
+                            {grant.provider}
+                            {grant.fundingAmount ? ` · ${grant.fundingAmount}` : ''}
+                          </p>
+                        </div>
+                      </SuggestionRow>
+                    )
+                  })}
+                </>
+              )}
+
+              {suggestions.investors.length > 0 && (
+                <>
+                  <CategoryHeading icon={<Landmark className="size-3.5" />} label="Investors" />
+                  {suggestions.investors.map((investor, i) => {
+                    const idx =
+                      suggestions.people.length +
+                      suggestions.ideas.length +
+                      suggestions.startups.length +
+                      suggestions.opportunities.length +
+                      suggestions.events.length +
+                      suggestions.grants.length +
+                      i
+                    return (
+                      <SuggestionRow
+                        key={investor.id}
+                        active={highlightedIndex === idx}
+                        onSelect={() => goTo({ kind: 'investor', data: investor })}
+                        onHover={() => setHighlightedIndex(idx)}
+                      >
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-sunken border border-border/70 text-fg-secondary">
+                          <Landmark className="size-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-fg truncate">{investor.firmName ?? investor.user?.name ?? 'Investor'}</p>
+                          <p className="text-xs text-fg-muted truncate">
+                            {investor.investorType}
+                            {investor.sectors.length > 0 ? ` · ${investor.sectors.slice(0, 2).join(', ')}` : ''}
                           </p>
                         </div>
                       </SuggestionRow>

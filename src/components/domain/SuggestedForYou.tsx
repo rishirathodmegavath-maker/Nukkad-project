@@ -71,12 +71,12 @@ function SuggestionRow({ user }: { user: User }) {
           onClick={() => connectMutation.mutate()}
           disabled={connectMutation.isPending || status === 'CONNECTED'}
           className={cn(
-            'text-xs font-semibold shrink-0 cursor-pointer disabled:cursor-default px-2.5 py-1 rounded-lg transition-colors',
+            'text-xs font-semibold shrink-0 cursor-pointer disabled:cursor-default px-3 py-1.5 rounded-lg transition-colors',
             status === 'CONNECTED'
               ? 'text-fg-muted bg-surface-sunken'
               : status === 'PENDING_OUTGOING'
               ? 'text-fg-muted bg-surface-sunken'
-              : 'text-brand-600 hover:text-brand-700 hover:bg-brand-50/60 dark:hover:bg-brand-950/40',
+              : 'text-fg-brand bg-brand-500/10 hover:bg-brand-500/20',
           )}
           aria-label={
             status === 'CONNECTED'

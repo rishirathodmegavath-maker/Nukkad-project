@@ -24,6 +24,7 @@ import StartupsListPage from '@/pages/startups/StartupsListPage'
 import RegisterStartupPage from '@/pages/startups/RegisterStartupPage'
 import StartupDetailPage from '@/pages/startups/StartupDetailPage'
 import OpportunitiesListPage from '@/pages/opportunities/OpportunitiesListPage'
+import JobsPage from '@/pages/opportunities/JobsPage'
 import PostOpportunityPage from '@/pages/opportunities/PostOpportunityPage'
 import MyApplicationsPage from '@/pages/opportunities/MyApplicationsPage'
 import PostedByMePage from '@/pages/opportunities/PostedByMePage'
@@ -111,6 +112,8 @@ export function AppRoutes() {
           <Route path="/investors/:id" element={<InvestorProfilePage />} />
 
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/discussions" element={<FeedPage fixedKind="discussion" />} />
+          <Route path="/jobs" element={<JobsPage />} />
           <Route path="/feed/:postId" element={<PostDetailPage />} />
 
           <Route path="/events" element={<EventsListPage />} />

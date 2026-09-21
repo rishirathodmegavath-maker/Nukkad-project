@@ -1,10 +1,12 @@
 import { NavLink, Link } from 'react-router-dom'
-import { X, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { useState } from 'react'
+import { X, PanelLeftClose, PanelLeftOpen, ArrowRight, UserPlus } from 'lucide-react'
 import { navSections } from './nav-config'
 import { useUiStore } from '@/store/ui.store'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
 import { IconButton } from '@/components/ui/IconButton'
+import { InviteBuilderModal } from '@/components/domain/InviteBuilderModal'
 
 function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; collapsed?: boolean }) {
   // The admin panel is a separate site (admin.…), so it never appears in the member navigation.
@@ -68,6 +70,59 @@ function NavSectionItems({ onNavigate, collapsed }: { onNavigate?: () => void; c
   )
 }
 
+/**
+ * The foot of the sidebar: invite someone to BuildAdda. A full card when the screen is tall enough, a single button when it
+ * is not (or in the phone menu, via `compactOnly`), so it never crowds out the navigation. Just an icon when collapsed.
+ */
+function InviteCard({ collapsed, compactOnly }: { collapsed?: boolean; compactOnly?: boolean }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      {collapsed ? (
+        <div className="flex justify-center px-2 pb-3">
+          <IconButton label="Invite a builder" onClick={() => setOpen(true)}>
+            <UserPlus className="size-[18px]" />
+          </IconButton>
+        </div>
+      ) : (
+        <div className="px-3 pb-4">
+          {!compactOnly && (
+            <div className="hidden rounded-xl border border-brand-500/20 bg-brand-500/10 p-4 [@media(min-height:821px)]:block">
+              <p className="text-base font-bold leading-snug text-fg">
+                Build together.
+                <br />
+                Go further.
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-fg-secondary">Join India’s growing startup community.</p>
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-700 cursor-pointer"
+              >
+                Invite a Builder
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={cn(
+              'inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-700 cursor-pointer',
+              !compactOnly && '[@media(min-height:821px)]:hidden',
+            )}
+          >
+            <UserPlus className="size-4" aria-hidden="true" />
+            Invite a Builder
+          </button>
+        </div>
+      )}
+      <InviteBuilderModal open={open} onClose={() => setOpen(false)} />
+    </>
+  )
+}
+
 export function DesktopSidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed)
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
@@ -89,7 +144,10 @@ export function DesktopSidebar() {
           <Logo size="sm" />
           {!collapsed && (
             <span className="flex items-center gap-1.5 min-w-0">
-              <span className="text-lg font-bold text-fg tracking-tight truncate">BuildAdda</span>
+              <span className="flex min-w-0 flex-col leading-tight">
+                <span className="text-lg font-bold text-fg tracking-tight truncate">BuildAdda</span>
+                <span className="text-[11px] font-medium text-fg-muted truncate">Where builders meet.</span>
+              </span>
             </span>
           )}
         </Link>
@@ -111,6 +169,8 @@ export function DesktopSidebar() {
         )}
         <NavSectionItems collapsed={collapsed} />
       </div>
+
+      <InviteCard collapsed={collapsed} />
     </aside>
   )
 }
@@ -133,7 +193,10 @@ export function MobileDrawer() {
             aria-label="Go to home"
           >
             <Logo size="sm" />
-            <span className="text-lg font-bold text-fg tracking-tight">BuildAdda</span>
+            <span className="flex flex-col leading-tight">
+              <span className="text-lg font-bold text-fg tracking-tight">BuildAdda</span>
+              <span className="text-[11px] font-medium text-fg-muted">Where builders meet.</span>
+            </span>
           </Link>
           <button
             onClick={() => setOpen(false)}
@@ -146,6 +209,7 @@ export function MobileDrawer() {
         <div className="flex-1 overflow-y-auto py-3">
           <NavSectionItems onNavigate={() => setOpen(false)} />
         </div>
+        <InviteCard compactOnly />
       </div>
     </div>
   )

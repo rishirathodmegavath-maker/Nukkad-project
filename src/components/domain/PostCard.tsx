@@ -38,6 +38,7 @@ import { ShareModal } from '@/components/domain/ShareModal'
 import { LikesModal } from '@/components/domain/LikesModal'
 import { ReportModal } from '@/components/domain/ReportModal'
 import { PostLinkCard } from '@/components/domain/PostLinkCard'
+import { HashtagText } from '@/components/domain/HashtagText'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { formatRelativeTime, cn } from '@/lib/utils'
@@ -687,7 +688,7 @@ export function PostCard({ post }: { post: Post }) {
       <div className="px-4 sm:px-5 pb-3.5 flex flex-col gap-3">
         {post.content && (
           <div className="text-sm text-fg whitespace-pre-line leading-relaxed">
-            {shownContent}
+            <HashtagText text={shownContent} />
             {isLong && (
               <button
                 type="button"

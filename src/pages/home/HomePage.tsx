@@ -13,7 +13,6 @@ import {
   Plus,
   Compass,
   ChevronRight,
-  Rss,
   type LucideIcon,
 } from 'lucide-react'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
@@ -25,7 +24,8 @@ import { getChapter } from '@/services/chapters.service'
 import { listFeed } from '@/services/feed.service'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
-import { EventCard } from '@/components/domain/EventCard'
+import { HomeEventRow } from '@/components/domain/HomeEventRow'
+import { TrendingTopicsCard } from '@/components/domain/TrendingTopicsCard'
 import { SuggestedForYou } from '@/components/domain/SuggestedForYou'
 import { MatchReasons } from '@/components/domain/MatchReasons'
 import { PostCard } from '@/components/domain/PostCard'
@@ -124,7 +124,7 @@ function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
 
 export default function HomePage() {
   const { data: currentUser } = useCurrentUser()
-  const [discoveryTab, setDiscoveryTab] = useState<'ideas' | 'startups'>('ideas')
+  const [homeTab, setHomeTab] = useState<'foryou' | 'ideas' | 'startups'>('foryou')
   const [composerOpen, setComposerOpen] = useState(false)
 
   // Real Queries
@@ -144,7 +144,7 @@ export default function HomePage() {
     enabled: !recommendedOppsQuery.data || recommendedOppsQuery.data.length === 0,
   })
   const eventsQuery = useQuery({ queryKey: ['events', 'upcoming'], queryFn: () => listEvents({ upcoming: true }) })
-  const feedQuery = useQuery({ queryKey: ['feed', 'home'], queryFn: () => listFeed(undefined, 4) })
+  const feedQuery = useQuery({ queryKey: ['feed', 'home'], queryFn: () => listFeed(undefined, 5) })
   const chapterQuery = useQuery({
     queryKey: ['chapter', currentUser?.chapterId],
     queryFn: () => getChapter(currentUser!.chapterId!),
@@ -235,27 +235,80 @@ export default function HomePage() {
           <section className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/60">
               <Tabs
-                label="Discover"
+                label="Home"
                 className="border-b-0"
-                value={discoveryTab}
-                onChange={(k) => setDiscoveryTab(k as 'ideas' | 'startups')}
+                value={homeTab}
+                onChange={(k) => setHomeTab(k as 'foryou' | 'ideas' | 'startups')}
                 items={[
+                  { key: 'foryou', label: 'For You' },
                   { key: 'ideas', label: 'Ideas to Build', count: matchedIdeas.length > 0 ? ideasQuery.data?.length ?? 0 : undefined },
                   { key: 'startups', label: 'Startups in Motion', count: featuredStartups.length > 0 ? startupsQuery.data?.length ?? 0 : undefined },
                 ]}
               />
 
               <Link
-                to={discoveryTab === 'ideas' ? '/ideas' : '/startups'}
+                to={homeTab === 'foryou' ? '/feed' : homeTab === 'ideas' ? '/ideas' : '/startups'}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-fg hover:underline self-end sm:self-auto"
               >
-                <span>Explore all {discoveryTab === 'ideas' ? 'ideas' : 'startups'}</span>
+                <span>Explore all {homeTab === 'foryou' ? 'posts' : homeTab === 'ideas' ? 'ideas' : 'startups'}</span>
                 <ArrowRight className="size-3.5" />
               </Link>
             </div>
 
+            {/* Tab Body: For You (the community feed) */}
+            {homeTab === 'foryou' && (
+              <div>
+              {feedQuery.isLoading ? (
+                <div className="flex flex-col gap-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="p-5 rounded-xl border border-border/80 bg-surface flex flex-col gap-3 shadow-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-full bg-surface-sunken animate-pulse" />
+                        <div className="flex flex-col gap-1.5 flex-1">
+                          <div className="h-3.5 w-28 rounded-md bg-surface-sunken animate-pulse" />
+                          <div className="h-2.5 w-16 rounded-md bg-surface-sunken animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse" />
+                      <div className="h-8 w-full rounded-lg bg-surface-sunken/40 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : feedQuery.isError ? (
+                <Card className="p-6 text-center border border-border/80 shadow-xs">
+                  <p className="text-sm font-semibold text-fg">Couldn’t load the feed right now.</p>
+                  <p className="text-xs text-fg-muted mt-1 mb-3">Please try again to see the latest community posts.</p>
+                  <Button size="sm" variant="secondary" onClick={() => feedQuery.refetch()}>
+                    Retry
+                  </Button>
+                </Card>
+              ) : feedQuery.data && feedQuery.data.length > 0 ? (
+                <div className="flex flex-col gap-4">
+                  {feedQuery.data.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <Card className="p-6 text-center border border-border/80 shadow-xs">
+                  <Sparkles className="size-8 text-fg-muted mx-auto mb-2" />
+                  <p className="text-sm font-semibold text-fg">Nothing new yet</p>
+                  <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto mb-3">
+                    Be the first to share something with the community.
+                  </p>
+                  <button type="button" onClick={() => setComposerOpen(true)} className={buttonClasses({ size: 'sm' })}>
+                    <Plus className="size-3.5" aria-hidden="true" />
+                    Create Post
+                  </button>
+                </Card>
+              )}
+              </div>
+            )}
+
             {/* Tab Body: Ideas */}
-            {discoveryTab === 'ideas' && (
+            {homeTab === 'ideas' && (
               <div>
                 {ideasQuery.isLoading ? (
                   <CardSkeletonGrid count={3} />
@@ -282,7 +335,7 @@ export default function HomePage() {
             )}
 
             {/* Tab Body: Startups */}
-            {discoveryTab === 'startups' && (
+            {homeTab === 'startups' && (
               <div>
                 {startupsQuery.isLoading ? (
                   <CardSkeletonGrid count={3} />
@@ -302,73 +355,6 @@ export default function HomePage() {
                   </Card>
                 )}
               </div>
-            )}
-          </section>
-
-          {/* ------------------------------------------------------------ */}
-          {/* Section B: Latest from BuildAdda (Primary Community Feed)       */}
-          {/* ------------------------------------------------------------ */}
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between pb-1 border-b border-border/60">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center size-6 rounded-lg bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-800/50">
-                  <Rss className="size-3.5" />
-                </div>
-                <h2 className="text-base font-bold text-fg">Latest from BuildAdda</h2>
-              </div>
-              <Link
-                to="/feed"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-fg hover:underline group"
-              >
-                <span>View Feed</span>
-                <ArrowRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-
-            {feedQuery.isLoading ? (
-              <div className="flex flex-col gap-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="p-5 rounded-xl border border-border/80 bg-surface flex flex-col gap-3 shadow-xs"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-full bg-surface-sunken animate-pulse" />
-                      <div className="flex flex-col gap-1.5 flex-1">
-                        <div className="h-3.5 w-28 rounded-md bg-surface-sunken animate-pulse" />
-                        <div className="h-2.5 w-16 rounded-md bg-surface-sunken animate-pulse" />
-                      </div>
-                    </div>
-                    <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse" />
-                    <div className="h-8 w-full rounded-lg bg-surface-sunken/40 animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            ) : feedQuery.isError ? (
-              <Card className="p-6 text-center border border-border/80 shadow-xs">
-                <p className="text-sm font-semibold text-fg">Couldn’t load the feed right now.</p>
-                <p className="text-xs text-fg-muted mt-1 mb-3">Please try again to see the latest community posts.</p>
-                <Button size="sm" variant="secondary" onClick={() => feedQuery.refetch()}>
-                  Retry
-                </Button>
-              </Card>
-            ) : feedQuery.data && feedQuery.data.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {feedQuery.data.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <Card className="p-6 text-center border border-border/80 shadow-xs">
-                <Sparkles className="size-8 text-fg-muted mx-auto mb-2" />
-                <p className="text-sm font-semibold text-fg">Nothing new yet</p>
-                <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto mb-3">
-                  Be the first to share something with the community.
-                </p>
-                <Link to="/feed" className={buttonClasses({ size: 'sm' })}>
-                  Go to feed
-                </Link>
-              </Card>
             )}
           </section>
 
@@ -423,64 +409,58 @@ export default function HomePage() {
         {/* ============================================================== */}
         <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
           {/* ------------------------------------------------------------ */}
-          {/* Section D: People You Should Know (Network Pulse)            */}
+          {/* Section D: Trending Topics (real hashtags from recent posts)  */}
           {/* ------------------------------------------------------------ */}
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-1 border-b border-border/60">
-              <h2 className="text-sm font-bold text-fg flex items-center gap-1.5">
-                <Users className="size-4 text-fg-muted" />
-                <span>People you may know</span>
+          <TrendingTopicsCard />
+
+          {/* ------------------------------------------------------------ */}
+          {/* Section E: People You May Know (Network Pulse)                */}
+          {/* ------------------------------------------------------------ */}
+          <Card padding="none" className="overflow-hidden border border-border/80 shadow-2xs">
+            <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-1">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-fg">
+                <Users className="size-4 text-fg-muted" aria-hidden="true" />
+                People you may know
               </h2>
-              <Link
-                to="/people"
-                className="text-xs font-semibold text-fg hover:underline"
-              >
-                Explore
+              <Link to="/people" className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
+                See all <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="px-5 pb-3">
+              <SuggestedForYou limit={4} showHeader={false} />
+            </div>
+          </Card>
+
+          {/* ------------------------------------------------------------ */}
+          {/* Section G: Upcoming Events (register right here)              */}
+          {/* ------------------------------------------------------------ */}
+          <Card padding="none" className="overflow-hidden border border-border/80 shadow-2xs">
+            <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-fg">
+                <CalendarDays className="size-4 text-fg-muted" aria-hidden="true" />
+                Upcoming events
+              </h2>
+              <Link to="/events" className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
+                View all <ArrowRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>
 
-            <Card padding="none" className="overflow-hidden border border-border/80 shadow-2xs">
-              <div className="p-3">
-                <SuggestedForYou limit={4} showHeader={false} />
-              </div>
-            </Card>
-          </section>
-
-          {/* ------------------------------------------------------------ */}
-          {/* Section E: Upcoming Events & Meetups                         */}
-          {/* ------------------------------------------------------------ */}
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-1 border-b border-border/60">
-              <h2 className="text-sm font-bold text-fg flex items-center gap-1.5">
-                <CalendarDays className="size-4 text-fg-muted" />
-                <span>Upcoming meetups</span>
-              </h2>
-              <Link
-                to="/events"
-                className="text-xs font-semibold text-fg hover:underline"
-              >
-                View all
-              </Link>
+            <div className="flex flex-col gap-4 px-5 pb-5">
+              {eventsQuery.isLoading ? (
+                <div className="h-16 w-full rounded-xl bg-surface-sunken/60 animate-pulse border border-border/70" />
+              ) : upcomingEvents.length > 0 ? (
+                upcomingEvents.map((event) => <HomeEventRow key={event.id} event={event} />)
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs font-semibold text-fg">No upcoming events scheduled</p>
+                  <p className="text-xs text-fg-muted mt-0.5 mb-3">Host an event for your local ecosystem.</p>
+                  <Link to="/events/new" className={buttonClasses({ size: 'sm', variant: 'secondary', className: 'w-full' })}>
+                    Host an event
+                  </Link>
+                </div>
+              )}
             </div>
-
-            {eventsQuery.isLoading ? (
-              <div className="h-28 w-full rounded-xl bg-surface-sunken/60 animate-pulse border border-border/70" />
-            ) : upcomingEvents.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {upcomingEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            ) : (
-              <Card className="p-4 text-center">
-                <p className="text-xs font-semibold text-fg">No upcoming meetups scheduled</p>
-                <p className="text-xs text-fg-muted mt-0.5 mb-3">Host a meetup for your local ecosystem.</p>
-                <Link to="/events/new" className={buttonClasses({ size: 'sm', variant: 'secondary', className: 'w-full' })}>
-                  Host an event
-                </Link>
-              </Card>
-            )}
-          </section>
+          </Card>
 
           {/* ------------------------------------------------------------ */}
           {/* Section F: Local Chapter Hub Summary                         */}

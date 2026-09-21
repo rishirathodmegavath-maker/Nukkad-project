@@ -16,7 +16,7 @@ export function PostLinkCard({ url, onRemove }: { url: string; onRemove?: () => 
       {video ? (
         <img src={`https://i.ytimg.com/vi/${video}/mqdefault.jpg`} alt="" className="h-full w-28 shrink-0 object-cover" loading="lazy" />
       ) : (
-        <span className="m-3 flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400">
+        <span className="m-3 flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-fg-brand">
           <Link2 className="size-5" />
         </span>
       )}

@@ -1,17 +1,21 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Search as SearchIcon, Users, Lightbulb, Rocket, Briefcase, CalendarDays, ArrowRight } from 'lucide-react'
+import { Search as SearchIcon, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, ArrowRight } from 'lucide-react'
 import { listUsers } from '@/services/users.service'
 import { listIdeas } from '@/services/ideas.service'
 import { listStartups } from '@/services/startups.service'
 import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
+import { listGrants } from '@/services/grants.service'
+import { listInvestors } from '@/services/investors.service'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { EventCard } from '@/components/domain/EventCard'
+import { GrantCard } from '@/components/domain/GrantCard'
+import { InvestorCard } from '@/components/domain/InvestorCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -88,21 +92,40 @@ export default function SearchResultsPage() {
     enabled: !!trimmed,
   })
 
+  const grantsQuery = useQuery({
+    queryKey: ['search', 'grants', trimmed],
+    queryFn: () => listGrants(filters),
+    enabled: !!trimmed,
+  })
+  const investorsQuery = useQuery({
+    queryKey: ['search', 'investors', trimmed],
+    queryFn: () => listInvestors(filters),
+    enabled: !!trimmed,
+  })
+
   const isLoading =
-    peopleQuery.isLoading || ideasQuery.isLoading || startupsQuery.isLoading || opportunitiesQuery.isLoading || eventsQuery.isLoading
+    peopleQuery.isLoading ||
+    ideasQuery.isLoading ||
+    startupsQuery.isLoading ||
+    opportunitiesQuery.isLoading ||
+    eventsQuery.isLoading ||
+    grantsQuery.isLoading ||
+    investorsQuery.isLoading
   const totalCount =
     (peopleQuery.data?.length ?? 0) +
     (ideasQuery.data?.length ?? 0) +
     (startupsQuery.data?.length ?? 0) +
     (opportunitiesQuery.data?.length ?? 0) +
-    (eventsQuery.data?.length ?? 0)
+    (eventsQuery.data?.length ?? 0) +
+    (grantsQuery.data?.length ?? 0) +
+    (investorsQuery.data?.length ?? 0)
   const encodedQuery = encodeURIComponent(trimmed)
 
   return (
     <div>
       <PageHeader
         title={trimmed ? `Search results for "${trimmed}"` : 'Search'}
-        description="Use the search bar at the top of the page to search across people, ideas, startups, opportunities and events."
+        description="Use the search bar at the top of the page to search across people, ideas, startups, opportunities, events, grants and investors."
       />
 
       {!trimmed ? (
@@ -157,6 +180,26 @@ export default function SearchResultsPage() {
             viewAllHref={`/events?q=${encodedQuery}`}
           >
             {eventsQuery.data?.slice(0, PREVIEW_COUNT).map((event) => <EventCard key={event.id} event={event} />)}
+          </ResultSection>
+
+          <ResultSection
+            title="Grants"
+            icon={<HandCoins className="size-4 text-fg-secondary" />}
+            count={grantsQuery.data?.length ?? 0}
+            isLoading={grantsQuery.isLoading}
+            viewAllHref="/grants"
+          >
+            {grantsQuery.data?.slice(0, PREVIEW_COUNT).map((grant) => <GrantCard key={grant.id} grant={grant} />)}
+          </ResultSection>
+
+          <ResultSection
+            title="Investors"
+            icon={<Landmark className="size-4 text-fg-secondary" />}
+            count={investorsQuery.data?.length ?? 0}
+            isLoading={investorsQuery.isLoading}
+            viewAllHref="/investors"
+          >
+            {investorsQuery.data?.slice(0, PREVIEW_COUNT).map((investor) => <InvestorCard key={investor.id} investor={investor} />)}
           </ResultSection>
 
           {!isLoading && totalCount === 0 && (
