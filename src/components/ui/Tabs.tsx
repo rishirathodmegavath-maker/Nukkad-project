@@ -89,12 +89,18 @@ interface PillTabsProps {
   tone?: 'solid' | 'soft'
   /** Accessible name for the group of filters. */
   label?: string
+  /** One row that scrolls sideways instead of wrapping onto several lines: for a long list of chips. */
+  scrollable?: boolean
 }
 
 /** Filter chips: narrow down the list on the page. Each chip is a toggle button. */
-export function PillTabs({ items, value, onChange, className, tone = 'soft', label }: PillTabsProps) {
+export function PillTabs({ items, value, onChange, className, tone = 'soft', label, scrollable = false }: PillTabsProps) {
   return (
-    <div role="group" aria-label={label} className={cn('flex items-center gap-2 flex-wrap', className)}>
+    <div
+      role="group"
+      aria-label={label}
+      className={cn('flex items-center gap-2', scrollable ? 'flex-nowrap overflow-x-auto no-scrollbar max-w-full' : 'flex-wrap', className)}
+    >
       {items.map((item) => {
         const active = item.key === value
         return (
@@ -105,6 +111,7 @@ export function PillTabs({ items, value, onChange, className, tone = 'soft', lab
             onClick={() => onChange(item.key)}
             className={cn(
               'rounded-lg px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border',
+              scrollable && 'shrink-0 whitespace-nowrap',
               active
                 ? tone === 'soft'
                   ? 'bg-brand-500/10 text-fg-brand border-brand-500/30'

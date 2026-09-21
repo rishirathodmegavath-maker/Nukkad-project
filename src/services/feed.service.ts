@@ -1,5 +1,5 @@
 import { apiClient, getPage, uploadFile, type Page } from '@/lib/api-client'
-import type { AttachmentKind, Post, PostAttachment, PostComment, PostLiker, PostType, SavedPostsSort } from '@/types'
+import type { AttachmentKind, Post, PostAttachment, PostComment, PostLiker, PostType, PostVisibility, SavedPostsSort } from '@/types'
 
 interface AttachmentDto {
   id: string
@@ -25,6 +25,8 @@ export interface PostDto {
   savedAt: string | null
   removedByAdmin: boolean
   removalReason: string | null
+  visibility: string
+  linkUrl: string | null
 }
 
 /** Ref to an already-uploaded, not-yet-attached file — same shape the upload endpoint returns and create-post expects. */
@@ -56,6 +58,9 @@ export function mapPost(dto: PostDto): Post {
     savedAt: dto.savedAt ?? undefined,
     removedByAdmin: dto.removedByAdmin,
     removalReason: dto.removalReason ?? undefined,
+    // Older responses (and a backend that has not been updated yet) have no visibility: those posts are public.
+    visibility: dto.visibility === 'CONNECTIONS' ? 'CONNECTIONS' : 'PUBLIC',
+    linkUrl: dto.linkUrl ?? undefined,
   }
 }
 
@@ -87,13 +92,18 @@ export async function uploadAttachment(file: File): Promise<AttachmentRef> {
   return uploadFile<AttachmentRef>('/feed/attachments', file)
 }
 
-export async function createPost(
-  content: string,
-  type: PostType = 'text',
-  relatedId?: string,
-  attachments: AttachmentRef[] = [],
-): Promise<Post> {
-  const dto = await apiClient.post<PostDto>('/feed', { content, type, relatedId, attachments })
+export interface CreatePostInput {
+  content: string
+  type?: PostType
+  relatedId?: string
+  attachments?: AttachmentRef[]
+  visibility?: PostVisibility
+  /** An http(s) link to show as a link card. */
+  linkUrl?: string
+}
+
+export async function createPost({ content, type = 'text', relatedId, attachments = [], visibility = 'PUBLIC', linkUrl }: CreatePostInput): Promise<Post> {
+  const dto = await apiClient.post<PostDto>('/feed', { content, type, relatedId, attachments, visibility, linkUrl })
   return mapPost(dto)
 }
 

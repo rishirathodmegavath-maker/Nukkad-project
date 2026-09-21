@@ -29,6 +29,7 @@ import { EventCard } from '@/components/domain/EventCard'
 import { SuggestedForYou } from '@/components/domain/SuggestedForYou'
 import { MatchReasons } from '@/components/domain/MatchReasons'
 import { PostCard } from '@/components/domain/PostCard'
+import { CreatePostModal } from '@/components/domain/CreatePostModal'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -124,6 +125,7 @@ function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
 export default function HomePage() {
   const { data: currentUser } = useCurrentUser()
   const [discoveryTab, setDiscoveryTab] = useState<'ideas' | 'startups'>('ideas')
+  const [composerOpen, setComposerOpen] = useState(false)
 
   // Real Queries
   const ideasQuery = useQuery({ queryKey: ['ideas', 'home'], queryFn: () => listIdeas() })
@@ -207,10 +209,10 @@ export default function HomePage() {
 
           {/* Quick Action Chips Bar */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            <Link to="/ideas/new" className={buttonClasses({ size: 'sm' })}>
+            <button type="button" onClick={() => setComposerOpen(true)} className={buttonClasses({ size: 'sm' })}>
               <Plus className="size-3.5" aria-hidden="true" />
-              Post an idea
-            </Link>
+              Create Post
+            </button>
 
             {currentUser && <StatChip to={`/people/${currentUser.id}`} icon={Users} value={currentUser.connectionsCount ?? 0} label="connections" />}
             <StatChip to="/opportunities" icon={Briefcase} value={allOppsQuery.data?.length ?? recommendedOppsQuery.data?.length ?? 0} label="roles" />
@@ -549,6 +551,8 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+
+      <CreatePostModal open={composerOpen} onClose={() => setComposerOpen(false)} />
     </div>
   )
 }

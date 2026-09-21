@@ -7,7 +7,6 @@ import {
   MessageCircleOff,
   ChevronLeft,
   ChevronRight,
-  FileText,
   Download,
   MoreHorizontal,
   Trash2,
@@ -23,6 +22,7 @@ import {
   VolumeX,
   RotateCw,
   Flag,
+  Users,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
@@ -37,10 +37,13 @@ import { DropdownMenu, DropdownItem, DropdownDivider } from '@/components/ui/Dro
 import { ShareModal } from '@/components/domain/ShareModal'
 import { LikesModal } from '@/components/domain/LikesModal'
 import { ReportModal } from '@/components/domain/ReportModal'
+import { PostLinkCard } from '@/components/domain/PostLinkCard'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { formatRelativeTime, cn } from '@/lib/utils'
 import { typeMeta } from '@/lib/postTypeMeta'
+import { documentLabel } from '@/lib/attachments'
+import { DocumentIcon } from '@/components/domain/DocumentIcon'
 import { toast } from '@/store/toast.store'
 import * as feedService from '@/services/feed.service'
 
@@ -138,7 +141,7 @@ function AttachmentCarousel({
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const media = attachments.filter((a) => a.kind === 'image' || a.kind === 'video')
-  const docs = attachments.filter((a) => a.kind === 'pdf')
+  const docs = attachments.filter((a) => a.kind === 'pdf' || a.kind === 'file')
   const current = media[index]
 
   // Autoplay (muted, as browsers require) once at least half the video is actually on screen
@@ -253,24 +256,26 @@ function AttachmentCarousel({
       )}
 
       {docs.map((doc) => (
-        <a
-          key={doc.id}
-          href={doc.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface-sunken/40 px-4 py-3 hover:bg-surface-hover hover:border-border-strong transition-all shadow-2xs group"
-        >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 shrink-0 border border-accent-500/20">
-            <FileText className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-fg truncate group-hover:text-brand-600 transition-colors">
-              {doc.fileName ?? 'Document.pdf'}
-            </p>
-            <p className="text-xs text-fg-muted">Click to view or download PDF</p>
-          </div>
-          <Download className="size-4 text-fg-muted group-hover:text-fg shrink-0 transition-colors" />
-        </a>
+          <a
+            key={doc.id}
+            href={doc.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface-sunken/40 px-4 py-3 hover:bg-surface-hover hover:border-border-strong transition-all shadow-2xs group"
+          >
+            <span className="flex size-10 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 shrink-0 border border-accent-500/20">
+              <DocumentIcon fileName={doc.fileName} className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-fg truncate group-hover:text-brand-600 transition-colors">
+                {doc.fileName ?? 'Document'}
+              </p>
+              <p className="text-xs text-fg-muted">
+                {doc.kind === 'pdf' ? 'Click to view or download PDF' : `${documentLabel(doc.fileName)} · click to download`}
+              </p>
+            </div>
+            <Download className="size-4 text-fg-muted group-hover:text-fg shrink-0 transition-colors" />
+          </a>
       ))}
     </div>
   )
@@ -608,6 +613,15 @@ export function PostCard({ post }: { post: Post }) {
                 {meta.label}
               </span>
             )}
+            {post.visibility === 'CONNECTIONS' && (
+              <span
+                title="Only the author and their connections can see this post"
+                className="inline-flex items-center gap-1 rounded-md bg-surface-sunken px-1.5 py-0.5 text-xs font-semibold text-fg-secondary"
+              >
+                <Users className="size-3" />
+                Connections
+              </span>
+            )}
           </p>
         </div>
         <DropdownMenu
@@ -693,6 +707,8 @@ export function PostCard({ post }: { post: Post }) {
             onDoubleTapLike={() => likeMutation.mutate()}
           />
         )}
+
+        {post.linkUrl && <PostLinkCard url={post.linkUrl} />}
 
         {meta && post.relatedId && (
           <Link

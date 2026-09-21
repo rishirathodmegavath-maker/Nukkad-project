@@ -193,6 +193,8 @@ export interface AdminPostRow {
   removedByAdmin: boolean
   removalReason: string | null
   createdAt: string
+  visibility?: string
+  linkUrl?: string | null
 }
 
 export async function listAdminPosts(
