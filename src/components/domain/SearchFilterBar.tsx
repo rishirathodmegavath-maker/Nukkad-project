@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { ListFilter, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SearchFilterBarProps {
   query: string
@@ -7,16 +8,19 @@ interface SearchFilterBarProps {
   placeholder?: string
   /** Accessible name for the field. Defaults to the placeholder text. */
   label?: string
+  /** Put the children (filters, actions) on the same row as the search field instead of stacked below it.
+   *  For compact toolbars such as the admin lists; wraps to a second row on narrow screens. */
+  inline?: boolean
   children?: ReactNode
 }
 
 /** The page's own list filter. It looks and reads differently from the header's site-wide search
  *  (filter icon, "Filter …" wording, its own labelled search landmark) so the two aren't confused. */
-export function SearchFilterBar({ query, onQueryChange, placeholder = 'Filter…', label, children }: SearchFilterBarProps) {
+export function SearchFilterBar({ query, onQueryChange, placeholder = 'Filter…', label, inline = false, children }: SearchFilterBarProps) {
   const fieldId = useId()
   return (
-    <div className="flex flex-col gap-3.5 mb-6">
-      <div role="search" aria-label={label ?? placeholder.replace(/…$/, '')} className="relative max-w-md">
+    <div className={cn('flex', inline ? 'flex-wrap items-center gap-3 mb-4' : 'flex-col gap-3.5 mb-6')}>
+      <div role="search" aria-label={label ?? placeholder.replace(/…$/, '')} className={cn('relative', inline ? 'w-full sm:w-80' : 'max-w-md')}>
         <ListFilter className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-fg-muted pointer-events-none" aria-hidden="true" />
         <input
           id={fieldId}
