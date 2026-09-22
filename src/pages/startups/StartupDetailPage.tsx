@@ -195,7 +195,7 @@ export default function StartupDetailPage() {
       />
 
       <StartupMetricStrip
-        followers={startup.followerCount}
+        followers={canManage ? startup.followerCount : undefined}
         teamMembers={members?.length}
         openRoles={openPositions.isLoading ? undefined : openPositions.positions.length}
         events={eventsQuery.isLoading ? undefined : (eventsQuery.data?.length ?? 0)}

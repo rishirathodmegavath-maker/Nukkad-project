@@ -61,10 +61,13 @@ export function StartupCard({ startup }: { startup: Startup }) {
                 <span className="truncate">{startup.location}</span>
               </span>
             )}
-            <span className="flex shrink-0 items-center gap-1">
-              <Users className="size-3.5" aria-hidden="true" />
-              {formatCompactNumber(startup.followerCount)} {startup.followerCount === 1 ? 'follower' : 'followers'}
-            </span>
+            {/* Follower count is private to the startup's own founders/admins — everyone else just doesn't see it here either. */}
+            {startup.canManage && (
+              <span className="flex shrink-0 items-center gap-1">
+                <Users className="size-3.5" aria-hidden="true" />
+                {formatCompactNumber(startup.followerCount)} {startup.followerCount === 1 ? 'follower' : 'followers'}
+              </span>
+            )}
           </div>
           <ArrowRight className="size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5 group-hover:text-fg" aria-hidden="true" />
         </div>
