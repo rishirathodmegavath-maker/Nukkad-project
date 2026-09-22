@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react'
 import { bulkDeleteAdminResources, deleteAdminResource, listAdminResources } from '@/services/admin.service'
@@ -15,6 +15,8 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
 import { toast } from '@/store/toast.store'
+import { useRowSelection } from '@/hooks/useRowSelection'
+import { isAllVisibleSelected, isAnyVisibleSelected } from '@/lib/rowSelection'
 import { RESOURCE_CATEGORIES, RESOURCE_TYPE_ORDER, categoryMeta, isCategory } from '@/lib/resource-catalog'
 import { formatRelativeTime } from '@/lib/utils'
 import type { Resource, ResourceCategory, ResourceType } from '@/types'
@@ -37,18 +39,10 @@ export default function AdminResourcesPage() {
   const [page, setPage] = useState(0)
   const [form, setForm] = useState<{ resource?: Resource } | null>(null)
   const [deleting, setDeleting] = useState<Resource | null>(null)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const { selectedIds, handleRowClick, toggleSelectAllVisible, clearSelection, removeFromSelection, clearAnchor } = useRowSelection()
+  const selectAllRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
-
-  function toggleSelected(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
 
   const filters = useMemo(
     () => ({
@@ -65,6 +59,16 @@ export default function AdminResourcesPage() {
     queryKey: ['admin', 'resources', filters],
     queryFn: () => listAdminResources(filters),
   })
+  // The order actually rendered right now — shift-range selection and "select all" only ever
+  // operate over this, never a server-side page that isn't loaded.
+  const visibleIds = useMemo(() => data?.content.map((r) => r.id) ?? [], [data])
+  const allVisibleSelected = isAllVisibleSelected(selectedIds, visibleIds)
+  const someVisibleSelected = isAnyVisibleSelected(selectedIds, visibleIds)
+  // `indeterminate` has no HTML attribute form — it's a DOM-only property, so it's set imperatively
+  // rather than as a JSX prop.
+  useEffect(() => {
+    if (selectAllRef.current) selectAllRef.current.indeterminate = someVisibleSelected && !allVisibleSelected
+  }, [someVisibleSelected, allVisibleSelected])
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteAdminResource(deleting!.id),
@@ -78,12 +82,13 @@ export default function AdminResourcesPage() {
   })
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: () => bulkDeleteAdminResources(Array.from(selectedIds)),
-    onSuccess: () => {
+    mutationFn: (ids: string[]) => bulkDeleteAdminResources(ids),
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'resources'] })
       queryClient.invalidateQueries({ queryKey: ['resources'] })
-      toast.success(`${selectedIds.size} resource${selectedIds.size === 1 ? '' : 's'} deleted`)
-      setSelectedIds(new Set())
+      toast.success(`${ids.length} resource${ids.length === 1 ? '' : 's'} deleted`)
+      removeFromSelection(ids)
+      clearAnchor()
       setBulkDeleteOpen(false)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete the selected resources'),
@@ -117,7 +122,7 @@ export default function AdminResourcesPage() {
         <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-surface-sunken/50 px-4 py-2.5">
           <p className="text-sm font-medium text-fg">{selectedIds.size} selected</p>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            <Button size="sm" variant="ghost" onClick={clearSelection}>
               Clear
             </Button>
             <Button size="sm" variant="danger-subtle" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setBulkDeleteOpen(true)}>
@@ -152,7 +157,18 @@ export default function AdminResourcesPage() {
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs font-semibold text-fg-muted uppercase tracking-wide">
                     <th className="px-3 py-3">
-                      <span className="sr-only">Select</span>
+                      <input
+                        ref={selectAllRef}
+                        type="checkbox"
+                        aria-label={allVisibleSelected ? 'Deselect all resources on this page' : 'Select all resources on this page'}
+                        checked={allVisibleSelected}
+                        onChange={() => {}}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          toggleSelectAllVisible(visibleIds)
+                        }}
+                        className="size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
+                      />
                     </th>
                     <th className="w-full min-w-[13rem] px-3 py-3">Title</th>
                     <th className="px-3 py-3">Shelf</th>
@@ -170,7 +186,11 @@ export default function AdminResourcesPage() {
                           type="checkbox"
                           aria-label={`Select ${resource.title}`}
                           checked={selectedIds.has(resource.id)}
-                          onChange={() => toggleSelected(resource.id)}
+                          onChange={() => {}}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleRowClick(resource.id, visibleIds, { shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey })
+                          }}
                           className="size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
                         />
                       </td>
@@ -270,7 +290,7 @@ export default function AdminResourcesPage() {
             <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button variant="danger" isLoading={bulkDeleteMutation.isPending} onClick={() => bulkDeleteMutation.mutate()}>
+            <Button variant="danger" isLoading={bulkDeleteMutation.isPending} onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}>
               Delete {selectedIds.size} Resource{selectedIds.size === 1 ? '' : 's'}
             </Button>
           </>
