@@ -25,6 +25,12 @@ const ADMIN_NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
     ],
   },
   {
+    heading: 'Investors',
+    items: [
+      { to: '/admin/investor-catalog', label: 'Investor Catalog' },
+    ],
+  },
+  {
     heading: 'Content',
     items: [
       { to: '/admin/startups', label: 'Startups' },
