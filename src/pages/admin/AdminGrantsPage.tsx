@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, ExternalLink, Plus, Sparkles } from 'lucide-react'
-import { listAdminGrants, reviewGrantModeration, setGrantRemoved } from '@/services/admin.service'
+import { listAdminGrants, reviewGrantModeration, runGrantDiscoveryNow, setGrantRemoved } from '@/services/admin.service'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
@@ -76,6 +76,19 @@ export default function AdminGrantsPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not review this grant'),
   })
 
+  const runDiscoveryMutation = useMutation({
+    mutationFn: runGrantDiscoveryNow,
+    onSuccess: (run) => {
+      invalidate()
+      if (run.status === 'FAILED') {
+        toast.error(run.errorMessage || 'Grant discovery run failed')
+      } else {
+        toast.success(`${run.batchGovernment} — ${run.batchTopic}: found ${run.schemesFound}, created ${run.schemesCreated}, updated ${run.schemesUpdated}, rejected ${run.schemesRejected}`)
+      }
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not run grant discovery'),
+  })
+
   return (
     <div>
       <SearchFilterBar query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search grants by name or provider…" />
@@ -95,7 +108,16 @@ export default function AdminGrantsPage() {
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </Select>
-        <Button className="sm:ml-auto" leftIcon={<Plus className="size-4" />} onClick={() => setAdding(true)}>
+        <Button
+          className="sm:ml-auto"
+          variant="secondary"
+          leftIcon={<Sparkles className="size-4" />}
+          isLoading={runDiscoveryMutation.isPending}
+          onClick={() => runDiscoveryMutation.mutate()}
+        >
+          Run AI Discovery now
+        </Button>
+        <Button leftIcon={<Plus className="size-4" />} onClick={() => setAdding(true)}>
           Add grant
         </Button>
       </div>
