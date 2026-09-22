@@ -28,7 +28,12 @@ export function GrantCard({ grant }: { grant: Grant }) {
         {grant.description && <p className="text-sm text-fg-secondary line-clamp-2">{grant.description}</p>}
 
         <div className="mt-auto flex flex-col gap-1.5 pt-3 border-t border-border/60">
-          {grant.fundingAmount && <p className="text-xs font-semibold text-fg-secondary">{grant.fundingAmount}</p>}
+          {grant.fundingAmount && (
+            <div>
+              <p className="text-[11px] font-medium text-fg-muted uppercase tracking-wide">Funding</p>
+              <p className="text-sm font-semibold text-fg-secondary">{grant.fundingAmount}</p>
+            </div>
+          )}
           <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-fg-brand">
             View details
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
