@@ -14,12 +14,17 @@ import { Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
+import { cn } from '@/lib/utils'
 import type { Post, PostType, SavedPostsSort } from '@/types'
 
 const FEED_TABS = [
   { key: 'all', label: 'Feed' },
   { key: 'saved', label: 'Saved' },
 ]
+
+/** Shared by both composer prompts below — only the content inside the button differs. */
+const COMPOSER_BUTTON =
+  'flex items-center gap-3 rounded-lg border border-border/80 bg-surface p-4 text-left shadow-xs transition-all duration-150 hover:border-border-strong active:scale-[0.995] cursor-pointer'
 
 /** Blank-card guard: image → video frame → PDF tile → related-entity chip → text → generic fallback.
  *  A saved post must never render with none of these, which is what happened before for
@@ -247,21 +252,32 @@ export default function FeedPage({ fixedKind }: { fixedKind?: PostType } = {}) {
         <Tabs label="Feed view" items={FEED_TABS} value={tab} onChange={setTab} />
       )}
 
-      {tab === 'all' && (
-        <button
-          type="button"
-          onClick={() => setIsComposerOpen(true)}
-          className="flex items-center gap-3 rounded-lg border border-border/80 bg-surface p-4 text-left shadow-xs transition-all duration-150 hover:border-border-strong active:scale-[0.995] cursor-pointer"
-        >
-          <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
-          <span className="flex-1 min-w-0 truncate text-sm text-fg-muted">
-            {fixedMeta ? 'Start a discussion…' : 'Share an update, ask for feedback, or celebrate an achievement…'}
+      {/* Discussions gets its own composer copy — "start a conversation", not "share an update" —
+          since this box opens the exact same CreatePostModal either way. */}
+      {tab === 'all' && fixedMeta ? (
+        <button type="button" onClick={() => setIsComposerOpen(true)} className={COMPOSER_BUTTON}>
+          <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', fixedMeta.tone)}>
+            <fixedMeta.icon className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-fg">Start a new discussion</span>
+            <span className="mt-0.5 block truncate text-xs text-fg-muted">Ask a question, share an opinion, or start a conversation.</span>
           </span>
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
             <Plus className="size-4.5" />
           </span>
         </button>
-      )}
+      ) : tab === 'all' ? (
+        <button type="button" onClick={() => setIsComposerOpen(true)} className={COMPOSER_BUTTON}>
+          <Avatar src={currentUser?.avatarUrl} name={currentUser?.name ?? ''} size="md" />
+          <span className="flex-1 min-w-0 truncate text-sm text-fg-muted">
+            Share an update, ask for feedback, or celebrate an achievement…
+          </span>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
+            <Plus className="size-4.5" />
+          </span>
+        </button>
+      ) : null}
 
       {tab === 'all' && !fixedKind && (
         <PillTabs tone="soft" scrollable label="Filter by post type" items={FEED_KIND_FILTERS} value={pickedKind} onChange={setPickedKind} />

@@ -42,6 +42,8 @@ import FundraiseDetailPage from '@/pages/investors/FundraiseDetailPage'
 import IntroRequestsPage from '@/pages/investors/IntroRequestsPage'
 import FeedPage from '@/pages/feed/FeedPage'
 import PostDetailPage from '@/pages/feed/PostDetailPage'
+import DiscussionsPage from '@/pages/discussions/DiscussionsPage'
+import DiscussionDetailPage from '@/pages/discussions/DiscussionDetailPage'
 import EventsListPage from '@/pages/events/EventsListPage'
 import PostEventPage from '@/pages/events/PostEventPage'
 import EventDetailPage from '@/pages/events/EventDetailPage'
@@ -116,7 +118,8 @@ export function AppRoutes() {
           <Route path="/investors/:id" element={<InvestorProfilePage />} />
 
           <Route path="/feed" element={<FeedPage />} />
-          <Route path="/discussions" element={<FeedPage fixedKind="discussion" />} />
+          <Route path="/discussions" element={<DiscussionsPage />} />
+          <Route path="/discussions/:id" element={<DiscussionDetailPage />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/feed/:postId" element={<PostDetailPage />} />
 
