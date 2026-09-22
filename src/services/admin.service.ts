@@ -286,10 +286,16 @@ export interface GrantDiscoveryRun {
   finishedAt: string | null
 }
 
-/** Read-only run history for the scheduled AI grant-discovery pipeline — see AdminGrantDiscoveryController.
- *  There is no "run now" endpoint; the pipeline is schedule-only by design. */
+/** Run history for the AI grant-discovery pipeline — see AdminGrantDiscoveryController. */
 export async function listGrantDiscoveryRuns(params: { page?: number; size?: number } = {}): Promise<Page<GrantDiscoveryRun>> {
   return getPagedResult<GrantDiscoveryRun>('/admin/grant-discovery/runs', { ...params })
+}
+
+/** Fires one discovery batch immediately instead of waiting for the nightly schedule — the
+ *  pipeline's automatic cadence is unchanged; this is purely a manual, on-demand extra trigger.
+ *  Rejected with 400 if GRANT_DISCOVERY_ENABLED is off. */
+export async function runGrantDiscoveryNow(): Promise<GrantDiscoveryRun> {
+  return apiClient.post<GrantDiscoveryRun>('/admin/grant-discovery/run', {})
 }
 
 export async function listAdminGrants(
