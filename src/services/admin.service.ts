@@ -1,7 +1,7 @@
 import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapResource, type ResourceDto } from '@/services/resources.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
-import type { Resource, ResourceCategory, ResourceType } from '@/types'
+import type { InvestorType, Resource, ResourceCategory, ResourceType } from '@/types'
 
 export interface AdminUserFilters {
   q?: string
@@ -356,4 +356,136 @@ export async function listAdminResourceChapters(): Promise<{ id: string; name: s
 
 export async function deleteAdminResource(id: string): Promise<void> {
   await apiClient.delete(`/admin/resources/${id}`)
+}
+
+// ---- Investor Discovery catalog (admin-managed: this is the ONLY place these are created, edited or retired —
+//      see the Investor entity's class comment for how this relates to self-serve Investor Applications above) ----
+
+export interface AdminInvestorRow {
+  id: string
+  name: string
+  investorType: InvestorType
+  description: string | null
+  location: string | null
+  website: string | null
+  logoUrl: string | null
+  sectors: string[]
+  stages: string[]
+  chequeMin: number | null
+  chequeMax: number | null
+  active: boolean
+  visible: boolean
+  linkedInvestorProfileId: string | null
+  linkedInvestorProfileName: string | null
+  createdByAdminId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export async function listAdminInvestors(
+  params: { q?: string; type?: InvestorType; active?: boolean; visible?: boolean; page?: number; size?: number } = {},
+): Promise<Page<AdminInvestorRow>> {
+  return getPagedResult<AdminInvestorRow>('/admin/investor-catalog', { ...params })
+}
+
+export async function getAdminInvestor(id: string): Promise<AdminInvestorRow> {
+  return apiClient.get<AdminInvestorRow>(`/admin/investor-catalog/${id}`)
+}
+
+export interface AdminCreateInvestorInput {
+  name: string
+  investorType: InvestorType
+  description?: string
+  location?: string
+  website?: string
+  sectors: string[]
+  stages: string[]
+  chequeMin?: number
+  chequeMax?: number
+  active: boolean
+  visible: boolean
+  /** Ties this catalog row to a real, activated investor account — see Investor Applications. Optional; most
+   *  catalog investors (firms that aren't BuildAdda users) leave this unset. */
+  linkedInvestorProfileId?: string
+  logo?: File
+}
+
+export async function createAdminInvestor(input: AdminCreateInvestorInput): Promise<AdminInvestorRow> {
+  return uploadFile<AdminInvestorRow>(
+    '/admin/investor-catalog',
+    input.logo ?? null,
+    'logo',
+    {
+      name: input.name,
+      investorType: input.investorType,
+      description: input.description,
+      location: input.location,
+      website: input.website,
+      sectors: input.sectors.length ? input.sectors.join(',') : undefined,
+      stages: input.stages.length ? input.stages.join(',') : undefined,
+      chequeMin: input.chequeMin !== undefined ? String(input.chequeMin) : undefined,
+      chequeMax: input.chequeMax !== undefined ? String(input.chequeMax) : undefined,
+      active: String(input.active),
+      visible: String(input.visible),
+      linkedInvestorProfileId: input.linkedInvestorProfileId,
+    },
+    'POST',
+  )
+}
+
+export interface AdminUpdateInvestorInput {
+  name?: string
+  investorType?: InvestorType
+  /** Pass '' to clear; omit to leave unchanged. */
+  description?: string
+  location?: string
+  website?: string
+  sectors?: string[]
+  stages?: string[]
+  chequeMin?: number
+  chequeMax?: number
+  active?: boolean
+  visible?: boolean
+  /** Pass '' to unlink; omit to leave unchanged. */
+  linkedInvestorProfileId?: string
+}
+
+export async function updateAdminInvestor(id: string, input: AdminUpdateInvestorInput): Promise<AdminInvestorRow> {
+  return apiClient.put<AdminInvestorRow>(`/admin/investor-catalog/${id}`, input)
+}
+
+export async function replaceAdminInvestorLogo(id: string, logo: File): Promise<AdminInvestorRow> {
+  return uploadFile<AdminInvestorRow>(`/admin/investor-catalog/${id}/logo`, logo, 'logo')
+}
+
+export async function removeAdminInvestorLogo(id: string): Promise<AdminInvestorRow> {
+  return apiClient.delete<AdminInvestorRow>(`/admin/investor-catalog/${id}/logo`)
+}
+
+export async function deleteAdminInvestor(id: string): Promise<void> {
+  await apiClient.delete(`/admin/investor-catalog/${id}`)
+}
+
+export interface AdminInvestorIntroductionRow {
+  id: string
+  investorId: string
+  investorName: string | null
+  requesterUserId: string
+  requesterName: string | null
+  startupId: string
+  startupName: string | null
+  message: string
+  status: 'PENDING' | 'CLOSED'
+  createdAt: string
+  closedAt: string | null
+}
+
+export async function listAdminInvestorIntroductions(
+  params: { status?: 'PENDING' | 'CLOSED'; page?: number; size?: number } = {},
+): Promise<Page<AdminInvestorIntroductionRow>> {
+  return getPagedResult<AdminInvestorIntroductionRow>('/admin/investor-catalog/introductions', { ...params })
+}
+
+export async function closeAdminInvestorIntroduction(id: string): Promise<AdminInvestorIntroductionRow> {
+  return apiClient.patch<AdminInvestorIntroductionRow>(`/admin/investor-catalog/introductions/${id}/close`, {})
 }

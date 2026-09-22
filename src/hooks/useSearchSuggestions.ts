@@ -6,7 +6,7 @@ import { listStartups } from '@/services/startups.service'
 import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { listGrants } from '@/services/grants.service'
-import { listInvestors } from '@/services/investors.service'
+import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
 
 const SUGGESTIONS_PER_CATEGORY = 5
 const DEBOUNCE_MS = 250
@@ -54,10 +54,14 @@ export function useSearchSuggestions(rawQuery: string) {
     queryFn: () => listGrants({ query: debounced, size: SUGGESTIONS_PER_CATEGORY }),
     enabled,
   })
+  // Investor Discovery requires an active Startup Profile. Checked once with the same query key the
+  // Investors page/profile use, so it's shared/cached rather than a second request, and investor results
+  // are never even fetched — not just hidden — for a viewer who isn't eligible to see them.
+  const investorAccess = useQuery({ queryKey: ['investor-catalog', 'access'], queryFn: hasInvestorDiscoveryAccess, enabled })
   const investors = useQuery({
     queryKey: ['search-suggestions', 'investors', debounced],
-    queryFn: async () => (await listInvestors({ query: debounced })).slice(0, SUGGESTIONS_PER_CATEGORY),
-    enabled,
+    queryFn: async () => (await listCatalogInvestors({ query: debounced })).content.slice(0, SUGGESTIONS_PER_CATEGORY),
+    enabled: enabled && investorAccess.data === true,
   })
 
   const queries = [people, ideas, startups, opportunities, events, grants, investors]

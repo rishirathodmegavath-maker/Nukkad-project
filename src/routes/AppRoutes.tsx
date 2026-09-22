@@ -37,6 +37,7 @@ import ChapterDetailPage from '@/pages/chapters/ChapterDetailPage'
 import InvestorsListPage from '@/pages/investors/InvestorsListPage'
 import InvestorProfileFormPage from '@/pages/investors/InvestorProfileFormPage'
 import InvestorProfilePage from '@/pages/investors/InvestorProfilePage'
+import InvestorCatalogProfilePage from '@/pages/investors/InvestorCatalogProfilePage'
 import FundraiseDetailPage from '@/pages/investors/FundraiseDetailPage'
 import IntroRequestsPage from '@/pages/investors/IntroRequestsPage'
 import FeedPage from '@/pages/feed/FeedPage'
@@ -111,6 +112,7 @@ export function AppRoutes() {
           <Route path="/investors/activate" element={<InvestorProfileFormPage />} />
           <Route path="/investors/requests" element={<IntroRequestsPage />} />
           <Route path="/investors/fundraises/:id" element={<FundraiseDetailPage />} />
+          <Route path="/investors/catalog/:id" element={<InvestorCatalogProfilePage />} />
           <Route path="/investors/:id" element={<InvestorProfilePage />} />
 
           <Route path="/feed" element={<FeedPage />} />

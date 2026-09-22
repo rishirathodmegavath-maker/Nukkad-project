@@ -15,6 +15,7 @@ import AdminGrantsPage from '@/pages/admin/AdminGrantsPage'
 import AdminResourcesPage from '@/pages/admin/AdminResourcesPage'
 import AdminFeedPage from '@/pages/admin/AdminFeedPage'
 import AdminInvestorActivationsPage from '@/pages/admin/AdminInvestorActivationsPage'
+import AdminInvestorCatalogPage from '@/pages/admin/AdminInvestorCatalogPage'
 import AdminOpportunitiesPage from '@/pages/admin/AdminOpportunitiesPage'
 import AdminReportsPage from '@/pages/admin/AdminReportsPage'
 import AdminWithdrawalsPage from '@/pages/admin/AdminWithdrawalsPage'
@@ -51,6 +52,7 @@ export function AdminPortalRoutes() {
             <Route path="resources" element={<AdminResourcesPage />} />
             <Route path="feed" element={<AdminFeedPage />} />
             <Route path="investor-activations" element={<AdminInvestorActivationsPage />} />
+            <Route path="investor-catalog" element={<AdminInvestorCatalogPage />} />
             <Route path="reports" element={<AdminReportsPage />} />
             <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />

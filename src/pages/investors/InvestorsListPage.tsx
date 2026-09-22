@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Landmark, Sparkles, X } from 'lucide-react'
-import { listInvestors, listFundraises, getMyInvestorProfile } from '@/services/investors.service'
-import { listStartups, getStartupMembers, getStartup } from '@/services/startups.service'
+import { listFundraises, getMyInvestorProfile } from '@/services/investors.service'
+import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
+import { listStartups, listMyFoundedStartups, getStartupMembers, getStartup } from '@/services/startups.service'
 import { listIdeas } from '@/services/ideas.service'
 import { toast } from '@/store/toast.store'
-import { InvestorCard } from '@/components/domain/InvestorCard'
+import { CatalogInvestorCard } from '@/components/domain/CatalogInvestorCard'
+import { InvestorDiscoveryLocked } from '@/components/domain/InvestorDiscoveryLocked'
 import { IntroRequestModal } from '@/components/domain/IntroRequestModal'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
@@ -116,18 +118,29 @@ export default function InvestorsListPage() {
     setChequeSize('')
   }
 
-  const filters = useMemo(
+  const catalogFilters = useMemo(
     () => ({
       query: query || undefined,
       type: (investorType as InvestorType) || undefined,
       sector: sector || undefined,
       stage: stage || undefined,
-      geography: geography || undefined,
-      ticketSize: chequeSize ? Number(chequeSize) : undefined,
+      location: geography || undefined,
+      chequeSize: chequeSize ? Number(chequeSize) : undefined,
     }),
     [query, investorType, sector, stage, geography, chequeSize],
   )
-  const investorsQuery = useQuery({ queryKey: ['investors', filters], queryFn: () => listInvestors(filters), enabled: tab === 'investors' })
+  // Investor Discovery requires an active Startup Profile (checked here so the frontend never even
+  // fetches investor data for a locked user; the backend enforces it again regardless).
+  const accessQuery = useQuery({ queryKey: ['investor-catalog', 'access'], queryFn: hasInvestorDiscoveryAccess, enabled: tab === 'investors' })
+  const hasAccess = accessQuery.data === true
+  const catalogQuery = useQuery({
+    queryKey: ['investor-catalog', catalogFilters],
+    queryFn: () => listCatalogInvestors(catalogFilters),
+    enabled: tab === 'investors' && hasAccess,
+  })
+  // Real data for the "Matches your startup" badge — never a fabricated match score.
+  const myStartupsQuery = useQuery({ queryKey: ['startups', 'me', 'founding'], queryFn: listMyFoundedStartups, enabled: tab === 'investors' && hasAccess })
+  const myStartup = myStartupsQuery.data?.[0]
   const fundraisesQuery = useQuery({ queryKey: ['fundraises', 'open'], queryFn: () => listFundraises({ status: 'Open' }), enabled: tab === 'raising' })
   const earlyStartupsQuery = useQuery({
     queryKey: ['startups', 'early-stage'],
@@ -176,66 +189,66 @@ export default function InvestorsListPage() {
       />
 
       {tab === 'investors' && (
-        <>
-          <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Filter investors by name, firm or thesis…">
-            <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              <Select label="Type" value={investorType} onChange={(e) => setInvestorType(e.target.value)}>
-                <option value="">Any type</option>
-                {INVESTOR_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </Select>
-              <Input label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="e.g. AI" />
-              <Input label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} placeholder="e.g. Seed" />
-              <Input label="Location" value={geography} onChange={(e) => setGeography(e.target.value)} placeholder="e.g. Bangalore" />
-              <Input
-                label="Cheque size (₹)"
-                type="number"
-                min={0}
-                value={chequeSize}
-                onChange={(e) => setChequeSize(e.target.value)}
-                placeholder="e.g. 2000000"
-              />
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" className="col-span-full justify-self-start" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
-                  Clear filters
-                </Button>
-              )}
-            </div>
-          </SearchFilterBar>
-          {investorsQuery.isLoading ? (
-            <CardSkeletonGrid count={6} />
-          ) : investorsQuery.data && investorsQuery.data.length > 0 ? (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {investorsQuery.data.map((inv) => (
-                <InvestorCard
-                  key={inv.id}
-                  investor={inv}
-                  onRequestIntro={() =>
-                    setIntroTarget({ recipientId: inv.userId, recipientName: inv.user?.name, direction: 'FOUNDER_TO_INVESTOR' })
-                  }
+        accessQuery.isLoading ? (
+          <CardSkeletonGrid count={6} />
+        ) : !hasAccess ? (
+          <InvestorDiscoveryLocked />
+        ) : (
+          <>
+            <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search investors by name, firm or thesis…">
+              <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <Select label="Type" value={investorType} onChange={(e) => setInvestorType(e.target.value)}>
+                  <option value="">Any type</option>
+                  {INVESTOR_TYPES.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </Select>
+                <Input label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="e.g. AI" />
+                <Input label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} placeholder="e.g. Seed" />
+                <Input label="Location" value={geography} onChange={(e) => setGeography(e.target.value)} placeholder="e.g. Bangalore" />
+                <Input
+                  label="Cheque size (₹)"
+                  type="number"
+                  min={0}
+                  value={chequeSize}
+                  onChange={(e) => setChequeSize(e.target.value)}
+                  placeholder="e.g. 2000000"
                 />
-              ))}
-            </div>
-          ) : hasActiveFilters || query ? (
-            <EmptyState
-              icon={<Landmark className="size-5" />}
-              title="No investors match your filters"
-              description="Try widening the sector, stage, location or cheque size — or clear filters to see everyone."
-              action={
-                <Button variant="secondary" size="sm" onClick={() => { setQuery(''); clearFilters() }}>
-                  Clear all filters
-                </Button>
-              }
-            />
-          ) : (
-            <EmptyState
-              icon={<Landmark className="size-5" />}
-              title="No investors on BuildAdda yet"
-              description="Once investors activate a profile, they'll show up here for founders to discover."
-            />
-          )}
-        </>
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" className="col-span-full justify-self-start" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+            </SearchFilterBar>
+            {catalogQuery.isLoading ? (
+              <CardSkeletonGrid count={6} />
+            ) : catalogQuery.data && catalogQuery.data.content.length > 0 ? (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {catalogQuery.data.content.map((inv) => (
+                  <CatalogInvestorCard key={inv.id} investor={inv} myStartup={myStartup ? { sector: myStartup.sector, stage: myStartup.stage } : undefined} />
+                ))}
+              </div>
+            ) : hasActiveFilters || query ? (
+              <EmptyState
+                icon={<Landmark className="size-5" />}
+                title="No investors match your filters"
+                description="Try widening the sector, stage, location or cheque size — or clear filters to see everyone."
+                action={
+                  <Button variant="secondary" size="sm" onClick={() => { setQuery(''); clearFilters() }}>
+                    Clear all filters
+                  </Button>
+                }
+              />
+            ) : (
+              <EmptyState
+                icon={<Landmark className="size-5" />}
+                title="No investors on BuildAdda yet"
+                description="Our team is building out the investor database. Check back soon."
+              />
+            )}
+          </>
+        )
       )}
 
       {tab === 'raising' &&
