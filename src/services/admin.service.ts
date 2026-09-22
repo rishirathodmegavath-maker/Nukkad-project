@@ -363,18 +363,33 @@ export async function deleteAdminResource(id: string): Promise<void> {
 
 export interface AdminInvestorRow {
   id: string
+  externalSourceId: string | null
   name: string
   investorType: InvestorType
   description: string | null
   location: string | null
+  country: string | null
   website: string | null
+  domain: string | null
   logoUrl: string | null
   sectors: string[]
   stages: string[]
+  programs: string[]
+  investmentCount: number | null
+  exitCount: number | null
+  keyPeople: string[]
+  facebookUrl: string | null
+  instagramUrl: string | null
+  linkedinUrl: string | null
+  twitterUrl: string | null
   chequeMin: number | null
   chequeMax: number | null
   active: boolean
   visible: boolean
+  contactEmail: string | null
+  contactEmailVerified: boolean | null
+  secondaryEmail: string | null
+  phoneNumber: string | null
   linkedInvestorProfileId: string | null
   linkedInvestorProfileName: string | null
   createdByAdminId: string
@@ -397,13 +412,27 @@ export interface AdminCreateInvestorInput {
   investorType: InvestorType
   description?: string
   location?: string
+  country?: string
   website?: string
+  domain?: string
   sectors: string[]
   stages: string[]
+  programs: string[]
+  keyPeople: string[]
+  investmentCount?: number
+  exitCount?: number
   chequeMin?: number
   chequeMax?: number
   active: boolean
   visible: boolean
+  facebookUrl?: string
+  instagramUrl?: string
+  linkedinUrl?: string
+  twitterUrl?: string
+  contactEmail?: string
+  contactEmailVerified?: boolean
+  secondaryEmail?: string
+  phoneNumber?: string
   /** Ties this catalog row to a real, activated investor account — see Investor Applications. Optional; most
    *  catalog investors (firms that aren't BuildAdda users) leave this unset. */
   linkedInvestorProfileId?: string
@@ -420,13 +449,27 @@ export async function createAdminInvestor(input: AdminCreateInvestorInput): Prom
       investorType: input.investorType,
       description: input.description,
       location: input.location,
+      country: input.country,
       website: input.website,
+      domain: input.domain,
       sectors: input.sectors.length ? input.sectors.join(',') : undefined,
       stages: input.stages.length ? input.stages.join(',') : undefined,
+      programs: input.programs.length ? input.programs.join(',') : undefined,
+      keyPeople: input.keyPeople.length ? input.keyPeople.join(',') : undefined,
+      investmentCount: input.investmentCount !== undefined ? String(input.investmentCount) : undefined,
+      exitCount: input.exitCount !== undefined ? String(input.exitCount) : undefined,
       chequeMin: input.chequeMin !== undefined ? String(input.chequeMin) : undefined,
       chequeMax: input.chequeMax !== undefined ? String(input.chequeMax) : undefined,
       active: String(input.active),
       visible: String(input.visible),
+      facebookUrl: input.facebookUrl,
+      instagramUrl: input.instagramUrl,
+      linkedinUrl: input.linkedinUrl,
+      twitterUrl: input.twitterUrl,
+      contactEmail: input.contactEmail,
+      contactEmailVerified: input.contactEmailVerified !== undefined ? String(input.contactEmailVerified) : undefined,
+      secondaryEmail: input.secondaryEmail,
+      phoneNumber: input.phoneNumber,
       linkedInvestorProfileId: input.linkedInvestorProfileId,
     },
     'POST',
@@ -439,13 +482,27 @@ export interface AdminUpdateInvestorInput {
   /** Pass '' to clear; omit to leave unchanged. */
   description?: string
   location?: string
+  country?: string
   website?: string
+  domain?: string
   sectors?: string[]
   stages?: string[]
+  programs?: string[]
+  keyPeople?: string[]
+  investmentCount?: number
+  exitCount?: number
   chequeMin?: number
   chequeMax?: number
   active?: boolean
   visible?: boolean
+  facebookUrl?: string
+  instagramUrl?: string
+  linkedinUrl?: string
+  twitterUrl?: string
+  contactEmail?: string
+  contactEmailVerified?: boolean
+  secondaryEmail?: string
+  phoneNumber?: string
   /** Pass '' to unlink; omit to leave unchanged. */
   linkedInvestorProfileId?: string
 }
@@ -488,4 +545,76 @@ export async function listAdminInvestorIntroductions(
 
 export async function closeAdminInvestorIntroduction(id: string): Promise<AdminInvestorIntroductionRow> {
   return apiClient.patch<AdminInvestorIntroductionRow>(`/admin/investor-catalog/introductions/${id}/close`, {})
+}
+
+// ---- Investor catalog bulk CSV import — see InvestorImportService on the backend ----
+
+export interface AdminInvestorImportPreviewRow {
+  rowNumber: number
+  externalSourceId: string | null
+  name: string | null
+  investorType: string | null
+  location: string | null
+  country: string | null
+  warnings: string[]
+  error: string | null
+}
+
+export interface AdminInvestorImportPreview {
+  totalRows: number
+  detectedColumns: string[]
+  unrecognizedColumns: string[]
+  hasIdColumn: boolean
+  sampleRows: AdminInvestorImportPreviewRow[]
+}
+
+export async function previewAdminInvestorImport(file: File): Promise<AdminInvestorImportPreview> {
+  return uploadFile<AdminInvestorImportPreview>('/admin/investor-catalog/import/preview', file, 'file')
+}
+
+export type AdminInvestorImportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+
+export interface AdminInvestorImportBatch {
+  id: string
+  originalFilename: string | null
+  status: AdminInvestorImportStatus
+  totalRows: number
+  processedRows: number
+  createdCount: number
+  updatedCount: number
+  skippedCount: number
+  failedCount: number
+  errorMessage: string | null
+  startedAt: string | null
+  completedAt: string | null
+  createdAt: string
+}
+
+export async function startAdminInvestorImport(file: File): Promise<AdminInvestorImportBatch> {
+  return uploadFile<AdminInvestorImportBatch>('/admin/investor-catalog/import', file, 'file')
+}
+
+export async function listAdminInvestorImports(params: { page?: number; size?: number } = {}): Promise<Page<AdminInvestorImportBatch>> {
+  return getPagedResult<AdminInvestorImportBatch>('/admin/investor-catalog/import', { ...params })
+}
+
+export async function getAdminInvestorImport(id: string): Promise<AdminInvestorImportBatch> {
+  return apiClient.get<AdminInvestorImportBatch>(`/admin/investor-catalog/import/${id}`)
+}
+
+export interface AdminInvestorImportIssue {
+  id: string
+  rowNumber: number
+  externalSourceId: string | null
+  investorName: string | null
+  severity: 'WARNING' | 'ERROR'
+  message: string
+  createdAt: string
+}
+
+export async function listAdminInvestorImportIssues(
+  batchId: string,
+  params: { page?: number; size?: number } = {},
+): Promise<Page<AdminInvestorImportIssue>> {
+  return getPagedResult<AdminInvestorImportIssue>(`/admin/investor-catalog/import/${batchId}/issues`, { ...params })
 }

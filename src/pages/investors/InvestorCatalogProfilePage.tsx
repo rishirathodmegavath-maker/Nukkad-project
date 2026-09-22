@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Globe, ChevronRight } from 'lucide-react'
+import { Globe, ChevronRight, TrendingUp, Link2, Users } from 'lucide-react'
 import { getCatalogInvestor, hasInvestorDiscoveryAccess } from '@/services/investor-catalog.service'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -11,10 +11,21 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
 import { CatalogIntroductionModal } from '@/components/domain/CatalogIntroductionModal'
 import { InvestorDiscoveryLocked } from '@/components/domain/InvestorDiscoveryLocked'
+import { investorLogoSrc } from '@/lib/investor-logo'
 import { formatCurrency } from '@/lib/utils'
 
+// lucide-react no longer ships brand/social logos, so every link uses the same generic icon and is told
+// apart by its label instead.
+const SOCIAL_LINKS: { key: 'facebookUrl' | 'instagramUrl' | 'linkedinUrl' | 'twitterUrl'; label: string }[] = [
+  { key: 'linkedinUrl', label: 'LinkedIn' },
+  { key: 'twitterUrl', label: 'Twitter / X' },
+  { key: 'facebookUrl', label: 'Facebook' },
+  { key: 'instagramUrl', label: 'Instagram' },
+]
+
 /** Investor Discovery's investor profile — an admin-managed catalog record. See InvestorProfilePage for the
- *  separate, unrelated self-serve investor-account profile at /investors/:id. */
+ *  separate, unrelated self-serve investor-account profile at /investors/:id. Only ever shows fields this
+ *  investor actually has — a CSV-imported row with no cheque range or stage preference just omits them. */
 export default function InvestorCatalogProfilePage() {
   const { id } = useParams<{ id: string }>()
   const [introOpen, setIntroOpen] = useState(false)
@@ -44,6 +55,10 @@ export default function InvestorCatalogProfilePage() {
     return <ErrorState title="Couldn’t load this investor" onRetry={refetch} />
   }
 
+  const hasActivity = investor.investmentCount !== undefined || investor.exitCount !== undefined
+  const hasChequeRange = investor.chequeMin !== undefined || investor.chequeMax !== undefined
+  const socialLinks = SOCIAL_LINKS.filter((s) => investor[s.key])
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2 text-xs font-medium text-fg-muted">
@@ -56,12 +71,14 @@ export default function InvestorCatalogProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="flex items-start justify-between gap-5">
+          <Card className="flex flex-col items-start justify-between gap-5 sm:flex-row">
             <div className="flex items-start gap-5">
-              <Avatar src={investor.logoUrl} name={investor.name} size="xl" />
+              <Avatar src={investorLogoSrc(investor.logoUrl, investor.domain)} name={investor.name} size="xl" />
               <div>
                 <h1 className="text-xl font-bold text-fg">{investor.name}</h1>
-                {investor.location && <p className="text-sm text-fg-muted mt-0.5">{investor.location}</p>}
+                {(investor.location || investor.country) && (
+                  <p className="text-sm text-fg-muted mt-0.5">{[investor.location, investor.country].filter(Boolean).join(', ')}</p>
+                )}
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   <Badge tone="brand">{investor.investorType}</Badge>
                   {investor.sectors.map((s) => (
@@ -72,7 +89,7 @@ export default function InvestorCatalogProfilePage() {
                 </div>
               </div>
             </div>
-            <Button size="sm" className="shrink-0" onClick={() => setIntroOpen(true)}>
+            <Button size="sm" className="w-full shrink-0 sm:w-auto" onClick={() => setIntroOpen(true)}>
               Request introduction
             </Button>
           </Card>
@@ -83,11 +100,37 @@ export default function InvestorCatalogProfilePage() {
               <p className="text-sm text-fg-secondary leading-relaxed">{investor.description}</p>
             </Card>
           )}
+
+          {investor.keyPeople.length > 0 && (
+            <Card>
+              <h2 className="font-semibold text-fg mb-3 flex items-center gap-1.5">
+                <Users className="size-4 text-fg-muted" /> Key people
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {investor.keyPeople.map((person) => (
+                  <span key={person} className="flex items-center gap-2 rounded-lg border border-border/70 bg-surface-sunken/50 px-3 py-1.5">
+                    <Avatar name={person} size="xs" />
+                    <span className="text-sm font-medium text-fg">{person}</span>
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
 
         <div className="flex flex-col gap-6">
           <Card className="flex flex-col gap-3">
-            {(investor.chequeMin !== undefined || investor.chequeMax !== undefined) && (
+            {hasActivity && (
+              <div>
+                <p className="text-xs text-fg-muted flex items-center gap-1"><TrendingUp className="size-3" /> Track record</p>
+                <p className="text-sm font-medium text-fg">
+                  {investor.investmentCount !== undefined && `${investor.investmentCount} investments`}
+                  {investor.investmentCount !== undefined && investor.exitCount !== undefined && ' · '}
+                  {investor.exitCount !== undefined && `${investor.exitCount} exits`}
+                </p>
+              </div>
+            )}
+            {hasChequeRange && (
               <div>
                 <p className="text-xs text-fg-muted">Cheque size</p>
                 <p className="text-sm font-medium text-fg">
@@ -102,10 +145,16 @@ export default function InvestorCatalogProfilePage() {
                 <p className="text-sm font-medium text-fg">{investor.stages.join(', ')}</p>
               </div>
             )}
-            {investor.location && (
+            {investor.programs.length > 0 && (
+              <div>
+                <p className="text-xs text-fg-muted">Programs</p>
+                <p className="text-sm font-medium text-fg">{investor.programs.join(', ')}</p>
+              </div>
+            )}
+            {(investor.location || investor.country) && (
               <div>
                 <p className="text-xs text-fg-muted">Location</p>
-                <p className="text-sm font-medium text-fg">{investor.location}</p>
+                <p className="text-sm font-medium text-fg">{[investor.location, investor.country].filter(Boolean).join(', ')}</p>
               </div>
             )}
             {investor.website && (
@@ -113,6 +162,11 @@ export default function InvestorCatalogProfilePage() {
                 <Globe className="size-3.5" /> Website
               </a>
             )}
+            {socialLinks.map(({ key, label }) => (
+              <a key={key} href={investor[key]} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
+                <Link2 className="size-3.5" /> {label}
+              </a>
+            ))}
           </Card>
 
           <p className="text-xs text-fg-muted px-1">

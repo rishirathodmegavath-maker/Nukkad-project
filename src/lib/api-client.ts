@@ -171,7 +171,7 @@ export const apiClient = {
 
 /** Mirrors the backend's `spring.servlet.multipart.max-file-size` (application.yml) so oversized
  * files are rejected instantly, client-side, instead of after a full upload only to hit a 400. */
-export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024
 
 function formatMb(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`

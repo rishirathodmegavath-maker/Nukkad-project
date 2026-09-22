@@ -71,10 +71,21 @@ export interface CatalogInvestor {
   investorType: InvestorType
   description?: string
   location?: string
+  country?: string
   website?: string
+  /** Bare domain (e.g. "peak.vc"), used to derive a logo fallback when there's no admin-uploaded one. */
+  domain?: string
   logoUrl?: string
   sectors: string[]
   stages: string[]
+  programs: string[]
+  investmentCount?: number
+  exitCount?: number
+  keyPeople: string[]
+  facebookUrl?: string
+  instagramUrl?: string
+  linkedinUrl?: string
+  twitterUrl?: string
   chequeMin?: number
   chequeMax?: number
   createdAt: string

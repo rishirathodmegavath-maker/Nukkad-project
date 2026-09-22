@@ -17,9 +17,14 @@ import type { InvestorType } from '@/types'
 const INVESTOR_TYPES: InvestorType[] = ['Angel', 'VC', 'Family Office', 'Corporate VC', 'Accelerator', 'Other']
 const ACCEPTED_IMAGES = '.png,.jpg,.jpeg,.webp,.gif'
 
+function SectionLabel({ children }: { children: string }) {
+  return <p className="text-xs font-bold uppercase tracking-wide text-fg-muted mt-1">{children}</p>
+}
+
 /**
- * Admin-only form to add or edit an Investor Discovery catalog record. This is the ONLY way one of these is
- * created — see AdminInvestorCatalogPage. Mount it only while open so its fields start fresh each time.
+ * Admin-only form to add or edit an Investor Discovery catalog record by hand. See AdminInvestorCatalogPage's
+ * Import tab for the primary, bulk way this catalog gets populated (CSV) — this modal is the secondary,
+ * one-at-a-time path, and also how CSV-sourced fields get manually enriched afterward.
  */
 export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => void; investor?: AdminInvestorRow }) {
   const editing = !!investor
@@ -28,13 +33,27 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
   const [investorType, setInvestorType] = useState<InvestorType>(investor?.investorType ?? 'VC')
   const [description, setDescription] = useState(investor?.description ?? '')
   const [location, setLocation] = useState(investor?.location ?? '')
+  const [country, setCountry] = useState(investor?.country ?? '')
   const [website, setWebsite] = useState(investor?.website ?? '')
+  const [domain, setDomain] = useState(investor?.domain ?? '')
   const [sectors, setSectors] = useState<string[]>(investor?.sectors ?? [])
   const [stages, setStages] = useState<string[]>(investor?.stages ?? [])
+  const [programs, setPrograms] = useState<string[]>(investor?.programs ?? [])
+  const [keyPeople, setKeyPeople] = useState<string[]>(investor?.keyPeople ?? [])
+  const [investmentCount, setInvestmentCount] = useState(investor?.investmentCount != null ? String(investor.investmentCount) : '')
+  const [exitCount, setExitCount] = useState(investor?.exitCount != null ? String(investor.exitCount) : '')
   const [chequeMin, setChequeMin] = useState(investor?.chequeMin != null ? String(investor.chequeMin) : '')
   const [chequeMax, setChequeMax] = useState(investor?.chequeMax != null ? String(investor.chequeMax) : '')
   const [active, setActive] = useState(investor?.active ?? true)
   const [visible, setVisible] = useState(investor?.visible ?? true)
+  const [facebookUrl, setFacebookUrl] = useState(investor?.facebookUrl ?? '')
+  const [instagramUrl, setInstagramUrl] = useState(investor?.instagramUrl ?? '')
+  const [linkedinUrl, setLinkedinUrl] = useState(investor?.linkedinUrl ?? '')
+  const [twitterUrl, setTwitterUrl] = useState(investor?.twitterUrl ?? '')
+  const [contactEmail, setContactEmail] = useState(investor?.contactEmail ?? '')
+  const [contactEmailVerified, setContactEmailVerified] = useState(investor?.contactEmailVerified ?? false)
+  const [secondaryEmail, setSecondaryEmail] = useState(investor?.secondaryEmail ?? '')
+  const [phoneNumber, setPhoneNumber] = useState(investor?.phoneNumber ?? '')
   const [linkedInvestorProfileId, setLinkedInvestorProfileId] = useState(investor?.linkedInvestorProfileId ?? '')
   const [logo, setLogo] = useState<File | null>(null)
   const [removeLogo, setRemoveLogo] = useState(false)
@@ -45,37 +64,37 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!investor) {
-        return createAdminInvestor({
-          name,
-          investorType,
-          description: description.trim() || undefined,
-          location: location.trim() || undefined,
-          website: website.trim() || undefined,
-          sectors,
-          stages,
-          chequeMin: min,
-          chequeMax: max,
-          active,
-          visible,
-          linkedInvestorProfileId: linkedInvestorProfileId.trim() || undefined,
-          logo: logo ?? undefined,
-        })
-      }
-      const updated = await updateAdminInvestor(investor.id, {
+      const common = {
         name,
         investorType,
-        description: description.trim(),
-        location: location.trim(),
-        website: website.trim(),
+        description: description.trim() || undefined,
+        location: location.trim() || undefined,
+        country: country.trim() || undefined,
+        website: website.trim() || undefined,
+        domain: domain.trim() || undefined,
         sectors,
         stages,
+        programs,
+        keyPeople,
+        investmentCount: investmentCount.trim() === '' ? undefined : Number(investmentCount),
+        exitCount: exitCount.trim() === '' ? undefined : Number(exitCount),
         chequeMin: min,
         chequeMax: max,
         active,
         visible,
-        linkedInvestorProfileId: linkedInvestorProfileId.trim(),
-      })
+        facebookUrl: facebookUrl.trim() || undefined,
+        instagramUrl: instagramUrl.trim() || undefined,
+        linkedinUrl: linkedinUrl.trim() || undefined,
+        twitterUrl: twitterUrl.trim() || undefined,
+        contactEmail: contactEmail.trim() || undefined,
+        contactEmailVerified,
+        secondaryEmail: secondaryEmail.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
+      }
+      if (!investor) {
+        return createAdminInvestor({ ...common, linkedInvestorProfileId: linkedInvestorProfileId.trim() || undefined, logo: logo ?? undefined })
+      }
+      const updated = await updateAdminInvestor(investor.id, { ...common, linkedInvestorProfileId: linkedInvestorProfileId.trim() })
       if (logo) return replaceAdminInvestorLogo(investor.id, logo)
       if (removeLogo && investor.logoUrl) return removeAdminInvestorLogo(investor.id)
       return updated
@@ -118,14 +137,16 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
               <option key={t} value={t}>{t}</option>
             ))}
           </Select>
-          <Input label="Location" hint="Optional" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bangalore, India" />
+          <Input label="Location" hint="Optional" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bangalore" />
+          <Input label="Country" hint="Optional" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. India" />
           <Input label="Website" hint="Optional" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" />
+          <Input label="Domain" hint="Optional — powers a logo fallback when there's no uploaded one" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="e.g. peak.vc" />
         </div>
 
         <Textarea label="Description / investment thesis" hint="Optional" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
 
         <div>
-          <p className="mb-1.5 text-sm font-medium text-fg">Sectors</p>
+          <p className="mb-1.5 text-sm font-medium text-fg">Sectors / industries</p>
           <TagInput value={sectors} onChange={setSectors} placeholder="Add a sector and press Enter…" maxLength={100} />
         </div>
         <div>
@@ -133,15 +154,11 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
           <TagInput value={stages} onChange={setStages} placeholder="Add a stage and press Enter…" maxLength={100} />
         </div>
 
+        <SectionLabel>Track record</SectionLabel>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input
-            label="Minimum cheque (₹)"
-            hint="Optional"
-            type="number"
-            min={0}
-            value={chequeMin}
-            onChange={(e) => setChequeMin(e.target.value)}
-          />
+          <Input label="Number of investments" hint="Optional" type="number" min={0} value={investmentCount} onChange={(e) => setInvestmentCount(e.target.value)} />
+          <Input label="Number of exits" hint="Optional" type="number" min={0} value={exitCount} onChange={(e) => setExitCount(e.target.value)} />
+          <Input label="Minimum cheque (₹)" hint="Optional" type="number" min={0} value={chequeMin} onChange={(e) => setChequeMin(e.target.value)} />
           <Input
             label="Maximum cheque (₹)"
             hint="Optional"
@@ -151,6 +168,38 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
             error={rangeValid ? undefined : 'Minimum cannot be greater than maximum'}
             onChange={(e) => setChequeMax(e.target.value)}
           />
+        </div>
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-fg">Programs</p>
+          <TagInput value={programs} onChange={setPrograms} placeholder="e.g. an accelerator cohort — press Enter…" maxLength={100} />
+        </div>
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-fg">Key people</p>
+          <TagInput value={keyPeople} onChange={setKeyPeople} placeholder="Add a name and press Enter…" maxLength={100} />
+        </div>
+
+        <SectionLabel>Social links</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="LinkedIn" hint="Optional" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/…" />
+          <Input label="Twitter / X" hint="Optional" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} placeholder="https://x.com/…" />
+          <Input label="Facebook" hint="Optional" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/…" />
+          <Input label="Instagram" hint="Optional" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/…" />
+        </div>
+
+        <SectionLabel>Private contact details — never shown to founders</SectionLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input label="Contact email" hint="Optional" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+          <Input label="Secondary email" hint="Optional" type="email" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} />
+          <Input label="Phone number" hint="Optional" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+          <label className="flex cursor-pointer items-center gap-2.5 self-end pb-2.5 text-sm text-fg">
+            <input
+              type="checkbox"
+              checked={contactEmailVerified}
+              onChange={(e) => setContactEmailVerified(e.target.checked)}
+              className="size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
+            />
+            Contact email verified
+          </label>
         </div>
 
         <div>
@@ -170,7 +219,7 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
             onChange={(e: ChangeEvent<HTMLInputElement>) => setLogo(e.target.files?.[0] ?? null)}
             className="block w-full text-sm text-fg-secondary file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-border/80 file:bg-surface file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-fg hover:file:bg-surface-hover"
           />
-          <p className="mt-1.5 text-xs text-fg-muted">Optional PNG, JPEG, WEBP or GIF. Without one, cards show the investor's initials.</p>
+          <p className="mt-1.5 text-xs text-fg-muted">Optional PNG, JPEG, WEBP or GIF. Without one, cards try the domain's logo, then fall back to initials.</p>
         </div>
 
         <Input

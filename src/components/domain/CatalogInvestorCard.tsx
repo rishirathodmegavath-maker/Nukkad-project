@@ -4,6 +4,7 @@ import type { CatalogInvestor } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
+import { investorLogoSrc } from '@/lib/investor-logo'
 import { formatCurrency } from '@/lib/utils'
 
 /** A card in Investor Discovery — the admin-managed catalog. `myStartup` (sector/stage) drives the "Matches
@@ -14,9 +15,9 @@ export function CatalogInvestorCard({ investor, myStartup }: { investor: Catalog
 
   return (
     <Link to={`/investors/catalog/${investor.id}`}>
-      <Card interactive padding="sm" className="flex h-full flex-col gap-3 border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
+      <Card interactive padding="sm" className="flex h-full flex-col gap-3 border border-border/80 shadow-xs hover:border-border-strong hover:shadow-sm transition-all min-w-0 overflow-hidden bg-surface">
         <div className="flex items-start gap-3">
-          <Avatar src={investor.logoUrl} name={investor.name} size="lg" />
+          <Avatar src={investorLogoSrc(investor.logoUrl, investor.domain)} name={investor.name} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="font-bold text-fg truncate text-base">{investor.name}</p>
             <p className="text-xs sm:text-sm text-fg-muted truncate mt-0.5">{investor.investorType}</p>
