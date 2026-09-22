@@ -89,6 +89,18 @@ export async function listCatalogInvestors(filters: CatalogInvestorFilters = {},
   return { ...result, content: result.content.map(mapCatalogInvestor) }
 }
 
+export interface CatalogFacets {
+  sectors: string[]
+  stages: string[]
+}
+
+/** The real sector/stage values currently in the catalog, for the filter dropdowns — sector and stage are
+ *  free text with no fixed list (unlike investor type), so these come from the data itself rather than a
+ *  guessed-at set of options. */
+export async function getCatalogFacets(): Promise<CatalogFacets> {
+  return apiClient.get<CatalogFacets>('/investor-catalog/facets')
+}
+
 export async function getCatalogInvestor(id: string): Promise<CatalogInvestor | null> {
   try {
     return mapCatalogInvestor(await apiClient.get<CatalogInvestorDto>(`/investor-catalog/${id}`))
