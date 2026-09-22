@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { useRef, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface TabItem {
@@ -95,11 +95,55 @@ interface PillTabsProps {
 
 /** Filter chips: narrow down the list on the page. Each chip is a toggle button. */
 export function PillTabs({ items, value, onChange, className, tone = 'soft', label, scrollable = false }: PillTabsProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  // `overflow-x-auto` already scrolls via the wheel (shift+scroll), a trackpad or touch — but a plain
+  // mouse has no way to pan it at all, since click-and-drag isn't something the browser gives a plain
+  // div for free. Tracked in a ref (not state) so mousemove never triggers a re-render.
+  const drag = useRef({ isDown: false, startX: 0, startScrollLeft: 0, dragged: false })
+
+  function handleMouseDown(e: ReactMouseEvent<HTMLDivElement>) {
+    if (!scrollable || !scrollRef.current) return
+    drag.current = { isDown: true, startX: e.pageX, startScrollLeft: scrollRef.current.scrollLeft, dragged: false }
+  }
+
+  function handleMouseMove(e: ReactMouseEvent<HTMLDivElement>) {
+    const state = drag.current
+    if (!state.isDown || !scrollRef.current) return
+    const delta = e.pageX - state.startX
+    // A few pixels of slop before it counts as a drag rather than a click that happened to wobble.
+    if (!state.dragged && Math.abs(delta) < 4) return
+    state.dragged = true
+    e.preventDefault()
+    scrollRef.current.scrollLeft = state.startScrollLeft - delta
+  }
+
+  function endDrag() {
+    drag.current.isDown = false
+  }
+
+  // A drag that ends over a pill would otherwise also fire that pill's click — swallow just that one.
+  function handleClickCapture(e: ReactMouseEvent<HTMLDivElement>) {
+    if (!drag.current.dragged) return
+    e.preventDefault()
+    e.stopPropagation()
+    drag.current.dragged = false
+  }
+
   return (
     <div
+      ref={scrollRef}
       role="group"
       aria-label={label}
-      className={cn('flex items-center gap-2', scrollable ? 'flex-nowrap overflow-x-auto no-scrollbar max-w-full' : 'flex-wrap', className)}
+      className={cn(
+        'flex items-center gap-2',
+        scrollable ? 'flex-nowrap overflow-x-auto no-scrollbar max-w-full cursor-grab active:cursor-grabbing select-none' : 'flex-wrap',
+        className,
+      )}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={endDrag}
+      onMouseLeave={endDrag}
+      onClickCapture={handleClickCapture}
     >
       {items.map((item) => {
         const active = item.key === value
