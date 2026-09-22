@@ -7,7 +7,8 @@ import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/inv
 import { listStartups, listMyFoundedStartups, getStartupMembers, getStartup } from '@/services/startups.service'
 import { listIdeas } from '@/services/ideas.service'
 import { toast } from '@/store/toast.store'
-import { CatalogInvestorCard } from '@/components/domain/CatalogInvestorCard'
+import { CatalogInvestorRow } from '@/components/domain/CatalogInvestorRow'
+import { CatalogIntroductionModal } from '@/components/domain/CatalogIntroductionModal'
 import { InvestorDiscoveryLocked } from '@/components/domain/InvestorDiscoveryLocked'
 import { IntroRequestModal } from '@/components/domain/IntroRequestModal'
 import { PageHeader } from '@/components/domain/PageHeader'
@@ -19,9 +20,10 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Pagination } from '@/components/ui/Pagination'
 import { buttonClasses } from '@/components/ui/button-styles'
 import { formatCurrency } from '@/lib/utils'
-import type { Idea, InvestorType, Startup } from '@/types'
+import type { CatalogInvestor, Idea, InvestorType, Startup } from '@/types'
 
 const INVESTOR_TYPES: InvestorType[] = ['Angel', 'VC', 'Family Office', 'Corporate VC', 'Accelerator', 'Other']
 
@@ -99,7 +101,10 @@ export default function InvestorsListPage() {
   const [sector, setSector] = useState('')
   const [stage, setStage] = useState('')
   const [geography, setGeography] = useState('')
+  const [country, setCountry] = useState('')
   const [chequeSize, setChequeSize] = useState('')
+  const [catalogPage, setCatalogPage] = useState(0)
+  const [introInvestor, setIntroInvestor] = useState<CatalogInvestor | null>(null)
   const [introTarget, setIntroTarget] = useState<{
     recipientId: string
     recipientName?: string
@@ -109,13 +114,15 @@ export default function InvestorsListPage() {
     contextLabel?: string
   } | null>(null)
 
-  const hasActiveFilters = !!(investorType || sector || stage || geography || chequeSize)
+  const hasActiveFilters = !!(investorType || sector || stage || geography || country || chequeSize)
   function clearFilters() {
     setInvestorType('')
     setSector('')
     setStage('')
     setGeography('')
+    setCountry('')
     setChequeSize('')
+    setCatalogPage(0)
   }
 
   const catalogFilters = useMemo(
@@ -125,17 +132,20 @@ export default function InvestorsListPage() {
       sector: sector || undefined,
       stage: stage || undefined,
       location: geography || undefined,
+      country: country || undefined,
       chequeSize: chequeSize ? Number(chequeSize) : undefined,
     }),
-    [query, investorType, sector, stage, geography, chequeSize],
+    [query, investorType, sector, stage, geography, country, chequeSize],
   )
   // Investor Discovery requires an active Startup Profile (checked here so the frontend never even
   // fetches investor data for a locked user; the backend enforces it again regardless).
   const accessQuery = useQuery({ queryKey: ['investor-catalog', 'access'], queryFn: hasInvestorDiscoveryAccess, enabled: tab === 'investors' })
   const hasAccess = accessQuery.data === true
   const catalogQuery = useQuery({
-    queryKey: ['investor-catalog', catalogFilters],
-    queryFn: () => listCatalogInvestors(catalogFilters),
+    queryKey: ['investor-catalog', catalogFilters, catalogPage],
+    // Server-side search/filter/pagination throughout — the catalog can eventually hold 100,000+ rows,
+    // so nothing here ever fetches "everyone" into the browser.
+    queryFn: () => listCatalogInvestors(catalogFilters, catalogPage, 20),
     enabled: tab === 'investors' && hasAccess,
   })
   // Real data for the "Matches your startup" badge — never a fabricated match score.
@@ -195,23 +205,24 @@ export default function InvestorsListPage() {
           <InvestorDiscoveryLocked />
         ) : (
           <>
-            <SearchFilterBar query={query} onQueryChange={setQuery} placeholder="Search investors by name, firm or thesis…">
-              <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                <Select label="Type" value={investorType} onChange={(e) => setInvestorType(e.target.value)}>
+            <SearchFilterBar query={query} onQueryChange={(v) => { setQuery(v); setCatalogPage(0) }} placeholder="Search investors by name, firm or thesis…">
+              <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                <Select label="Type" value={investorType} onChange={(e) => { setInvestorType(e.target.value); setCatalogPage(0) }}>
                   <option value="">Any type</option>
                   {INVESTOR_TYPES.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </Select>
-                <Input label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} placeholder="e.g. AI" />
-                <Input label="Stage" value={stage} onChange={(e) => setStage(e.target.value)} placeholder="e.g. Seed" />
-                <Input label="Location" value={geography} onChange={(e) => setGeography(e.target.value)} placeholder="e.g. Bangalore" />
+                <Input label="Sector" value={sector} onChange={(e) => { setSector(e.target.value); setCatalogPage(0) }} placeholder="e.g. AI" />
+                <Input label="Stage" value={stage} onChange={(e) => { setStage(e.target.value); setCatalogPage(0) }} placeholder="e.g. Seed" />
+                <Input label="Location" value={geography} onChange={(e) => { setGeography(e.target.value); setCatalogPage(0) }} placeholder="e.g. Bangalore" />
+                <Input label="Country" value={country} onChange={(e) => { setCountry(e.target.value); setCatalogPage(0) }} placeholder="e.g. India" />
                 <Input
                   label="Cheque size (₹)"
                   type="number"
                   min={0}
                   value={chequeSize}
-                  onChange={(e) => setChequeSize(e.target.value)}
+                  onChange={(e) => { setChequeSize(e.target.value); setCatalogPage(0) }}
                   placeholder="e.g. 2000000"
                 />
                 {hasActiveFilters && (
@@ -224,16 +235,25 @@ export default function InvestorsListPage() {
             {catalogQuery.isLoading ? (
               <CardSkeletonGrid count={6} />
             ) : catalogQuery.data && catalogQuery.data.content.length > 0 ? (
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {catalogQuery.data.content.map((inv) => (
-                  <CatalogInvestorCard key={inv.id} investor={inv} myStartup={myStartup ? { sector: myStartup.sector, stage: myStartup.stage } : undefined} />
-                ))}
-              </div>
+              <>
+                <p className="mb-3 text-sm font-medium text-fg-muted">{catalogQuery.data.totalElements} investors</p>
+                <div className="flex flex-col gap-3">
+                  {catalogQuery.data.content.map((inv) => (
+                    <CatalogInvestorRow
+                      key={inv.id}
+                      investor={inv}
+                      myStartup={myStartup ? { sector: myStartup.sector, stage: myStartup.stage } : undefined}
+                      onRequestIntro={() => setIntroInvestor(inv)}
+                    />
+                  ))}
+                </div>
+                <Pagination page={catalogQuery.data.page} totalPages={catalogQuery.data.totalPages} totalElements={catalogQuery.data.totalElements} onPageChange={setCatalogPage} />
+              </>
             ) : hasActiveFilters || query ? (
               <EmptyState
                 icon={<Landmark className="size-5" />}
                 title="No investors match your filters"
-                description="Try widening the sector, stage, location or cheque size — or clear filters to see everyone."
+                description="Try widening the sector, stage, location, country or cheque size — or clear filters to see everyone."
                 action={
                   <Button variant="secondary" size="sm" onClick={() => { setQuery(''); clearFilters() }}>
                     Clear all filters
@@ -334,6 +354,8 @@ export default function InvestorsListPage() {
           contextLabel={introTarget.contextLabel}
         />
       )}
+
+      {introInvestor && <CatalogIntroductionModal investor={introInvestor} onClose={() => setIntroInvestor(null)} />}
     </div>
   )
 }

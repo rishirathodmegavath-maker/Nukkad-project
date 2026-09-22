@@ -10,6 +10,7 @@ import {
   type AdminInvestorRow,
 } from '@/services/admin.service'
 import { AdminInvestorFormModal } from '@/components/domain/AdminInvestorFormModal'
+import { AdminInvestorImportPanel } from '@/components/domain/AdminInvestorImportPanel'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { Avatar } from '@/components/ui/Avatar'
 import { Card } from '@/components/ui/Card'
@@ -112,11 +113,14 @@ function CatalogTab() {
                       {!investor.active && <Badge tone="danger">Inactive</Badge>}
                       {!investor.visible && <Badge tone="warning">Hidden</Badge>}
                       {investor.linkedInvestorProfileName && <Badge tone="success">Linked account</Badge>}
+                      {investor.externalSourceId && <Badge tone="info">CSV</Badge>}
                     </div>
                     <p className="text-xs text-fg-muted">
-                      {investor.location ?? 'No location set'}
+                      {[investor.location, investor.country].filter(Boolean).join(', ') || 'No location set'}
                       {(investor.chequeMin != null || investor.chequeMax != null) &&
                         ` · ${investor.chequeMin != null ? formatCurrency(investor.chequeMin) : 'Any'}–${investor.chequeMax != null ? formatCurrency(investor.chequeMax) : 'Any'}`}
+                      {(investor.investmentCount != null || investor.exitCount != null) &&
+                        ` · ${investor.investmentCount ?? 0} investments, ${investor.exitCount ?? 0} exits`}
                       {' · Added '}{formatRelativeTime(investor.createdAt)}
                     </p>
                   </div>
@@ -235,7 +239,7 @@ function IntroductionsTab() {
  *  (an unlinked investor has no live account to notify) — see AdminInvestorFormModal and InvestorCatalogService. */
 export default function AdminInvestorCatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const tab = (searchParams.get('tab') as 'catalog' | 'introductions') || 'catalog'
+  const tab = (searchParams.get('tab') as 'catalog' | 'import' | 'introductions') || 'catalog'
 
   return (
     <div>
@@ -244,11 +248,12 @@ export default function AdminInvestorCatalogPage() {
         onChange={(k) => setSearchParams(k === 'catalog' ? {} : { tab: k })}
         items={[
           { key: 'catalog', label: 'Catalog' },
+          { key: 'import', label: 'Import' },
           { key: 'introductions', label: 'Introduction requests' },
         ]}
         className="mb-6"
       />
-      {tab === 'catalog' ? <CatalogTab /> : <IntroductionsTab />}
+      {tab === 'catalog' ? <CatalogTab /> : tab === 'import' ? <AdminInvestorImportPanel /> : <IntroductionsTab />}
     </div>
   )
 }

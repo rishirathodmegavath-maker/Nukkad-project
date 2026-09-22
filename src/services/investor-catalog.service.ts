@@ -7,6 +7,7 @@ export interface CatalogInvestorFilters {
   sector?: string
   stage?: string
   location?: string
+  country?: string
   chequeSize?: number
 }
 
@@ -16,10 +17,20 @@ interface CatalogInvestorDto {
   investorType: string
   description: string | null
   location: string | null
+  country: string | null
   website: string | null
+  domain: string | null
   logoUrl: string | null
   sectors: string[]
   stages: string[]
+  programs: string[]
+  investmentCount: number | null
+  exitCount: number | null
+  keyPeople: string[]
+  facebookUrl: string | null
+  instagramUrl: string | null
+  linkedinUrl: string | null
+  twitterUrl: string | null
   chequeMin: number | null
   chequeMax: number | null
   createdAt: string
@@ -32,10 +43,20 @@ function mapCatalogInvestor(dto: CatalogInvestorDto): CatalogInvestor {
     investorType: dto.investorType as InvestorType,
     description: dto.description ?? undefined,
     location: dto.location ?? undefined,
+    country: dto.country ?? undefined,
     website: dto.website ?? undefined,
+    domain: dto.domain ?? undefined,
     logoUrl: dto.logoUrl ?? undefined,
     sectors: dto.sectors,
     stages: dto.stages,
+    programs: dto.programs ?? [],
+    investmentCount: dto.investmentCount ?? undefined,
+    exitCount: dto.exitCount ?? undefined,
+    keyPeople: dto.keyPeople ?? [],
+    facebookUrl: dto.facebookUrl ?? undefined,
+    instagramUrl: dto.instagramUrl ?? undefined,
+    linkedinUrl: dto.linkedinUrl ?? undefined,
+    twitterUrl: dto.twitterUrl ?? undefined,
     chequeMin: dto.chequeMin ?? undefined,
     chequeMax: dto.chequeMax ?? undefined,
     createdAt: dto.createdAt,
@@ -53,14 +74,17 @@ export async function hasInvestorDiscoveryAccess(): Promise<boolean> {
   }
 }
 
-export async function listCatalogInvestors(filters: CatalogInvestorFilters = {}): Promise<Page<CatalogInvestor>> {
+export async function listCatalogInvestors(filters: CatalogInvestorFilters = {}, page = 0, size = 20): Promise<Page<CatalogInvestor>> {
   const result = await getPagedResult<CatalogInvestorDto>('/investor-catalog', {
     q: filters.query,
     type: filters.type,
     sector: filters.sector,
     stage: filters.stage,
     location: filters.location,
+    country: filters.country,
     chequeSize: filters.chequeSize,
+    page,
+    size,
   })
   return { ...result, content: result.content.map(mapCatalogInvestor) }
 }
