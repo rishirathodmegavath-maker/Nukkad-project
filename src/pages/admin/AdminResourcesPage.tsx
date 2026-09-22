@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ExternalLink, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react'
-import { deleteAdminResource, listAdminResources } from '@/services/admin.service'
+import { bulkDeleteAdminResources, deleteAdminResource, listAdminResources } from '@/services/admin.service'
 import { AdminResourceFormModal } from '@/components/domain/AdminResourceFormModal'
 import { ResourceThumbnail } from '@/components/domain/ResourceThumbnail'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
@@ -37,7 +37,18 @@ export default function AdminResourcesPage() {
   const [page, setPage] = useState(0)
   const [form, setForm] = useState<{ resource?: Resource } | null>(null)
   const [deleting, setDeleting] = useState<Resource | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const queryClient = useQueryClient()
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const filters = useMemo(
     () => ({
@@ -66,6 +77,18 @@ export default function AdminResourcesPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete this resource'),
   })
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: () => bulkDeleteAdminResources(Array.from(selectedIds)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'resources'] })
+      queryClient.invalidateQueries({ queryKey: ['resources'] })
+      toast.success(`${selectedIds.size} resource${selectedIds.size === 1 ? '' : 's'} deleted`)
+      setSelectedIds(new Set())
+      setBulkDeleteOpen(false)
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete the selected resources'),
+  })
+
   return (
     <div>
       <SearchFilterBar inline query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search resources by title or tag…">
@@ -89,6 +112,20 @@ export default function AdminResourcesPage() {
           Add resource
         </Button>
       </SearchFilterBar>
+
+      {selectedIds.size > 0 && (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-surface-sunken/50 px-4 py-2.5">
+          <p className="text-sm font-medium text-fg">{selectedIds.size} selected</p>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              Clear
+            </Button>
+            <Button size="sm" variant="danger-subtle" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setBulkDeleteOpen(true)}>
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}</div>
@@ -114,6 +151,9 @@ export default function AdminResourcesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/60 text-left text-xs font-semibold text-fg-muted uppercase tracking-wide">
+                    <th className="px-3 py-3">
+                      <span className="sr-only">Select</span>
+                    </th>
                     <th className="w-full min-w-[13rem] px-3 py-3">Title</th>
                     <th className="px-3 py-3">Shelf</th>
                     <th className="px-3 py-3">Source</th>
@@ -125,6 +165,15 @@ export default function AdminResourcesPage() {
                 <tbody>
                   {data.content.map((resource) => (
                     <tr key={resource.id} className="group border-b border-border/60 last:border-0 hover:bg-surface-hover transition-colors">
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${resource.title}`}
+                          checked={selectedIds.has(resource.id)}
+                          onChange={() => toggleSelected(resource.id)}
+                          className="size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
+                        />
+                      </td>
                       {/* w-full + max-w-0: the title column takes the spare width (and truncates), so the
                           other columns and the actions sit together instead of drifting apart. min-w keeps
                           the title readable when the table is tight. */}
@@ -208,6 +257,26 @@ export default function AdminResourcesPage() {
         }
       >
         <p className="text-sm text-fg-muted">The action is recorded in the audit log.</p>
+      </Modal>
+
+      <Modal
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        title={`Delete ${selectedIds.size} resource${selectedIds.size === 1 ? '' : 's'}?`}
+        description="This permanently removes the selected resources (and their uploaded files, where hosted) for every member. This action cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" isLoading={bulkDeleteMutation.isPending} onClick={() => bulkDeleteMutation.mutate()}>
+              Delete {selectedIds.size} Resource{selectedIds.size === 1 ? '' : 's'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-fg-muted">The action is recorded in the audit log, one entry per resource.</p>
       </Modal>
     </div>
   )

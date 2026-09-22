@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Landmark, Pencil, Plus, Trash2 } from 'lucide-react'
 import {
+  bulkDeleteAdminInvestors,
   closeAdminInvestorIntroduction,
   deleteAdminInvestor,
   listAdminInvestorIntroductions,
@@ -35,7 +36,18 @@ function CatalogTab() {
   const [page, setPage] = useState(0)
   const [form, setForm] = useState<{ investor?: AdminInvestorRow } | null>(null)
   const [deleting, setDeleting] = useState<AdminInvestorRow | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const queryClient = useQueryClient()
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const filters = useMemo(
     () => ({
@@ -62,6 +74,18 @@ function CatalogTab() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete this investor'),
   })
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: () => bulkDeleteAdminInvestors(Array.from(selectedIds)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'investor-catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['investor-catalog'] })
+      toast.success(`${selectedIds.size} investor${selectedIds.size === 1 ? '' : 's'} deleted`)
+      setSelectedIds(new Set())
+      setBulkDeleteOpen(false)
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete the selected investors'),
+  })
+
   return (
     <div>
       <SearchFilterBar inline query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search investors by name, description or location…">
@@ -81,6 +105,20 @@ function CatalogTab() {
           Add investor
         </Button>
       </SearchFilterBar>
+
+      {selectedIds.size > 0 && (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border/80 bg-surface-sunken/50 px-4 py-2.5">
+          <p className="text-sm font-medium text-fg">{selectedIds.size} selected</p>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              Clear
+            </Button>
+            <Button size="sm" variant="danger-subtle" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setBulkDeleteOpen(true)}>
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}</div>
@@ -105,6 +143,13 @@ function CatalogTab() {
             {data.content.map((investor) => (
               <Card key={investor.id} className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${investor.name}`}
+                    checked={selectedIds.has(investor.id)}
+                    onChange={() => toggleSelected(investor.id)}
+                    className="size-4 shrink-0 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
+                  />
                   <Avatar src={investor.logoUrl ?? undefined} name={investor.name} size="md" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -160,6 +205,26 @@ function CatalogTab() {
         }
       >
         <p className="text-sm text-fg-muted">The action is recorded in the audit log.</p>
+      </Modal>
+
+      <Modal
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        title={`Delete ${selectedIds.size} investor${selectedIds.size === 1 ? '' : 's'}?`}
+        description="This permanently removes the selected investor records. This action cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setBulkDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" isLoading={bulkDeleteMutation.isPending} onClick={() => bulkDeleteMutation.mutate()}>
+              Delete {selectedIds.size} Investor{selectedIds.size === 1 ? '' : 's'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-fg-muted">The action is recorded in the audit log, one entry per investor.</p>
       </Modal>
     </div>
   )
