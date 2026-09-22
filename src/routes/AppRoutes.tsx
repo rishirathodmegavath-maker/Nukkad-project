@@ -23,6 +23,7 @@ import PostIdeaPage from '@/pages/ideas/PostIdeaPage'
 import StartupsListPage from '@/pages/startups/StartupsListPage'
 import RegisterStartupPage from '@/pages/startups/RegisterStartupPage'
 import StartupDetailPage from '@/pages/startups/StartupDetailPage'
+import ManageStartupPage from '@/pages/startups/ManageStartupPage'
 import OpportunitiesListPage from '@/pages/opportunities/OpportunitiesListPage'
 import JobsPage from '@/pages/opportunities/JobsPage'
 import PostOpportunityPage from '@/pages/opportunities/PostOpportunityPage'
@@ -92,6 +93,7 @@ export function AppRoutes() {
           <Route path="/startups" element={<StartupsListPage />} />
           <Route path="/startups/new" element={<RegisterStartupPage />} />
           <Route path="/startups/:id" element={<StartupDetailPage />} />
+          <Route path="/startups/:id/manage" element={<ManageStartupPage />} />
 
           <Route path="/opportunities" element={<OpportunitiesListPage />} />
           <Route path="/opportunities/new" element={<PostOpportunityPage />} />

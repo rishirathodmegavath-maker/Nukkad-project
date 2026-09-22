@@ -263,3 +263,8 @@ export async function updateFundraise(id: string, input: UpdateFundraiseInput): 
 export async function closeFundraise(id: string): Promise<Fundraise> {
   return mapFundraise(await apiClient.post<FundraiseDto>(`/fundraises/${id}/close`))
 }
+
+/** Raising again after stopping: opens the startup's one fundraise back up. */
+export async function reopenFundraise(id: string): Promise<Fundraise> {
+  return mapFundraise(await apiClient.post<FundraiseDto>(`/fundraises/${id}/reopen`))
+}

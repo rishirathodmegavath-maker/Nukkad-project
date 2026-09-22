@@ -51,7 +51,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
           <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-border/70">
             <div>
               {title && <h2 className="text-lg font-bold text-fg tracking-tight">{title}</h2>}
-              {description && <p className="text-sm text-fg-muted mt-1 leading-relaxed">{description}</p>}
+              {description && <p className="text-sm text-fg-muted mt-1 leading-relaxed [overflow-wrap:anywhere]">{description}</p>}
             </div>
             <button
               onClick={onClose}

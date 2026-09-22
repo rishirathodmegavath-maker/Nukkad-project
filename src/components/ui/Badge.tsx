@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export type BadgeTone = 'neutral' | 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'purple'
+export type BadgeTone = 'neutral' | 'brand' | 'primary' | 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'purple'
 
 const toneClasses: Record<BadgeTone, string> = {
   neutral:
     'bg-surface-sunken text-fg-secondary border border-border/80',
+  // The product's purple accent, built from theme tokens so it holds in both themes.
+  primary:
+    'bg-brand-500/10 text-fg-brand border border-brand-500/20',
   brand:
     'bg-surface-sunken text-fg font-medium border border-border-strong',
   accent:
