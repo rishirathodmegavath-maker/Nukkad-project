@@ -66,7 +66,7 @@ export default function AdminResetPasswordPage() {
           {done ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="size-5 text-success-600 dark:text-success-400" />
+                <CheckCircle2 className="size-5 text-success-500" />
                 <h1 className="text-lg font-bold text-fg tracking-tight">Password updated</h1>
               </div>
               <p className="text-sm text-fg-muted">
@@ -87,7 +87,7 @@ export default function AdminResetPasswordPage() {
               <p className="text-sm text-fg-muted">
                 This link is missing its reset code. Open the link from the email exactly as sent, or request a new one.
               </p>
-              <Link to="/forgot-password" className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline">
+              <Link to="/forgot-password" className="text-sm font-medium text-fg-brand hover:underline">
                 Request a new link
               </Link>
             </div>

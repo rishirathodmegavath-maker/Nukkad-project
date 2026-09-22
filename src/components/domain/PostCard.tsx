@@ -264,7 +264,7 @@ function AttachmentCarousel({
             rel="noreferrer"
             className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface-sunken/40 px-4 py-3 hover:bg-surface-hover hover:border-border-strong transition-all shadow-2xs group"
           >
-            <span className="flex size-10 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 shrink-0 border border-accent-500/20">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 shrink-0 border border-accent-500/20">
               <DocumentIcon fileName={doc.fileName} className="size-5" />
             </span>
             <div className="min-w-0 flex-1">

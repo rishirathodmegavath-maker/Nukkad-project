@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Tabs } from '@/components/ui/Tabs'
@@ -130,9 +131,8 @@ function CatalogTab() {
         // (unlike the Resources table), so it gets this thin bar instead — always shown once there's
         // data, independent of whether anything is currently selected.
         <label className="mb-2 flex items-center gap-2 px-1 text-xs font-medium text-fg-muted select-none">
-          <input
+          <Checkbox
             ref={selectAllRef}
-            type="checkbox"
             aria-label={allVisibleSelected ? 'Deselect all investors on this page' : 'Select all investors on this page'}
             checked={allVisibleSelected}
             onChange={() => {}}
@@ -140,7 +140,6 @@ function CatalogTab() {
               e.preventDefault()
               toggleSelectAllVisible(visibleIds)
             }}
-            className="size-4 shrink-0 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
           />
           Select all on this page
         </label>
@@ -169,8 +168,7 @@ function CatalogTab() {
             {data.content.map((investor) => (
               <Card key={investor.id} className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     aria-label={`Select ${investor.name}`}
                     checked={selectedIds.has(investor.id)}
                     onChange={() => {}}
@@ -178,7 +176,6 @@ function CatalogTab() {
                       e.preventDefault()
                       handleRowClick(investor.id, visibleIds, { shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey })
                     }}
-                    className="size-4 shrink-0 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
                   />
                   <Avatar src={investor.logoUrl ?? undefined} name={investor.name} size="md" />
                   <div className="min-w-0">

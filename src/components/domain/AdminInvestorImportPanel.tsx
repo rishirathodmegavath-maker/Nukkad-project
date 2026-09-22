@@ -110,7 +110,7 @@ function BatchReportCard({ batch, onViewIssues }: { batch: AdminInvestorImportBa
       </div>
 
       {batch.errorMessage && (
-        <p className="text-xs text-danger-600 dark:text-danger-400">{batch.errorMessage}</p>
+        <p className="text-xs text-danger-500">{batch.errorMessage}</p>
       )}
 
       {!active && (
@@ -274,7 +274,7 @@ export function AdminInvestorImportPanel() {
             </div>
 
             {preview.note && (
-              <p className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-warning-500">
                 <AlertTriangle className="size-3.5 shrink-0" /> {preview.note}
               </p>
             )}
@@ -298,18 +298,18 @@ export function AdminInvestorImportPanel() {
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {preview.sampleRows.map((row) => (
-                    <tr key={row.rowNumber} className={row.error ? 'bg-danger-50/60 dark:bg-danger-950/20' : undefined}>
+                    <tr key={row.rowNumber} className={row.error ? 'bg-danger-500/10' : undefined}>
                       <td className="px-3 py-2 text-fg-muted tabular-nums">{row.rowNumber}</td>
                       <td className="px-3 py-2 font-medium text-fg">{row.name ?? <span className="text-fg-muted italic">—</span>}</td>
                       <td className="px-3 py-2 text-fg-secondary">{row.investorType ?? '—'}</td>
                       <td className="px-3 py-2 text-fg-secondary">{[row.location, row.country].filter(Boolean).join(', ') || '—'}</td>
                       <td className="px-3 py-2">
                         {row.error ? (
-                          <span className="flex items-center gap-1 text-xs font-medium text-danger-600 dark:text-danger-400">
+                          <span className="flex items-center gap-1 text-xs font-medium text-danger-500">
                             <XCircle className="size-3.5" /> {row.error}
                           </span>
                         ) : row.warnings.length > 0 ? (
-                          <span className="flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                          <span className="flex items-center gap-1 text-xs font-medium text-warning-500">
                             <AlertTriangle className="size-3.5" /> {row.warnings.join('; ')}
                           </span>
                         ) : (

@@ -10,7 +10,10 @@ import { formatRelativeTime } from '@/lib/utils'
 export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportunity; reasons?: string[] }) {
   return (
     <Card interactive className="flex flex-col gap-3 rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
-      <Link to={`/opportunities/${opportunity.id}`} className="flex flex-col gap-2.5">
+      {/* reasons/compensation used to sit outside this Link — interactive's cursor-pointer/hover
+          made that area look clickable, but it wasn't (the same dead-click-zone shape GrantCard
+          had). There's no separate action down there, so it belongs inside the link, not its own control. */}
+      <Link to={`/opportunities/${opportunity.id}`} className="flex flex-1 flex-col gap-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <Badge tone="neutral">{opportunity.type}</Badge>
@@ -30,13 +33,13 @@ export function OpportunityCard({ opportunity, reasons }: { opportunity: Opportu
             {opportunity.workMode}
           </p>
         </div>
+        {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} />}
+        {opportunity.compensation && (
+          <p className="text-xs font-semibold text-fg-secondary mt-auto pt-3 border-t border-border/60">
+            {opportunity.compensation}
+          </p>
+        )}
       </Link>
-      {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} />}
-      {opportunity.compensation && (
-        <p className="text-xs font-semibold text-fg-secondary mt-auto pt-3 border-t border-border/60">
-          {opportunity.compensation}
-        </p>
-      )}
     </Card>
   )
 }

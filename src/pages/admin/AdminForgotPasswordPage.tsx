@@ -47,7 +47,7 @@ export default function AdminForgotPasswordPage() {
           {submitted ? (
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <MailCheck className="size-5 text-brand-600 dark:text-brand-400" />
+                <MailCheck className="size-5 text-fg-brand" />
                 <h1 className="text-lg font-bold text-fg tracking-tight">Check your email</h1>
               </div>
               {/* Deliberately not "we sent an email to X": the server gives the same answer for any

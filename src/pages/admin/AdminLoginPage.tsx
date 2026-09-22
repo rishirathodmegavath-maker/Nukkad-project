@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
 
         <div className="rounded-xl border border-border/70 bg-surface p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="size-5 text-brand-600 dark:text-brand-400" />
+            <ShieldCheck className="size-5 text-fg-brand" />
             <h1 className="text-lg font-bold text-fg tracking-tight">Admin control panel</h1>
           </div>
           <p className="text-sm text-fg-muted mb-5">Authorized administrators only. Every sign-in is recorded.</p>
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             />
             <Link
               to="/forgot-password"
-              className="self-end -mt-2 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
+              className="self-end -mt-2 text-xs font-medium text-fg-brand hover:underline"
             >
               Forgot password?
             </Link>

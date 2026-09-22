@@ -94,10 +94,17 @@
   --radius-full: 9999px;
 
   /* ---- Subtle Hairline Shadows ---- */
+  /* 2xs: the faintest tier — badges, chips, thin card borders that want the barest lift. Used more
+     than any other shadow step in the app, but until now it silently fell back to Tailwind's stock
+     (un-themed, light-mode-only) default instead of one of Nukkad's own tokens. */
+  --shadow-2xs: 0 1px 1px 0 rgb(15 23 42 / 0.03);
   --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
   --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.05), 0 2px 4px -2px rgb(15 23 42 / 0.02);
   --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.06), 0 4px 6px -4px rgb(15 23 42 / 0.02);
   --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.08), 0 8px 10px -6px rgb(15 23 42 / 0.03);
+  /* 2xl: heavier than xl — reserved for the rare surface that should read as clearly "floating"
+     above everything else (a lightbox, a full-bleed overlay panel). */
+  --shadow-2xl: 0 25px 50px -12px rgb(15 23 42 / 0.14);
   --shadow-focus: 0 0 0 3px rgb(99 102 241 / 0.20);
 }
 
@@ -127,10 +134,12 @@
   --nav-surface-active: #1e293b;
   --header-surface: #111827;
 
+  --shadow-2xs: 0 1px 1px 0 rgb(0 0 0 / 0.35);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.40);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.45);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.50);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.60);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.70);
   --shadow-focus: 0 0 0 3px rgb(99 102 241 / 0.35);
 }
 

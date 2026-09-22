@@ -61,6 +61,7 @@ import { ErrorState } from '@/components/ui/EmptyState'
 import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { TagInput } from '@/components/ui/TagInput'
 import { ImageLightbox } from '@/components/ui/ImageLightbox'
 import { ImageCropModal } from '@/components/ui/ImageCropModal'
@@ -118,7 +119,7 @@ function ConfirmRemoveModal({
         <button
           onClick={onConfirm}
           disabled={isPending}
-          className="py-3 text-sm font-semibold text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-950/30 cursor-pointer border-b border-border/60 disabled:opacity-50 transition-colors"
+          className="py-3 text-sm font-semibold text-danger-500 hover:bg-danger-500/10 cursor-pointer border-b border-border/60 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Removing…' : 'Remove'}
         </button>
@@ -195,7 +196,7 @@ function ExperienceFormModal({
           {!isCurrent && <Input label="End date" type="month" value={endDate} onChange={(e) => setEndDate(e.target.value)} />}
         </div>
         <label className="flex items-center gap-2 text-sm text-fg cursor-pointer select-none">
-          <input type="checkbox" id="experience-current-role" name="experience-current-role" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} className="rounded-md accent-brand-500 size-4" />
+          <Checkbox id="experience-current-role" name="experience-current-role" checked={isCurrent} onChange={(e) => setIsCurrent(e.target.checked)} />
           I currently work here
         </label>
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What were your key responsibilities and impact?" />
@@ -1277,7 +1278,7 @@ function PendingRecommendationsCard({ userId }: { userId: string }) {
   if (!pending || pending.length === 0) return null
 
   return (
-    <Card className="rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/40 dark:bg-brand-950/20 shadow-xs mb-4">
+    <Card className="rounded-xl border border-brand-500/20 bg-brand-500/5 shadow-xs mb-4">
       <h2 className="font-bold text-fg text-sm mb-3">Pending Recommendations to Review</h2>
       <div className="flex flex-col gap-4 divide-y divide-border/60">
         {pending.map((r) => (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Globe, Link2 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
 import { Textarea, Input, Select } from '@/components/ui/Input'
 import { Avatar } from '@/components/ui/Avatar'
@@ -153,13 +154,11 @@ function ApplyForm({
                   key={exp.id}
                   className="flex items-center gap-2.5 rounded-xl border border-border/80 px-3 py-2 text-sm cursor-pointer hover:bg-surface-hover"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id={`apply-experience-${exp.id}`}
                     name={`apply-experience-${exp.id}`}
                     checked={experienceIds.includes(exp.id)}
                     onChange={() => setExperienceIds((prev) => toggle(prev, exp.id))}
-                    className="size-4 rounded-md border-border accent-brand-600"
                   />
                   <span className="text-fg">
                     {exp.role} · <span className="text-fg-muted">{exp.company}</span>
@@ -179,13 +178,11 @@ function ApplyForm({
                   key={project.id}
                   className="flex items-center gap-2.5 rounded-xl border border-border/80 px-3 py-2 text-sm cursor-pointer hover:bg-surface-hover"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id={`apply-project-${project.id}`}
                     name={`apply-project-${project.id}`}
                     checked={projectIds.includes(project.id)}
                     onChange={() => setProjectIds((prev) => toggle(prev, project.id))}
-                    className="size-4 rounded-md border-border accent-brand-600"
                   />
                   <span className="text-fg">{project.title}</span>
                 </label>

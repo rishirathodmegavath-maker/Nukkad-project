@@ -44,7 +44,7 @@ export function EventCard({ event, headingAs: Heading = 'h3' }: { event: NukkadE
                 </Badge>
               )}
               {event.isAttending && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-success-500 bg-success-500/10 border border-success-500/20 px-2 py-0.5 rounded-md">
                   <CheckCircle2 className="size-3" /> Registered
                 </span>
               )}

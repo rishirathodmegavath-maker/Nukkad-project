@@ -63,13 +63,13 @@ export function TagInput({ value, onChange, placeholder = 'Type and press Enterâ
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-lg bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-700/40 text-xs font-medium pl-2.5 pr-1.5 py-1"
+            className="inline-flex items-center gap-1 rounded-lg bg-brand-500/10 text-fg-brand border border-brand-500/20 text-xs font-medium pl-2.5 pr-1.5 py-1"
           >
             {tag}
             <button
               type="button"
               onClick={() => onChange(value.filter((t) => t !== tag))}
-              className="flex size-4 items-center justify-center rounded-full hover:bg-brand-200/60 dark:hover:bg-brand-800/60 cursor-pointer transition-colors"
+              className="flex size-4 items-center justify-center rounded-full hover:bg-brand-500/20 cursor-pointer transition-colors"
               aria-label={`Remove ${tag}`}
             >
               <X className="size-3" />

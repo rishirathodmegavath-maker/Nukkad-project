@@ -340,7 +340,7 @@ export function ColorPickerPanel() {
             {contrast.suggestedHex && (
               <button
                 type="button"
-                className="mt-1.5 font-medium text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
+                className="mt-1.5 font-medium text-fg-brand hover:underline cursor-pointer"
                 onClick={() => {
                   const suggested = contrast.suggestedHex!
                   const nextHsv = hexToHsv(suggested)

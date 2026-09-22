@@ -177,7 +177,7 @@ export default function PostOpportunityPage() {
   if (step === 'success' && published) {
     return (
       <div className="max-w-lg mx-auto text-center py-16 flex flex-col items-center gap-4">
-        <div className="flex size-14 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+        <div className="flex size-14 items-center justify-center rounded-xl bg-success-500/10 text-success-500 border border-success-500/20">
           <CheckCircle2 className="size-7" />
         </div>
         <h1 className="text-xl font-bold text-fg">Submitted for review</h1>

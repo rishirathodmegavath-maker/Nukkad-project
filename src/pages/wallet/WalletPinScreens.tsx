@@ -49,7 +49,7 @@ function PinCard({ title, description, children }: { title: string; description:
   return (
     <Card variant="elevated" padding="lg" className="mx-auto w-full max-w-md">
       <div className="mb-5 flex flex-col items-center gap-3 text-center">
-        <div className="flex size-12 items-center justify-center rounded-xl border border-brand-500/20 bg-brand-500/10 text-brand-600 dark:text-brand-400">
+        <div className="flex size-12 items-center justify-center rounded-xl border border-brand-500/20 bg-brand-500/10 text-fg-brand">
           <ShieldCheck className="size-6" />
         </div>
         <div>
@@ -187,7 +187,7 @@ export function UnlockCard({
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <PinField label="Wallet PIN" value={pin} onChange={setPin} autoFocus error={isLocked ? undefined : error} />
         {isLocked && (
-          <p role="alert" className="flex items-center gap-2 rounded-lg bg-danger-100/50 px-3 py-2 text-sm text-danger-600 dark:text-danger-400">
+          <p role="alert" className="flex items-center gap-2 rounded-lg bg-danger-100/50 px-3 py-2 text-sm text-danger-500">
             <Lock className="size-4 shrink-0" />
             Too many incorrect PINs. Try again in {formatCountdown(secondsLeft)}, or reset your PIN below.
           </p>
@@ -195,7 +195,7 @@ export function UnlockCard({
         <Button type="submit" size="lg" isLoading={busy} disabled={isLocked}>
           Unlock wallet
         </Button>
-        <button type="button" onClick={onForgot} className="cursor-pointer self-center text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
+        <button type="button" onClick={onForgot} className="cursor-pointer self-center text-sm font-medium text-fg-brand hover:underline">
           Forgot PIN?
         </button>
       </form>

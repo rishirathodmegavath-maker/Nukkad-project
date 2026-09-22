@@ -60,7 +60,7 @@ function PostEvidence({ report }: { report: AdminReport }) {
         {post.removedByAdmin && <Badge tone="danger" size="sm">Already removed</Badge>}
       </div>
       <p className="text-sm text-fg whitespace-pre-wrap break-words">{post.content || <em>(attachment only)</em>}</p>
-      <Link to="/admin/feed" className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline self-start">
+      <Link to="/admin/feed" className="text-xs font-semibold text-fg-brand hover:underline self-start">
         Manage in Admin Feed →
       </Link>
     </div>
@@ -204,7 +204,7 @@ export default function AdminReportsPage() {
                   <p className="text-sm text-fg">
                     <span className="font-medium">{report.reporterName ?? 'Unknown user'}</span> reported{' '}
                     {report.postId ? 'a post by ' : ''}
-                    <Link to={`/admin/users/${report.reportedUserId}`} className="font-medium text-brand-600 dark:text-brand-400 hover:underline">
+                    <Link to={`/admin/users/${report.reportedUserId}`} className="font-medium text-fg-brand hover:underline">
                       {report.reportedUserName ?? 'Unknown user'}
                     </Link>
                   </p>

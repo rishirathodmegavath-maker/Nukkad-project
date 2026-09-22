@@ -89,8 +89,8 @@ export default function AdminDashboardPage() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <Badge tone="neutral">{entry.action}</Badge>
                       </td>
-                      <td className="px-4 py-3 text-fg-secondary truncate">{entry.actorName ?? 'System'}</td>
-                      <td className="px-4 py-3 text-fg-muted truncate">
+                      <td className="px-4 py-3 text-fg-secondary truncate max-w-[10rem]">{entry.actorName ?? 'System'}</td>
+                      <td className="px-4 py-3 text-fg-muted truncate max-w-[12rem]">
                         {entry.entityType ? `${entry.entityType}${entry.entityId ? ` · ${entry.entityId.slice(0, 8)}` : ''}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap text-right">{formatRelativeTime(entry.createdAt)}</td>

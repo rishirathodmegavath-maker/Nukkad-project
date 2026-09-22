@@ -40,8 +40,8 @@ interface ErrorStateProps {
 
 export function ErrorState({ title = 'Something went wrong', description, onRetry }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6 rounded-xl border border-danger-200 dark:border-danger-900/50 bg-danger-100/20 dark:bg-danger-950/20">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-danger-100 text-danger-500 border border-danger-200 dark:border-danger-800/40">
+    <div className="flex flex-col items-center justify-center text-center py-16 px-6 rounded-xl border border-danger-500/20 bg-danger-500/5">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20">
         <AlertCircle className="size-6" />
       </div>
       <h2 className="text-base font-bold text-fg tracking-tight">{title}</h2>
@@ -49,7 +49,7 @@ export function ErrorState({ title = 'Something went wrong', description, onRetr
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-5 text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 cursor-pointer underline underline-offset-4"
+          className="mt-5 text-sm font-semibold text-fg-brand hover:opacity-80 cursor-pointer underline underline-offset-4"
         >
           Try again
         </button>

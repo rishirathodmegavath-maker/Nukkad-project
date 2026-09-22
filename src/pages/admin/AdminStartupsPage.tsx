@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
@@ -68,13 +69,11 @@ export default function AdminStartupsPage() {
       <SearchFilterBar query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search startups by name, sector, tagline…" />
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
-          <input
-            type="checkbox"
+          <Checkbox
             id="admin-startups-include-removed"
             name="admin-startups-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
-            className="size-3.5 rounded-md border-border accent-brand-600"
           />
           Show removed startups too
         </label>
@@ -124,7 +123,7 @@ export default function AdminStartupsPage() {
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(startup.createdAt)}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <Link to={`/startups/${startup.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                          <Link to={`/startups/${startup.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
                             View <ExternalLink className="size-3" />
                           </Link>
                           <Button

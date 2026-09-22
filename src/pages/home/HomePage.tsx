@@ -71,7 +71,7 @@ function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
           <Badge tone="neutral" className="text-xs font-semibold">
             {opp.type}
           </Badge>
-          <span className="text-xs font-medium text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 rounded-md border border-brand-200/50 dark:border-brand-800/40">
+          <span className="text-xs font-medium text-fg-brand bg-brand-500/10 px-2 py-0.5 rounded-md border border-brand-500/20">
             {opp.workMode}
           </span>
           {opp.compensation && (

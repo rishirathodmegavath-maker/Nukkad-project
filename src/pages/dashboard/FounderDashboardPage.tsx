@@ -80,7 +80,7 @@ export default function FounderDashboardPage() {
         {data.profileCompletionPercent < 100 && data.primaryStartupId && (
           <p className="text-sm text-fg-muted mt-3">
             A fuller profile shows up better in discovery.{' '}
-            <Link to={`/startups/${data.primaryStartupId}`} className="text-brand-600 dark:text-brand-400 hover:underline font-medium">
+            <Link to={`/startups/${data.primaryStartupId}`} className="text-fg-brand hover:underline font-medium">
               Complete your profile
             </Link>
           </p>

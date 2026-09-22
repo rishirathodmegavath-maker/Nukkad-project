@@ -11,7 +11,7 @@ interface FieldWrapProps {
   children: ReactNode
 }
 
-export function FieldWrap({ label, hint, error, required, className, children }: FieldWrapProps) {
+export function FieldWrap({ label, hint, error, required, className, children, messageId }: FieldWrapProps & { messageId?: string }) {
   return (
     <label className={cn('flex flex-col gap-1.5', className)}>
       {label && (
@@ -22,9 +22,13 @@ export function FieldWrap({ label, hint, error, required, className, children }:
       )}
       {children}
       {error ? (
-        <span className="text-xs font-medium text-danger-500 animate-in">{error}</span>
+        <span id={messageId} role="alert" className="text-xs font-medium text-danger-500 animate-in">
+          {error}
+        </span>
       ) : hint ? (
-        <span className="text-xs text-fg-muted">{hint}</span>
+        <span id={messageId} className="text-xs text-fg-muted">
+          {hint}
+        </span>
       ) : null}
     </label>
   )
@@ -48,13 +52,17 @@ export function Input({ label, hint, error, required, leftIcon, rightIcon, class
   // instance unique even when this component renders many times on one page.
   const generatedId = useId()
   const fieldId = id ?? generatedId
+  const messageId = useId()
+  const hasMessage = !!error || !!hint
   return (
-    <FieldWrap label={label} hint={hint} error={error} required={required}>
+    <FieldWrap label={label} hint={hint} error={error} required={required} messageId={hasMessage ? messageId : undefined}>
       <span className="relative flex items-center">
         {leftIcon && <span className="absolute left-3.5 text-fg-muted pointer-events-none">{leftIcon}</span>}
         <input
           id={fieldId}
           name={name ?? fieldId}
+          aria-invalid={!!error || undefined}
+          aria-describedby={hasMessage ? messageId : undefined}
           className={cn(
             fieldBase,
             error
@@ -104,11 +112,15 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 export function Textarea({ label, hint, error, required, className, id, name, ...props }: TextareaProps) {
   const generatedId = useId()
   const fieldId = id ?? generatedId
+  const messageId = useId()
+  const hasMessage = !!error || !!hint
   return (
-    <FieldWrap label={label} hint={hint} error={error} required={required}>
+    <FieldWrap label={label} hint={hint} error={error} required={required} messageId={hasMessage ? messageId : undefined}>
       <textarea
         id={fieldId}
         name={name ?? fieldId}
+        aria-invalid={!!error || undefined}
+        aria-describedby={hasMessage ? messageId : undefined}
         className={cn(
           fieldBase,
           'resize-y min-h-[100px] leading-relaxed',
@@ -132,12 +144,16 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({ label, hint, error, required, className, children, id, name, ...props }: SelectProps) {
   const generatedId = useId()
   const fieldId = id ?? generatedId
+  const messageId = useId()
+  const hasMessage = !!error || !!hint
   return (
-    <FieldWrap label={label} hint={hint} error={error} required={required}>
+    <FieldWrap label={label} hint={hint} error={error} required={required} messageId={hasMessage ? messageId : undefined}>
       <div className="relative flex items-center">
         <select
           id={fieldId}
           name={name ?? fieldId}
+          aria-invalid={!!error || undefined}
+          aria-describedby={hasMessage ? messageId : undefined}
           className={cn(
             fieldBase,
             'appearance-none pr-10 cursor-pointer',

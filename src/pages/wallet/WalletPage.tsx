@@ -146,7 +146,7 @@ function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePi
       ) : (
         <Card variant="elevated" className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-brand-500/10 text-fg-brand border border-brand-500/20">
               <WalletIcon className="size-6" />
             </div>
             <div>
@@ -251,7 +251,7 @@ function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePi
                         </td>
                         <td
                           className={`px-4 py-3 text-right font-medium tabular-nums whitespace-nowrap ${
-                            txn.type === 'CREDIT' ? 'text-success-600 dark:text-success-400' : 'text-fg'
+                            txn.type === 'CREDIT' ? 'text-success-500' : 'text-fg'
                           }`}
                         >
                           {txn.type === 'CREDIT' ? '+' : '−'}{formatMoney(txn.amountMinorUnits, txn.currency)}
