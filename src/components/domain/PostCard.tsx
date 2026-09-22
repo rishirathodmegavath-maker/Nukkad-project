@@ -510,8 +510,18 @@ export function PostCard({ post }: { post: Post }) {
       const flip = (p: Post): Post =>
         p.id === post.id ? { ...p, isLiked: !wasLiked, likesCount: p.likesCount + (wasLiked ? -1 : 1) } : p
 
-      const prevFeed = queryClient.getQueryData<Post[]>(['feed'])
-      if (prevFeed) queryClient.setQueryData<Post[]>(['feed'], prevFeed.map(flip))
+      // Every feed listing — Home (['feed','home']), the Feed page per filter/tag
+      // (['feed', kindFilter, tag]), a profile's own posts (['feed', {authorId}]) — is cached under
+      // its own compound key, never the bare ['feed'] this used to look for with an exact-match
+      // getQueryData/setQueryData. That always missed, so the heart/count never visibly moved on
+      // click even though the request itself succeeded — only a later refetch (e.g. a full page
+      // reload) would show it. exact: false catches every one of them, the same way `prevSaved`
+      // below already does for ['savedPosts']; Array.isArray guards against the other cache entries
+      // that also live under the 'feed' prefix (comment lists, trending topics, a single post detail).
+      const prevFeeds = queryClient.getQueriesData<Post[]>({ queryKey: ['feed'], exact: false })
+      queryClient.setQueriesData<Post[]>({ queryKey: ['feed'], exact: false }, (data) =>
+        Array.isArray(data) ? data.map(flip) : data,
+      )
 
       const prevDetail = queryClient.getQueryData<Post>(['feed', post.id, 'detail'])
       if (prevDetail) queryClient.setQueryData<Post>(['feed', post.id, 'detail'], flip(prevDetail))
@@ -521,18 +531,20 @@ export function PostCard({ post }: { post: Post }) {
         if (data) queryClient.setQueryData(key, { ...data, content: data.content.map(flip) })
       })
 
-      return { prevFeed, prevDetail, prevSaved }
+      return { prevFeeds, prevDetail, prevSaved }
     },
     onSuccess: (updated) => {
       const reconcile = (p: Post) => (p.id === updated.id ? updated : p)
-      queryClient.setQueryData<Post[]>(['feed'], (prev) => prev?.map(reconcile))
+      queryClient.setQueriesData<Post[]>({ queryKey: ['feed'], exact: false }, (data) =>
+        Array.isArray(data) ? data.map(reconcile) : data,
+      )
       queryClient.setQueryData<Post>(['feed', updated.id, 'detail'], (prev) => (prev ? updated : prev))
       queryClient.setQueriesData<Page<Post>>({ queryKey: ['savedPosts'], exact: false }, (prev) =>
         prev ? { ...prev, content: prev.content.map(reconcile) } : prev,
       )
     },
     onError: (err, _vars, context) => {
-      if (context?.prevFeed) queryClient.setQueryData(['feed'], context.prevFeed)
+      context?.prevFeeds?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       if (context?.prevDetail) queryClient.setQueryData(['feed', post.id, 'detail'], context.prevDetail)
       context?.prevSaved?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       toast.error(err instanceof Error ? err.message : 'Could not update like')
