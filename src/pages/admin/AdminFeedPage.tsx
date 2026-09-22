@@ -8,6 +8,7 @@ import { AdminPostFormModal } from '@/components/domain/AdminPostFormModal'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Pagination } from '@/components/ui/Pagination'
@@ -51,13 +52,11 @@ export default function AdminFeedPage() {
     <div>
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
-          <input
-            type="checkbox"
+          <Checkbox
             id="admin-feed-include-removed"
             name="admin-feed-include-removed"
             checked={includeRemoved}
             onChange={(e) => { setIncludeRemoved(e.target.checked); setPage(0) }}
-            className="size-3.5 rounded-md border-border accent-brand-600"
           />
           Show removed posts too
         </label>
@@ -91,7 +90,7 @@ export default function AdminFeedPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <Link to={`/people/${post.authorId}`} className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                  <Link to={`/people/${post.authorId}`} className="text-xs font-semibold text-fg-brand hover:underline">
                     Author <ExternalLink className="size-3 inline" />
                   </Link>
                   <Button

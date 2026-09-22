@@ -59,7 +59,7 @@ function SavedPostThumbnail({ post }: { post: Post }) {
   if (doc) {
     return (
       <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-surface">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 dark:text-accent-400 border border-accent-500/20 shrink-0">
+        <span className="flex size-9 items-center justify-center rounded-xl bg-accent-500/10 text-accent-600 border border-accent-500/20 shrink-0">
           <DocumentIcon fileName={doc.fileName} className="size-4.5" />
         </span>
         <p className="text-xs font-semibold text-fg-secondary truncate max-w-full">{doc.fileName ?? 'Document'}</p>

@@ -47,7 +47,10 @@ export function Avatar({ src, name, size = 'md', online, ring, className }: Avat
           className="size-full rounded-full object-cover bg-surface-sunken border border-border/70 shadow-xs"
         />
       ) : (
-        <span aria-hidden="true" className="size-full rounded-full bg-gradient-to-br from-brand-100 to-brand-200/70 dark:from-brand-950 dark:to-brand-900/60 text-brand-700 dark:text-brand-300 flex items-center justify-center border border-brand-200/80 dark:border-brand-700/40 shadow-xs">
+        /* dark:from-brand-950 used to be a no-op — brand's token ramp only goes to 900 — so the
+           fallback gradient's first stop silently dropped out in dark mode. brand-900 is the
+           deepest defined step. */
+        <span aria-hidden="true" className="size-full rounded-full bg-gradient-to-br from-brand-100 to-brand-200/70 dark:from-brand-900 dark:to-brand-800/60 text-brand-700 dark:text-brand-300 flex items-center justify-center border border-brand-200/80 dark:border-brand-700/40 shadow-xs">
           {initials(name || '?')}
         </span>
       )}

@@ -9,6 +9,7 @@ import {
 } from '@/services/admin.service'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
 import { toast } from '@/store/toast.store'
@@ -192,12 +193,7 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
           <Input label="Secondary email" hint="Optional" type="email" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} />
           <Input label="Phone number" hint="Optional" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
           <label className="flex cursor-pointer items-center gap-2.5 self-end pb-2.5 text-sm text-fg">
-            <input
-              type="checkbox"
-              checked={contactEmailVerified}
-              onChange={(e) => setContactEmailVerified(e.target.checked)}
-              className="size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
-            />
+            <Checkbox checked={contactEmailVerified} onChange={(e) => setContactEmailVerified(e.target.checked)} />
             Contact email verified
           </label>
         </div>
@@ -240,24 +236,14 @@ export function AdminInvestorFormModal({ onClose, investor }: { onClose: () => v
 
         <div className="flex flex-col gap-2 rounded-lg border border-border/80 p-3">
           <label className="flex cursor-pointer items-start gap-2.5 text-sm text-fg">
-            <input
-              type="checkbox"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-              className="mt-0.5 size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
-            />
+            <Checkbox checked={active} onChange={(e) => setActive(e.target.checked)} className="mt-0.5" />
             <span>
               <span className="font-medium">Active</span>
               <span className="block text-xs text-fg-muted">Inactive investors never appear in Discovery.</span>
             </span>
           </label>
           <label className="flex cursor-pointer items-start gap-2.5 text-sm text-fg">
-            <input
-              type="checkbox"
-              checked={visible}
-              onChange={(e) => setVisible(e.target.checked)}
-              className="mt-0.5 size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
-            />
+            <Checkbox checked={visible} onChange={(e) => setVisible(e.target.checked)} className="mt-0.5" />
             <span>
               <span className="font-medium">Visible</span>
               <span className="block text-xs text-fg-muted">Hide without deactivating — e.g. while you finish editing details.</span>

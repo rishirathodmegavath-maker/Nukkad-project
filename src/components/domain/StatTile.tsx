@@ -10,7 +10,7 @@ interface StatTileProps {
 export function StatTile({ icon, label, value }: StatTileProps) {
   return (
     <Card padding="sm" className="flex items-center gap-3.5 shadow-2xs hover:shadow-xs transition-shadow">
-      <span className="flex size-11 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/30 shrink-0">
+      <span className="flex size-11 items-center justify-center rounded-xl bg-brand-500/10 text-fg-brand border border-brand-500/20 shrink-0">
         {icon}
       </span>
       <div className="min-w-0 flex-1">

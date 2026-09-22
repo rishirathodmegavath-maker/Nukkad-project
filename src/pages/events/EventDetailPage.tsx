@@ -188,7 +188,7 @@ export default function EventDetailPage() {
                     </Link>
                   )}
                   {event.isAttending && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-md">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-success-500 bg-success-500/10 border border-success-500/20 px-2.5 py-0.5 rounded-md">
                       <CheckCircle2 className="size-3.5" /> Registered
                     </span>
                   )}
@@ -291,7 +291,7 @@ export default function EventDetailPage() {
                 </div>
                 <div className="h-2 rounded-full bg-surface-sunken overflow-hidden">
                   <div
-                    className="h-full bg-brand-600 dark:bg-brand-500 rounded-full transition-all duration-300"
+                    className="h-full bg-brand-600 rounded-full transition-all duration-300"
                     style={{ width: `${capacityPercent}%` }}
                   />
                 </div>

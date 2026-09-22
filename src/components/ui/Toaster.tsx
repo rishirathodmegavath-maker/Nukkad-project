@@ -36,7 +36,7 @@ function MessageToastBanner() {
           navigate(`/messages/${messageToast.conversationId}`)
         }}
         aria-label={`New message from ${messageToast.senderName}. Open the conversation.`}
-        className="pointer-events-auto animate-in flex w-full max-w-sm items-center gap-3 rounded-lg border border-border/80 bg-surface px-4 py-3 text-left shadow-xl backdrop-blur-md transition-colors hover:bg-surface-hover cursor-pointer"
+        className="pointer-events-auto animate-in-toast flex w-full max-w-sm items-center gap-3 rounded-lg border border-border/80 bg-surface px-4 py-3 text-left shadow-xl backdrop-blur-md transition-colors hover:bg-surface-hover cursor-pointer"
       >
         <Avatar src={messageToast.avatarUrl} name={messageToast.senderName} size="md" />
         <span className="min-w-0 flex-1">
@@ -63,7 +63,7 @@ export function Toaster() {
               <div
                 key={t.id}
                 className={cn(
-                  'flex items-start gap-3 rounded-xl border border-border/80 bg-surface shadow-xl px-4 py-3.5 animate-in backdrop-blur-md',
+                  'flex items-start gap-3 rounded-xl border border-border/80 bg-surface shadow-xl px-4 py-3.5 animate-in-toast backdrop-blur-md',
                 )}
               >
                 <Icon className={cn('size-5 shrink-0 mt-0.5', classes)} />

@@ -51,44 +51,49 @@ export function PersonCard({
           {topRightAction}
         </div>
       )}
-      <Link to={`/people/${user.id}`} className="flex items-start gap-3">
-        <Avatar src={user.avatarUrl} name={user.name} size="lg" />
-        <div className="min-w-0 flex-1">
-          <p className="font-bold text-fg truncate text-sm sm:text-base">{user.name}</p>
-          <p className="text-xs sm:text-sm text-fg-muted truncate">{user.headline || 'Community Member'}</p>
-          <p className="text-xs text-fg-muted flex items-center gap-1 mt-1 font-medium">
-            <MapPin className="size-3 text-fg-muted/80" /> {user.location || 'Location not specified'}
-          </p>
-        </div>
-        {compatibilityScore !== undefined && (
-          <Badge tone="accent" className="shrink-0 font-semibold shadow-2xs">
-            {Math.round(compatibilityScore * 100)}% match
-          </Badge>
-        )}
-      </Link>
-
-      <div className="flex flex-wrap gap-1.5">
-        {user.skills.slice(0, 3).map((skill) => (
-          <Badge key={skill} tone="neutral">
-            {skill}
-          </Badge>
-        ))}
-      </div>
-
-      {(user.lookingFor.length > 0 || user.role) && (
-        <p className="text-xs text-fg-muted">
-          {user.lookingFor.length > 0 ? (
-            <>
-              <span className="font-medium text-fg-secondary">Looking for: </span>
-              {user.lookingFor.slice(0, 2).join(' · ')}
-            </>
-          ) : (
-            user.role
+      {/* skills/lookingFor/reasons used to sit outside this Link — interactive's cursor-pointer/hover
+          made that area look clickable, but it wasn't. The action buttons below are real separate
+          actions (they already stopPropagation), so they deliberately stay outside the link. */}
+      <Link to={`/people/${user.id}`} className="flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <Avatar src={user.avatarUrl} name={user.name} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-fg truncate text-sm sm:text-base">{user.name}</p>
+            <p className="text-xs sm:text-sm text-fg-muted truncate">{user.headline || 'Community Member'}</p>
+            <p className="text-xs text-fg-muted flex items-center gap-1 mt-1 font-medium">
+              <MapPin className="size-3 text-fg-muted/80" /> {user.location || 'Location not specified'}
+            </p>
+          </div>
+          {compatibilityScore !== undefined && (
+            <Badge tone="accent" className="shrink-0 font-semibold shadow-2xs">
+              {Math.round(compatibilityScore * 100)}% match
+            </Badge>
           )}
-        </p>
-      )}
+        </div>
 
-      {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} />}
+        <div className="flex flex-wrap gap-1.5">
+          {user.skills.slice(0, 3).map((skill) => (
+            <Badge key={skill} tone="neutral">
+              {skill}
+            </Badge>
+          ))}
+        </div>
+
+        {(user.lookingFor.length > 0 || user.role) && (
+          <p className="text-xs text-fg-muted">
+            {user.lookingFor.length > 0 ? (
+              <>
+                <span className="font-medium text-fg-secondary">Looking for: </span>
+                {user.lookingFor.slice(0, 2).join(' · ')}
+              </>
+            ) : (
+              user.role
+            )}
+          </p>
+        )}
+
+        {reasons && reasons.length > 0 && <MatchReasons reasons={reasons} />}
+      </Link>
 
       <div className="flex items-center justify-end mt-auto gap-2">
         {user.connectionStatus === 'PENDING_INCOMING' ? (

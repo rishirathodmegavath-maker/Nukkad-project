@@ -331,7 +331,7 @@ function DirectDetailsPanel({
       <Modal open={showBlockModal} onClose={() => setShowBlockModal(false)} size="sm">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-50 dark:bg-danger-950/40 text-danger-600 dark:text-danger-400 border border-danger-200/60 dark:border-danger-800/40 shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20 shrink-0">
               <UserX className="size-5" />
             </div>
             <div>
@@ -361,7 +361,7 @@ function DirectDetailsPanel({
       <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="sm">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-50 dark:bg-danger-950/40 text-danger-600 dark:text-danger-400 border border-danger-200/60 dark:border-danger-800/40 shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20 shrink-0">
               <Trash2 className="size-5" />
             </div>
             <div>
@@ -676,7 +676,7 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
       <Modal open={showLeaveModal} onClose={() => setShowLeaveModal(false)} size="sm">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-50 dark:bg-danger-950/40 text-danger-600 dark:text-danger-400 border border-danger-200/60 dark:border-danger-800/40 shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20 shrink-0">
               <LogOut className="size-5" />
             </div>
             <div>
@@ -1440,7 +1440,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
       <Modal open={deleteTarget !== null} onClose={() => setDeleteTarget(null)} size="sm">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-50 dark:bg-danger-950/40 text-danger-600 dark:text-danger-400 border border-danger-200/60 dark:border-danger-800/40 shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20 shrink-0">
               <Trash2 className="size-5" />
             </div>
             <div>
@@ -1472,7 +1472,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
       <Modal open={unsendTarget !== null} onClose={() => setUnsendTarget(null)} size="sm">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-50 dark:bg-danger-950/40 text-danger-600 dark:text-danger-400 border border-danger-200/60 dark:border-danger-800/40 shrink-0">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-danger-500/10 text-danger-500 border border-danger-500/20 shrink-0">
               <Undo2 className="size-5" />
             </div>
             <div>

@@ -159,7 +159,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
     <div
       className={cn(
         'flex items-start gap-3.5 p-4 sm:p-5 transition-colors relative group',
-        !notif.isRead ? 'bg-brand-50/30 dark:bg-brand-950/20' : 'bg-surface hover:bg-surface-hover/60',
+        !notif.isRead ? 'bg-brand-500/5' : 'bg-surface hover:bg-surface-hover/60',
       )}
       onClick={() => !notif.isRead && markRead.mutate(notif.id)}
     >
@@ -219,7 +219,7 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
       {!notif.isRead && (
         <span
-          className="size-2.5 rounded-full bg-brand-600 dark:bg-brand-500 shrink-0 mt-1.5 shadow-2xs motion-safe:animate-pulse"
+          className="size-2.5 rounded-full bg-brand-600 shrink-0 mt-1.5 shadow-2xs motion-safe:animate-pulse"
           aria-label="Unread"
         />
       )}
@@ -307,7 +307,7 @@ export default function NotificationsPage() {
         </Card>
       ) : (
         <EmptyState
-          icon={<Bell className="size-6 text-brand-600 dark:text-brand-400" />}
+          icon={<Bell className="size-6 text-fg-brand" />}
           title={
             filter === 'connections'
               ? 'No connection notifications'

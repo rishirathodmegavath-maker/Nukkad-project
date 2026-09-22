@@ -2,6 +2,15 @@
 @import './tokens.css';
 @import './liquid-nav.css';
 
+/* Nukkad's theme toggle (Settings → Appearance: Light / Dark / System) sets data-theme on <html> —
+   Tailwind's dark: variant defaults to media-query-only (prefers-color-scheme), which never looks at
+   that attribute. Redefining it here makes every existing and future dark: class follow the app's
+   own toggle instead of (or in addition to, for "System") the OS setting — no per-class rewrite
+   needed, no new colours, and the explicit Light/Dark choice can no longer be silently overridden by
+   the OS. ("System" still tracks the OS because theme.store.ts writes data-theme from the OS value
+   in that mode and listens for OS changes — see applyDataTheme/getSystemTheme.) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Map semantic + brand tokens into Tailwind's theme so utilities like
    bg-surface, text-fg-muted, border-border, rounded-lg, shadow-md all read
    from the single tokens.css source of truth above. */
@@ -86,10 +95,12 @@
   --radius-xl: var(--radius-xl);
   --radius-full: var(--radius-full);
 
+  --shadow-2xs: var(--shadow-2xs);
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
 }
 
 @layer base {
@@ -164,6 +175,18 @@
   animation: fade-in-up 0.15s ease-out;
 }
 
+/* Same entrance, tuned to the blueprint's per-surface timing: a dropdown/menu (using .animate-in
+   above) is a quick, low-weight reveal (150–200ms); a modal is a bigger interruption and reads
+   better slightly slower (180–250ms); a toast arrives on its own schedule, not in response to a
+   click, so it can afford to be the slowest of the three (200–300ms) without feeling sluggish. */
+.animate-in-modal {
+  animation: fade-in-up 0.2s ease-out;
+}
+
+.animate-in-toast {
+  animation: fade-in-up 0.24s ease-out;
+}
+
 @keyframes heart-burst {
   0% {
     opacity: 0;
@@ -190,4 +213,19 @@
 
 .animate-heart-burst {
   animation: heart-burst 0.8s ease-out forwards;
+}
+
+/* Respect the OS's reduced-motion request app-wide: every transition/keyframe animation still runs
+   (so state changes remain visible — a button still shows it moved to "loading", a dropdown still
+   shows it opened) but resolves near-instantly instead of animating. Users who have NOT asked for
+   reduced motion are completely unaffected — this block only exists inside the media query. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

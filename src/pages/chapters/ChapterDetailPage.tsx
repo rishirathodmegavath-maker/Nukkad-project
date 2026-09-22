@@ -383,12 +383,12 @@ export default function ChapterDetailPage() {
               </div>
             )}
             {isMember && isPresident ? (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-success-500/10 text-success-500 border border-success-500/20 text-xs font-bold shadow-2xs">
                 <CheckCircle2 className="size-4" /> Member
               </span>
             ) : isMember ? (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-2xs">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-success-500/10 text-success-500 border border-success-500/20 text-xs font-bold shadow-2xs">
                   <CheckCircle2 className="size-4" /> Member
                 </span>
                 <Button

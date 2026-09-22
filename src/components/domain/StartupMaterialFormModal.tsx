@@ -86,7 +86,7 @@ export function StartupMaterialFormModal({
               name="startup-material-file"
               accept={ACCEPT_BY_TYPE[materialType]}
               onChange={handleFileChange}
-              className="block w-full text-sm text-fg-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 dark:file:bg-brand-900/40 file:text-brand-700 dark:file:text-brand-300 file:px-3.5 file:py-2 file:text-sm file:font-medium hover:file:bg-brand-100 dark:hover:file:bg-brand-900/60 cursor-pointer"
+              className="block w-full text-sm text-fg-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-brand-500/10 file:text-fg-brand file:px-3.5 file:py-2 file:text-sm file:font-medium hover:file:bg-brand-500/20 cursor-pointer"
             />
             {editing && !file && <p className="text-xs text-fg-muted mt-1.5">Leave blank to keep the current file.</p>}
           </div>

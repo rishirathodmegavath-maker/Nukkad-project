@@ -55,7 +55,7 @@ function ActivityRow({ item }: { item: AdminActivity }) {
         <p className="mt-0.5 text-xs text-fg-muted">{formatRelativeTime(item.occurredAt)}</p>
       </div>
       {link && (
-        <Link to={link} className="shrink-0 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+        <Link to={link} className="shrink-0 text-xs font-semibold text-fg-brand hover:underline">
           Open
         </Link>
       )}

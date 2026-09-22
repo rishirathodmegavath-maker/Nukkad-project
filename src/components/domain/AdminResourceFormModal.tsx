@@ -9,6 +9,7 @@ import {
 } from '@/services/admin.service'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
 import { PillTabs } from '@/components/ui/Tabs'
@@ -233,12 +234,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
         </div>
 
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-fg">
-          <input
-            type="checkbox"
-            checked={featured}
-            onChange={(e) => setFeatured(e.target.checked)}
-            className="mt-0.5 size-4 cursor-pointer rounded-md border-border accent-[var(--color-brand-600)]"
-          />
+          <Checkbox checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="mt-0.5" />
           <span>
             <span className="font-medium">Feature on the Resources page</span>
             <span className="block text-xs text-fg-muted">Shown in the “Featured resources” row at the top. Keep it to a few.</span>
