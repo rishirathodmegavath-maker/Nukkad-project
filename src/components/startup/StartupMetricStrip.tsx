@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
 import { Briefcase, CalendarDays, Heart, Users } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatCompactNumber } from '@/lib/startup-meta'
 
 interface StartupMetricStripProps {
-  followers: number
+  /** Omitted entirely for a viewer who isn't this startup's own founder/admin — the tile itself disappears
+   *  (not a skeleton, not a hidden "0") rather than showing a number that isn't this viewer's to see. */
+  followers?: number
   /** Undefined while the list is still loading: the tile then shows a placeholder instead of a wrong "0". */
   teamMembers?: number
   openRoles?: number
@@ -28,16 +31,24 @@ function MetricTile({ icon, label, value }: { icon: ReactNode; label: string; va
 }
 
 /**
- * Four real counts about the startup. A count that is genuinely zero shows 0; a count still loading shows a skeleton,
+ * Real counts about the startup. A count that is genuinely zero shows 0; a count still loading shows a skeleton,
  * never a made-up number. (How many investors have expressed interest is private to the founders, so it lives on their
- * dashboard and not on this public profile.)
+ * dashboard and not on this public profile — followers works the same way: the caller only passes it in for a viewer
+ * who can manage the startup, everyone else just gets a 3-tile strip instead of a leaked/zeroed follower count.)
  */
 export function StartupMetricStrip({ followers, teamMembers, openRoles, events }: StartupMetricStripProps) {
+  const showFollowers = followers !== undefined
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" role="list" aria-label="Startup at a glance">
-      <div role="listitem">
-        <MetricTile icon={<Heart className="size-4 xl:size-5" />} label={followers === 1 ? 'Follower' : 'Followers'} value={followers} />
-      </div>
+    <div
+      className={cn('grid grid-cols-2 gap-3', showFollowers ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}
+      role="list"
+      aria-label="Startup at a glance"
+    >
+      {showFollowers && (
+        <div role="listitem">
+          <MetricTile icon={<Heart className="size-4 xl:size-5" />} label={followers === 1 ? 'Follower' : 'Followers'} value={followers} />
+        </div>
+      )}
       <div role="listitem">
         <MetricTile icon={<Users className="size-4 xl:size-5" />} label={teamMembers === 1 ? 'Team member' : 'Team members'} value={teamMembers} />
       </div>
