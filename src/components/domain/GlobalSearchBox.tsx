@@ -10,7 +10,7 @@ import type { Startup } from '@/types/startup'
 import type { Opportunity } from '@/types/opportunity'
 import type { NukkadEvent } from '@/types/event'
 import type { Grant } from '@/types/grant'
-import type { InvestorProfile } from '@/types/investor'
+import type { CatalogInvestor } from '@/types/investor'
 
 type FlatItem =
   | { kind: 'person'; data: User }
@@ -19,7 +19,7 @@ type FlatItem =
   | { kind: 'opportunity'; data: Opportunity }
   | { kind: 'event'; data: NukkadEvent }
   | { kind: 'grant'; data: Grant }
-  | { kind: 'investor'; data: InvestorProfile }
+  | { kind: 'investor'; data: CatalogInvestor }
   | { kind: 'search-all' }
 
 function routeFor(item: FlatItem, query: string): string {
@@ -37,7 +37,7 @@ function routeFor(item: FlatItem, query: string): string {
     case 'grant':
       return `/grants/${item.data.id}`
     case 'investor':
-      return `/investors/${item.data.id}`
+      return `/investors/catalog/${item.data.id}`
     case 'search-all':
       return `/search?q=${encodeURIComponent(query)}`
   }
@@ -415,7 +415,7 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
                           <Landmark className="size-4" />
                         </span>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-fg truncate">{investor.firmName ?? investor.user?.name ?? 'Investor'}</p>
+                          <p className="text-sm font-medium text-fg truncate">{investor.name}</p>
                           <p className="text-xs text-fg-muted truncate">
                             {investor.investorType}
                             {investor.sectors.length > 0 ? ` · ${investor.sectors.slice(0, 2).join(', ')}` : ''}

@@ -8,14 +8,14 @@ import { listStartups } from '@/services/startups.service'
 import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { listGrants } from '@/services/grants.service'
-import { listInvestors } from '@/services/investors.service'
+import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { EventCard } from '@/components/domain/EventCard'
 import { GrantCard } from '@/components/domain/GrantCard'
-import { InvestorCard } from '@/components/domain/InvestorCard'
+import { CatalogInvestorCard } from '@/components/domain/CatalogInvestorCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -97,10 +97,13 @@ export default function SearchResultsPage() {
     queryFn: () => listGrants(filters),
     enabled: !!trimmed,
   })
+  // Investor Discovery requires an active Startup Profile — same shared, cached access check the Investors
+  // page uses. Results are never fetched, not just hidden, for a viewer who isn't eligible to see them.
+  const investorAccessQuery = useQuery({ queryKey: ['investor-catalog', 'access'], queryFn: hasInvestorDiscoveryAccess })
   const investorsQuery = useQuery({
     queryKey: ['search', 'investors', trimmed],
-    queryFn: () => listInvestors(filters),
-    enabled: !!trimmed,
+    queryFn: () => listCatalogInvestors(filters),
+    enabled: !!trimmed && investorAccessQuery.data === true,
   })
 
   const isLoading =
@@ -118,7 +121,7 @@ export default function SearchResultsPage() {
     (opportunitiesQuery.data?.length ?? 0) +
     (eventsQuery.data?.length ?? 0) +
     (grantsQuery.data?.length ?? 0) +
-    (investorsQuery.data?.length ?? 0)
+    (investorsQuery.data?.content.length ?? 0)
   const encodedQuery = encodeURIComponent(trimmed)
 
   return (
@@ -195,11 +198,11 @@ export default function SearchResultsPage() {
           <ResultSection
             title="Investors"
             icon={<Landmark className="size-4 text-fg-secondary" />}
-            count={investorsQuery.data?.length ?? 0}
+            count={investorsQuery.data?.content.length ?? 0}
             isLoading={investorsQuery.isLoading}
             viewAllHref="/investors"
           >
-            {investorsQuery.data?.slice(0, PREVIEW_COUNT).map((investor) => <InvestorCard key={investor.id} investor={investor} />)}
+            {investorsQuery.data?.content.slice(0, PREVIEW_COUNT).map((investor) => <CatalogInvestorCard key={investor.id} investor={investor} />)}
           </ResultSection>
 
           {!isLoading && totalCount === 0 && (
