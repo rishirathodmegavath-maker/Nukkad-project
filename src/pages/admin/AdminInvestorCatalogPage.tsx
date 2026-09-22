@@ -113,7 +113,7 @@ function CatalogTab() {
                       {!investor.active && <Badge tone="danger">Inactive</Badge>}
                       {!investor.visible && <Badge tone="warning">Hidden</Badge>}
                       {investor.linkedInvestorProfileName && <Badge tone="success">Linked account</Badge>}
-                      {investor.externalSourceId && <Badge tone="info">CSV</Badge>}
+                      {investor.externalSourceId && <Badge tone="info">Imported</Badge>}
                     </div>
                     <p className="text-xs text-fg-muted">
                       {[investor.location, investor.country].filter(Boolean).join(', ') || 'No location set'}

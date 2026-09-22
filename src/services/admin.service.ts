@@ -565,6 +565,8 @@ export interface AdminInvestorImportPreview {
   detectedColumns: string[]
   unrecognizedColumns: string[]
   hasIdColumn: boolean
+  /** Set only for a multi-sheet Excel upload — only the first sheet is ever imported. */
+  note: string | null
   sampleRows: AdminInvestorImportPreviewRow[]
 }
 

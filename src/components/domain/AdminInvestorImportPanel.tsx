@@ -139,7 +139,7 @@ function ImportHistory({ onViewIssues }: { onViewIssues: (batch: AdminInvestorIm
       ) : isError || !data ? (
         <ErrorState title="Couldn't load import history" onRetry={refetch} />
       ) : data.content.length === 0 ? (
-        <EmptyState title="No imports yet" description="Uploaded CSV files will show up here." />
+        <EmptyState title="No imports yet" description="Uploaded files will show up here." />
       ) : (
         <>
           <div className="flex flex-col gap-2">
@@ -171,7 +171,7 @@ function ImportHistory({ onViewIssues }: { onViewIssues: (batch: AdminInvestorIm
   )
 }
 
-/** Admin investor catalog's primary way to populate the database — bulk CSV import. Two deliberate steps:
+/** Admin investor catalog's primary way to populate the database — bulk CSV/Excel import. Two deliberate steps:
  *  preview (parses and validates, saves nothing) then confirm (actually imports, off-request — see
  *  InvestorImportService on the backend). The same flow handles a 10-row file and, later, a 100,000-row one. */
 export function AdminInvestorImportPanel() {
@@ -230,7 +230,7 @@ export function AdminInvestorImportPanel() {
     <div className="flex flex-col gap-6">
       <Card className="flex flex-col gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-fg">Bulk import from CSV</h3>
+          <h3 className="text-sm font-semibold text-fg">Bulk import from CSV or Excel</h3>
           <p className="mt-1 text-sm text-fg-muted">
             Upload investors in bulk instead of adding them one by one. Re-uploading the same file later updates
             matching rows (by the source "id" column) instead of duplicating them.
@@ -240,9 +240,15 @@ export function AdminInvestorImportPanel() {
         {!pickedFile && !batchQuery.data && (
           <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border/80 bg-surface-sunken/40 px-6 py-10 text-center transition-colors hover:border-brand-400 hover:bg-brand-500/5">
             <UploadCloud className="size-7 text-fg-muted" />
-            <span className="text-sm font-semibold text-fg">Click to choose a CSV file</span>
+            <span className="text-sm font-semibold text-fg">Click to choose a CSV or Excel file</span>
             <span className="text-xs text-fg-muted">company_name, investor_type, location, industries, and the other investor columns</span>
-            <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFileChange} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              className="hidden"
+              onChange={handleFileChange}
+            />
           </label>
         )}
 
@@ -266,6 +272,12 @@ export function AdminInvestorImportPanel() {
                 Choose a different file
               </Button>
             </div>
+
+            {preview.note && (
+              <p className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="size-3.5 shrink-0" /> {preview.note}
+              </p>
+            )}
 
             {preview.unrecognizedColumns.length > 0 && (
               <p className="text-xs text-fg-muted">
