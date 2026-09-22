@@ -1,7 +1,18 @@
 import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapResource, type ResourceDto } from '@/services/resources.service'
+import type { AttachmentRef } from '@/services/feed.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
-import type { InvestorType, Resource, ResourceCategory, ResourceType } from '@/types'
+import type {
+  GrantProviderType,
+  InvestorType,
+  OpportunityType,
+  PostType,
+  PostVisibility,
+  Resource,
+  ResourceCategory,
+  ResourceType,
+  WorkMode,
+} from '@/types'
 
 export interface AdminUserFilters {
   q?: string
@@ -177,6 +188,39 @@ export async function reviewOpportunityModeration(id: string, approved: boolean,
   return apiClient.patch<AdminOpportunityRow>(`/admin/opportunities/${id}/moderation`, { approved, reason })
 }
 
+export interface AdminPostOpportunityInput {
+  title: string
+  type: OpportunityType
+  organizationName: string
+  location?: string
+  workMode: WorkMode
+  description: string
+  responsibilities?: string
+  requirements?: string[]
+  requiredSkills?: string[]
+  compensation?: string
+  equity?: string
+  experienceLevel?: string
+  applicationDeadline?: string
+  /** A member to attribute the posting to. Without it the admin's own account is the poster. */
+  postedByEmail?: string
+}
+
+/** Posts an opportunity from the admin panel. It's live at once, not sent through the pending-review
+ *  queue a member's own posting enters — and it's never attributed to a specific BuildAdda startup. */
+export async function createAdminOpportunity(input: AdminPostOpportunityInput): Promise<AdminOpportunityRow> {
+  return apiClient.post<AdminOpportunityRow>('/admin/opportunities', {
+    ...input,
+    location: input.location || undefined,
+    responsibilities: input.responsibilities || undefined,
+    compensation: input.compensation || undefined,
+    equity: input.equity || undefined,
+    experienceLevel: input.experienceLevel || undefined,
+    applicationDeadline: input.applicationDeadline || undefined,
+    postedByEmail: input.postedByEmail || undefined,
+  })
+}
+
 export interface AdminGrantRow {
   id: string
   name: string
@@ -205,6 +249,34 @@ export async function reviewGrantModeration(id: string, approved: boolean, reaso
   return apiClient.patch<AdminGrantRow>(`/admin/grants/${id}/moderation`, { approved, reason })
 }
 
+export interface AdminCreateGrantInput {
+  name: string
+  provider: string
+  providerType: GrantProviderType
+  description?: string
+  fundingAmount?: string
+  eligibilityCriteria?: string
+  eligibleSectors?: string[]
+  eligibleStages?: string[]
+  deadline?: string
+  applicationUrl: string
+  /** A member to attribute the listing to. Without it the admin's own account is the creator. */
+  createdByEmail?: string
+}
+
+/** Publishes a grant listing from the admin panel. It's live at once, not sent through the
+ *  pending-review queue a member's own submission enters. */
+export async function createAdminGrant(input: AdminCreateGrantInput): Promise<AdminGrantRow> {
+  return apiClient.post<AdminGrantRow>('/admin/grants', {
+    ...input,
+    description: input.description || undefined,
+    fundingAmount: input.fundingAmount || undefined,
+    eligibilityCriteria: input.eligibilityCriteria || undefined,
+    deadline: input.deadline || undefined,
+    createdByEmail: input.createdByEmail || undefined,
+  })
+}
+
 export interface AdminPostRow {
   id: string
   authorId: string
@@ -231,6 +303,33 @@ export async function getAdminPost(id: string): Promise<AdminPostRow> {
 
 export async function setPostRemoved(id: string, removed: boolean, reason?: string): Promise<AdminPostRow> {
   return apiClient.patch<AdminPostRow>(`/admin/feed/posts/${id}/removed`, { removed, reason })
+}
+
+/** Same upload the member composer uses, just reachable with an admin-scoped token. */
+export async function uploadAdminPostAttachment(file: File): Promise<AttachmentRef> {
+  return uploadFile<AttachmentRef>('/admin/feed/posts/attachments', file)
+}
+
+export interface AdminCreatePostInput {
+  content: string
+  type?: PostType
+  attachments?: AttachmentRef[]
+  visibility?: PostVisibility
+  linkUrl?: string
+  /** A member to make the author. Without it the admin's own account is the author. */
+  authorEmail?: string
+}
+
+/** Publishes a post from the admin panel. It's live at once, like one a member writes themselves. */
+export async function createAdminPost(input: AdminCreatePostInput): Promise<AdminPostRow> {
+  return apiClient.post<AdminPostRow>('/admin/feed/posts', {
+    content: input.content,
+    type: input.type ?? 'text',
+    attachments: input.attachments ?? [],
+    visibility: input.visibility ?? 'PUBLIC',
+    linkUrl: input.linkUrl || undefined,
+    authorEmail: input.authorEmail || undefined,
+  })
 }
 
 export interface AdminInvestorActivationRow {

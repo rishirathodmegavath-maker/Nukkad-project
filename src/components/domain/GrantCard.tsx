@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom'
-import { Landmark, CalendarClock } from 'lucide-react'
+import { ArrowRight, Landmark, CalendarClock } from 'lucide-react'
 import type { Grant } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 
 export function GrantCard({ grant }: { grant: Grant }) {
   return (
-    <Card interactive className="flex flex-col gap-3 rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
-      <Link to={`/grants/${grant.id}`} className="flex flex-col gap-2.5">
+    <Card interactive className="group flex flex-col rounded-xl border border-border/80 shadow-xs hover:border-border-strong transition-all min-w-0 overflow-hidden bg-surface">
+      {/* Everything lives inside this one Link — the funding line and "View details" used to sit
+          outside it, so that area showed a pointer cursor (from `interactive` above) but clicking
+          it did nothing. */}
+      <Link to={`/grants/${grant.id}`} className="flex flex-1 flex-col gap-2.5">
         <div className="flex items-center justify-between gap-2">
           <Badge tone="neutral">{grant.providerType}</Badge>
           {grant.deadline && (
@@ -23,10 +26,15 @@ export function GrantCard({ grant }: { grant: Grant }) {
           </p>
         </div>
         {grant.description && <p className="text-sm text-fg-secondary line-clamp-2">{grant.description}</p>}
+
+        <div className="mt-auto flex flex-col gap-1.5 pt-3 border-t border-border/60">
+          {grant.fundingAmount && <p className="text-xs font-semibold text-fg-secondary">{grant.fundingAmount}</p>}
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-fg-brand">
+            View details
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
       </Link>
-      {grant.fundingAmount && (
-        <p className="text-xs font-semibold text-fg-secondary mt-auto pt-3 border-t border-border/60">{grant.fundingAmount}</p>
-      )}
     </Card>
   )
 }
