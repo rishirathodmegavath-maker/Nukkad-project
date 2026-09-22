@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Landmark, ExternalLink, Plus } from 'lucide-react'
+import { Landmark, ExternalLink, Plus, Sparkles } from 'lucide-react'
 import { listAdminGrants, reviewGrantModeration, setGrantRemoved } from '@/services/admin.service'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
@@ -125,6 +125,11 @@ export default function AdminGrantsPage() {
                     <tr key={grant.id} className="border-b border-border/60 last:border-0 hover:bg-surface-hover transition-colors">
                       <td className="px-4 py-3 font-medium text-fg truncate max-w-sm">
                         {grant.name}
+                        {grant.discoveryOrigin === 'AI Discovery' && (
+                          <Badge tone="primary" className="ml-2 inline-flex items-center gap-1">
+                            <Sparkles className="size-3" /> AI Discovery
+                          </Badge>
+                        )}
                         {grant.removedByAdmin && <Badge tone="danger" className="ml-2">Removed</Badge>}
                         {moderationBadge(grant.moderationStatus)}
                       </td>
