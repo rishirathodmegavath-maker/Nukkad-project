@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { MessageSquare, ExternalLink } from 'lucide-react'
+import { MessageSquare, ExternalLink, Plus } from 'lucide-react'
 import { listAdminPosts, setPostRemoved } from '@/services/admin.service'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
+import { AdminPostFormModal } from '@/components/domain/AdminPostFormModal'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -20,6 +21,7 @@ export default function AdminFeedPage() {
   const [includeRemoved, setIncludeRemoved] = useState(searchParams.get('includeRemoved') === 'true')
   const [page, setPage] = useState(Number(searchParams.get('page') ?? 0))
   const [target, setTarget] = useState<{ id: string; label: string; removed: boolean } | null>(null)
+  const [adding, setAdding] = useState(false)
   const queryClient = useQueryClient()
   const filters = useMemo(() => ({ includeRemoved, page, size: 20 }), [includeRemoved, page])
 
@@ -59,6 +61,9 @@ export default function AdminFeedPage() {
           />
           Show removed posts too
         </label>
+        <Button className="sm:ml-auto" leftIcon={<Plus className="size-4" />} onClick={() => setAdding(true)}>
+          Add post
+        </Button>
       </div>
 
       {isLoading ? (
@@ -114,6 +119,8 @@ export default function AdminFeedPage() {
           onConfirm={(reason) => removeMutation.mutate(reason)}
         />
       )}
+
+      {adding && <AdminPostFormModal onClose={() => setAdding(false)} />}
     </div>
   )
 }

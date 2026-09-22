@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Briefcase, ExternalLink } from 'lucide-react'
+import { Briefcase, ExternalLink, Plus } from 'lucide-react'
 import { listAdminOpportunities, reviewOpportunityModeration, setOpportunityRemoved } from '@/services/admin.service'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
 import { AdminReviewContentModal } from '@/components/domain/AdminReviewContentModal'
+import { AdminOpportunityFormModal } from '@/components/domain/AdminOpportunityFormModal'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -32,6 +33,7 @@ export default function AdminOpportunitiesPage() {
   const [page, setPage] = useState(Number(searchParams.get('page') ?? 0))
   const [target, setTarget] = useState<{ id: string; label: string; removed: boolean } | null>(null)
   const [reviewing, setReviewing] = useState<{ id: string; label: string; approving: boolean } | null>(null)
+  const [adding, setAdding] = useState(false)
   const queryClient = useQueryClient()
   const filters = useMemo(
     () => ({ q: q || undefined, includeClosed, includeRemoved, status: (status || undefined) as ModerationStatus | undefined, page, size: 20 }),
@@ -107,6 +109,9 @@ export default function AdminOpportunitiesPage() {
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </Select>
+        <Button className="sm:ml-auto" leftIcon={<Plus className="size-4" />} onClick={() => setAdding(true)}>
+          Add opportunity
+        </Button>
       </div>
 
       {isLoading ? (
@@ -197,6 +202,8 @@ export default function AdminOpportunitiesPage() {
           onConfirm={(reason) => reviewMutation.mutate(reason)}
         />
       )}
+
+      {adding && <AdminOpportunityFormModal onClose={() => setAdding(false)} />}
     </div>
   )
 }
