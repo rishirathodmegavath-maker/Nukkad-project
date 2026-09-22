@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Landmark, Sparkles, X } from 'lucide-react'
 import { listFundraises, getMyInvestorProfile } from '@/services/investors.service'
-import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
+import { getCatalogFacets, hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
 import { listStartups, listMyFoundedStartups, getStartupMembers, getStartup } from '@/services/startups.service'
 import { listIdeas } from '@/services/ideas.service'
 import { toast } from '@/store/toast.store'
@@ -148,6 +148,9 @@ export default function InvestorsListPage() {
     queryFn: () => listCatalogInvestors(catalogFilters, catalogPage, 20),
     enabled: tab === 'investors' && hasAccess,
   })
+  // Sector and stage have no fixed list (unlike type) — these are the real values sitting in the catalog
+  // today, so the dropdowns below only ever offer something that can actually match.
+  const facetsQuery = useQuery({ queryKey: ['investor-catalog', 'facets'], queryFn: getCatalogFacets, enabled: tab === 'investors' && hasAccess })
   // Real data for the "Matches your startup" badge — never a fabricated match score.
   const myStartupsQuery = useQuery({ queryKey: ['startups', 'me', 'founding'], queryFn: listMyFoundedStartups, enabled: tab === 'investors' && hasAccess })
   const myStartup = myStartupsQuery.data?.[0]
@@ -213,8 +216,18 @@ export default function InvestorsListPage() {
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </Select>
-                <Input label="Sector" value={sector} onChange={(e) => { setSector(e.target.value); setCatalogPage(0) }} placeholder="e.g. AI" />
-                <Input label="Stage" value={stage} onChange={(e) => { setStage(e.target.value); setCatalogPage(0) }} placeholder="e.g. Seed" />
+                <Select label="Sector" value={sector} onChange={(e) => { setSector(e.target.value); setCatalogPage(0) }}>
+                  <option value="">Any sector</option>
+                  {facetsQuery.data?.sectors.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </Select>
+                <Select label="Stage" value={stage} onChange={(e) => { setStage(e.target.value); setCatalogPage(0) }}>
+                  <option value="">Any stage</option>
+                  {facetsQuery.data?.stages.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </Select>
                 <Input label="Location" value={geography} onChange={(e) => { setGeography(e.target.value); setCatalogPage(0) }} placeholder="e.g. Bangalore" />
                 <Input label="Country" value={country} onChange={(e) => { setCountry(e.target.value); setCatalogPage(0) }} placeholder="e.g. India" />
                 <Input
