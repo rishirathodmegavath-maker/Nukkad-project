@@ -258,12 +258,38 @@ export interface AdminGrantRow {
   provider: string
   providerType: string
   applicationUrl: string
+  /** Official page the details were verified against — set on every AI-discovered grant, rarely on a manually-entered one. */
+  sourceUrl: string | null
+  /** "Manual" (a person entered it) or "AI Discovery" (the scheduled pipeline auto-published it) — see com.nukkad.grant.discovery. */
+  discoveryOrigin: 'Manual' | 'AI Discovery'
+  /** Last time the discovery pipeline re-confirmed an AI-discovered grant is still live. Null for a manually-entered grant. */
+  lastVerifiedAt: string | null
   createdByUserId: string
   removedByAdmin: boolean
   removalReason: string | null
   moderationStatus: ModerationStatus
   rejectionReason: string | null
   createdAt: string
+}
+
+export interface GrantDiscoveryRun {
+  id: string
+  batchGovernment: string
+  batchTopic: string
+  status: 'SUCCESS' | 'FAILED'
+  schemesFound: number
+  schemesCreated: number
+  schemesUpdated: number
+  schemesRejected: number
+  errorMessage: string | null
+  startedAt: string
+  finishedAt: string | null
+}
+
+/** Read-only run history for the scheduled AI grant-discovery pipeline — see AdminGrantDiscoveryController.
+ *  There is no "run now" endpoint; the pipeline is schedule-only by design. */
+export async function listGrantDiscoveryRuns(params: { page?: number; size?: number } = {}): Promise<Page<GrantDiscoveryRun>> {
+  return getPagedResult<GrantDiscoveryRun>('/admin/grant-discovery/runs', { ...params })
 }
 
 export async function listAdminGrants(
