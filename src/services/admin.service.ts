@@ -358,6 +358,14 @@ export async function deleteAdminResource(id: string): Promise<void> {
   await apiClient.delete(`/admin/resources/${id}`)
 }
 
+/** All-or-nothing on the backend: if any id doesn't exist, none of them are deleted. `apiClient.delete`
+ *  takes no body, so the ids go in the query string — same approach as messages.service.ts's
+ *  hideMessagesForMe. */
+export async function bulkDeleteAdminResources(ids: string[]): Promise<void> {
+  const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&')
+  await apiClient.delete(`/admin/resources?${query}`)
+}
+
 // ---- Investor Discovery catalog (admin-managed: this is the ONLY place these are created, edited or retired —
 //      see the Investor entity's class comment for how this relates to self-serve Investor Applications above) ----
 
@@ -521,6 +529,12 @@ export async function removeAdminInvestorLogo(id: string): Promise<AdminInvestor
 
 export async function deleteAdminInvestor(id: string): Promise<void> {
   await apiClient.delete(`/admin/investor-catalog/${id}`)
+}
+
+/** All-or-nothing on the backend: if any id doesn't exist, none of them are deleted. */
+export async function bulkDeleteAdminInvestors(ids: string[]): Promise<void> {
+  const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&')
+  await apiClient.delete(`/admin/investor-catalog?${query}`)
 }
 
 export interface AdminInvestorIntroductionRow {
