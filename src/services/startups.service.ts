@@ -1,4 +1,4 @@
-import { apiClient, getPage, uploadFile } from '@/lib/api-client'
+import { apiClient, getPage, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
 import type {
   Startup,
@@ -53,6 +53,7 @@ interface StartupDto {
   isRaising: boolean
   needs: string[]
   isFollowing: boolean
+  followerCount: number
   canManage: boolean
   profileCompletionPercent: number
   moderationStatus: string
@@ -89,6 +90,7 @@ function mapStartup(dto: StartupDto): Startup {
     ideaId: dto.ideaId ?? undefined,
     chapterId: dto.chapterId ?? undefined,
     isFollowing: dto.isFollowing,
+    followerCount: dto.followerCount ?? 0,
     isRaising: dto.isRaising,
     canManage: dto.canManage,
     profileCompletionPercent: dto.profileCompletionPercent,
@@ -96,6 +98,32 @@ function mapStartup(dto: StartupDto): Startup {
     rejectionReason: dto.rejectionReason ?? undefined,
     createdAt: dto.createdAt,
   }
+}
+
+export interface StartupSector {
+  sector: string
+  /** How many visible startups are in this sector. */
+  count: number
+}
+
+/** The sectors discovery can filter by: only ones some visible startup really has. */
+export async function listStartupSectors(): Promise<StartupSector[]> {
+  return apiClient.get<StartupSector[]>('/startups/sectors')
+}
+
+/** One page of startups plus the totals, for a list that pages. */
+export async function listStartupsPage(filters: StartupFilters & { page?: number } = {}): Promise<Page<Startup>> {
+  const result = await getPagedResult<StartupDto>('/startups', {
+    q: filters.query,
+    sector: filters.sector,
+    stage: filters.stage,
+    isRaising: filters.isRaising,
+    chapterId: filters.chapterId,
+    memberId: filters.memberId,
+    page: filters.page,
+    size: filters.size,
+  })
+  return { ...result, content: result.content.map(mapStartup) }
 }
 
 export async function listStartups(filters: StartupFilters = {}): Promise<Startup[]> {
@@ -120,8 +148,21 @@ export interface CreateStartupInput {
   stage?: StartupStage
   needs?: string[]
   chapterId?: string
+  location?: string
+  website?: string
+  targetCustomer?: string
+  businessModel?: string
+  whatBuilding?: string
+  revenue?: string
+  customers?: string
+  users?: string
+  growth?: string
+  otherTraction?: string
+  visibility?: StartupVisibility
+  fundraisingVisible?: boolean
 }
 
+/** Creates the startup with everything the create flow collected, in one call: it exists complete or not at all. */
 export async function createStartup(input: CreateStartupInput): Promise<Startup> {
   return mapStartup(
     await apiClient.post<StartupDto>('/startups', {
@@ -133,6 +174,18 @@ export async function createStartup(input: CreateStartupInput): Promise<Startup>
       stage: input.stage,
       needs: input.needs,
       chapterId: input.chapterId || undefined,
+      location: input.location || undefined,
+      website: input.website || undefined,
+      targetCustomer: input.targetCustomer || undefined,
+      businessModel: input.businessModel || undefined,
+      whatBuilding: input.whatBuilding || undefined,
+      revenue: input.revenue || undefined,
+      customers: input.customers || undefined,
+      users: input.users || undefined,
+      growth: input.growth || undefined,
+      otherTraction: input.otherTraction || undefined,
+      visibility: input.visibility,
+      fundraisingVisible: input.fundraisingVisible,
     }),
   )
 }
@@ -212,6 +265,7 @@ interface StartupTeamMemberDto {
   roleId: string | null
   createdAt: string
   reviewedAt: string | null
+  user?: UserDto | null
 }
 
 const TEAM_ROLE_LABEL: Record<StartupTeamRole, string> = { FOUNDER: 'Founder', ADMIN: 'Admin', MEMBER: 'Member' }
@@ -229,6 +283,7 @@ function mapTeamMember(dto: StartupTeamMemberDto): StartupTeamMember {
     status: dto.status as StartupMembershipStatus,
     roleId: dto.roleId ?? undefined,
     reviewedAt: dto.reviewedAt ?? undefined,
+    user: dto.user ? mapUser(dto.user) : undefined,
   }
 }
 

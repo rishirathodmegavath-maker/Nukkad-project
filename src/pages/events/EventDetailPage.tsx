@@ -14,8 +14,9 @@ import {
   MessageSquare,
   ChevronRight,
   Download,
+  X,
 } from 'lucide-react'
-import { getEvent, getEventAttendees, rsvpToEvent, cancelEventRsvp, deleteEvent } from '@/services/events.service'
+import { getEvent, getEventAttendees, rsvpToEvent, cancelEventRsvp, deleteEvent, unlinkStartupFromEvent } from '@/services/events.service'
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
@@ -38,6 +39,7 @@ import {
   isPastDate,
 } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
+import type { EventStartupSummary } from '@/types'
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -45,6 +47,7 @@ export default function EventDetailPage() {
   const queryClient = useQueryClient()
   const [editOpen, setEditOpen] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [startupToRemove, setStartupToRemove] = useState<EventStartupSummary | null>(null)
   const { data: currentUser } = useCurrentUser()
 
   const { data: event, isLoading, isError, refetch } = useQuery({
@@ -83,6 +86,21 @@ export default function EventDetailPage() {
       toast.info('Registration cancelled')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not cancel registration'),
+  })
+
+  const removeStartupMutation = useMutation({
+    mutationFn: (startup: EventStartupSummary) => unlinkStartupFromEvent(id!, startup.id),
+    onSuccess: (_, startup) => {
+      queryClient.invalidateQueries({ queryKey: ['event', id] })
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+      queryClient.invalidateQueries({ queryKey: ['startup', startup.id, 'events'] })
+      setStartupToRemove(null)
+      toast.info(`${startup.name} was taken off this event`)
+    },
+    onError: (err) => {
+      setStartupToRemove(null)
+      toast.error(err instanceof Error && err.message ? err.message : 'Could not take the startup off this event')
+    },
   })
 
   const messageMutation = useMutation({
@@ -382,22 +400,55 @@ export default function EventDetailPage() {
           )}
 
           {event.startups.length > 0 && (
-            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
-              <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Featuring</h2>
-              <div className="flex flex-col gap-2.5">
+            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3" data-testid="participating-startups">
+              <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Participating startups ({event.startups.length})</h2>
+              <ul className="flex flex-col gap-2.5">
                 {event.startups.map((s) => (
-                  <Link key={s.id} to={`/startups/${s.id}`} className="flex items-center gap-2.5 group">
-                    <Avatar src={s.logoUrl} name={s.name} size="sm" />
-                    <p className="text-sm font-bold text-fg group-hover:underline truncate">{s.name}</p>
-                  </Link>
+                  <li key={s.id} className="flex items-center justify-between gap-2">
+                    <Link to={`/startups/${s.id}`} className="flex min-w-0 items-center gap-2.5 group">
+                      <Avatar src={s.logoUrl} name={s.name} size="sm" />
+                      <p className="text-sm font-bold text-fg group-hover:underline truncate">{s.name}</p>
+                    </Link>
+                    {s.canUnlink && (
+                      <button
+                        type="button"
+                        onClick={() => setStartupToRemove(s)}
+                        aria-label={`Take ${s.name} off this event`}
+                        title="Take off this event"
+                        className="shrink-0 cursor-pointer rounded-md p-1.5 text-fg-muted hover:bg-surface-sunken hover:text-fg"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </Card>
           )}
         </div>
       </div>
 
       <EventEditModal open={editOpen} onClose={() => setEditOpen(false)} event={event} />
+
+      <Modal
+        open={!!startupToRemove}
+        onClose={() => (removeStartupMutation.isPending ? undefined : setStartupToRemove(null))}
+        title="Take this startup off the event?"
+        description={`${startupToRemove?.name ?? 'This startup'} will no longer be listed on this event. The event itself isn’t changed.`}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setStartupToRemove(null)} disabled={removeStartupMutation.isPending}>
+              Cancel
+            </Button>
+            <Button variant="danger" isLoading={removeStartupMutation.isPending} onClick={() => startupToRemove && removeStartupMutation.mutate(startupToRemove)}>
+              Take off event
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-fg-muted">It can be added again by the event’s organizer.</p>
+      </Modal>
 
       <Modal
         open={confirmDeleteOpen}

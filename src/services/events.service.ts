@@ -1,6 +1,6 @@
 import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
-import type { EventStartupSummary, NukkadEvent, StartupEventSummary, User } from '@/types'
+import type { EventStartupSummary, EventStatus, NukkadEvent, StartupEventSummary, User } from '@/types'
 
 export interface EventFilters {
   chapterId?: string
@@ -29,6 +29,7 @@ interface EventStartupSummaryDto {
   id: string
   name: string
   logoUrl: string | null
+  canUnlink: boolean
 }
 
 interface EventDto {
@@ -71,7 +72,7 @@ function mapEvent(dto: EventDto): NukkadEvent {
     attendeeCount: dto.attendeeCount,
     isAttending: dto.isAttending,
     canManage: dto.canManage,
-    startups: (dto.startups ?? []).map((s): EventStartupSummary => ({ id: s.id, name: s.name, logoUrl: s.logoUrl ?? undefined })),
+    startups: (dto.startups ?? []).map((s): EventStartupSummary => ({ id: s.id, name: s.name, logoUrl: s.logoUrl ?? undefined, canUnlink: !!s.canUnlink })),
     createdAt: dto.createdAt,
   }
 }
@@ -149,10 +150,33 @@ interface StartupEventSummaryDto {
   endAt: string
   online: boolean
   location: string | null
+  coverImageUrl: string | null
+  chapterName: string | null
+  status: EventStatus
 }
 
-/** Events a given startup is tagged on — powers the startup profile's "Events" card. */
+/** Events a given startup is on, soonest first: what the startup's profile shows under Events. */
 export async function getEventsForStartup(startupId: string): Promise<StartupEventSummary[]> {
   const dtos = await apiClient.get<StartupEventSummaryDto[]>(`/events/by-startup/${startupId}`)
-  return dtos.map((d) => ({ id: d.id, title: d.title, startAt: d.startAt, endAt: d.endAt, isOnline: d.online, location: d.location ?? '' }))
+  return dtos.map((d) => ({
+    id: d.id,
+    title: d.title,
+    startAt: d.startAt,
+    endAt: d.endAt,
+    isOnline: d.online,
+    location: d.location ?? '',
+    coverImageUrl: d.coverImageUrl ?? undefined,
+    chapterName: d.chapterName ?? undefined,
+    status: d.status,
+  }))
+}
+
+/** Puts a startup on an event. The server needs the caller to run the event and manage the startup. */
+export async function linkStartupToEvent(eventId: string, startupId: string): Promise<NukkadEvent> {
+  return mapEvent(await apiClient.post<EventDto>(`/events/${eventId}/startups/${startupId}`))
+}
+
+/** Takes a startup off an event: the event's organizer or the startup's founder/admin may. */
+export async function unlinkStartupFromEvent(eventId: string, startupId: string): Promise<void> {
+  await apiClient.delete(`/events/${eventId}/startups/${startupId}`)
 }

@@ -42,6 +42,8 @@ export interface StartupTeamMember {
   status: StartupMembershipStatus
   roleId?: string
   reviewedAt?: string
+  /** Who this is, sent along with the team list so showing the team needs no request per person. */
+  user?: User
 }
 
 export interface StartupJoinRequest {
@@ -130,6 +132,8 @@ export interface Startup {
   chapterId?: string
   followerIds?: string[]
   isFollowing?: boolean
+  /** How many members follow this startup: the real count from the server. */
+  followerCount: number
   isRaising: boolean
   /** True for an active founder OR admin of this startup — drives edit/manage-material UI.
    *  Delete-startup stays founder-only; check the viewer's own membership for that. */
