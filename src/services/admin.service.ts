@@ -11,6 +11,7 @@ import type {
   Resource,
   ResourceCategory,
   ResourceType,
+  StartupVisibility,
   WorkMode,
 } from '@/types'
 
@@ -142,11 +143,25 @@ export interface AdminCreateStartupInput {
   solution?: string
   needs: string[]
   chapterId?: string
+  location?: string
+  website?: string
+  targetCustomer?: string
+  businessModel?: string
+  whatBuilding?: string
+  revenue?: string
+  customers?: string
+  users?: string
+  growth?: string
+  otherTraction?: string
+  visibility?: StartupVisibility
+  fundraisingVisible?: boolean
   /** A member to make the founder. Without it the admin's own account owns the startup. */
   founderEmail?: string
 }
 
-/** Adds a startup from the admin panel. It is live at once, like one a member registers. */
+/** Adds a startup from the admin panel — every field a member can set when registering their own is
+ *  available here too. It is live at once, like one a member registers. The logo (if any) is a
+ *  separate call once the startup exists (uploadAdminStartupLogo), same shape as the member flow. */
 export async function createAdminStartup(input: AdminCreateStartupInput): Promise<AdminStartupRow> {
   return apiClient.post<AdminStartupRow>('/admin/startups', {
     ...input,
@@ -155,8 +170,24 @@ export async function createAdminStartup(input: AdminCreateStartupInput): Promis
     problem: input.problem || undefined,
     solution: input.solution || undefined,
     chapterId: input.chapterId || undefined,
+    location: input.location || undefined,
+    website: input.website || undefined,
+    targetCustomer: input.targetCustomer || undefined,
+    businessModel: input.businessModel || undefined,
+    whatBuilding: input.whatBuilding || undefined,
+    revenue: input.revenue || undefined,
+    customers: input.customers || undefined,
+    users: input.users || undefined,
+    growth: input.growth || undefined,
+    otherTraction: input.otherTraction || undefined,
     founderEmail: input.founderEmail || undefined,
   })
+}
+
+/** The startup's logo — a separate call after createAdminStartup, exactly like the member create-startup flow
+ *  (create, then upload). Never blocked by "must manage this startup," unlike the member logo endpoint. */
+export async function uploadAdminStartupLogo(id: string, file: File): Promise<AdminStartupRow> {
+  return uploadFile<AdminStartupRow>(`/admin/startups/${id}/logo`, file)
 }
 
 export interface AdminOpportunityRow {
