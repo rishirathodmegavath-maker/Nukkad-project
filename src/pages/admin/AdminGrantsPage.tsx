@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Landmark, ExternalLink, Plus, Sparkles } from 'lucide-react'
+import { Landmark, ExternalLink, Plus, Sparkles, UploadCloud } from 'lucide-react'
 import { listAdminGrants, reviewGrantModeration, runGrantDiscoveryNow, setGrantRemoved } from '@/services/admin.service'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
 import { AdminReviewContentModal } from '@/components/domain/AdminReviewContentModal'
 import { AdminGrantFormModal } from '@/components/domain/AdminGrantFormModal'
+import { AdminGrantImportPanel } from '@/components/domain/AdminGrantImportPanel'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -27,6 +28,7 @@ function moderationBadge(status: ModerationStatus) {
 
 export default function AdminGrantsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get('tab') === 'import' ? 'import' : 'list'
   const [q, setQ] = useState(searchParams.get('q') ?? '')
   const [includeRemoved, setIncludeRemoved] = useState(searchParams.get('includeRemoved') === 'true')
   const [status, setStatus] = useState(searchParams.get('status') ?? '')
@@ -89,8 +91,33 @@ export default function AdminGrantsPage() {
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not run grant discovery'),
   })
 
+  function setTab(next: 'list' | 'import') {
+    const nextParams = new URLSearchParams(searchParams)
+    if (next === 'list') nextParams.delete('tab')
+    else nextParams.set('tab', next)
+    setSearchParams(nextParams, { replace: true })
+  }
+
   return (
     <div>
+      <div className="mb-4 flex gap-2">
+        <Button variant={tab === 'list' ? 'primary' : 'secondary'} size="sm" onClick={() => setTab('list')}>
+          Grants
+        </Button>
+        <Button
+          variant={tab === 'import' ? 'primary' : 'secondary'}
+          size="sm"
+          leftIcon={<UploadCloud className="size-4" />}
+          onClick={() => setTab('import')}
+        >
+          Import from spreadsheet
+        </Button>
+      </div>
+
+      {tab === 'import' ? (
+        <AdminGrantImportPanel />
+      ) : (
+      <>
       <SearchFilterBar query={q} onQueryChange={(v) => { setQ(v); setPage(0) }} placeholder="Search grants by name or provider…" />
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
@@ -195,6 +222,8 @@ export default function AdminGrantsPage() {
           </Card>
           <Pagination page={data.page} totalPages={data.totalPages} totalElements={data.totalElements} onPageChange={setPage} />
         </>
+      )}
+      </>
       )}
 
       {target && (

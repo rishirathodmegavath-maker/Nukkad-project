@@ -340,6 +340,78 @@ export async function createAdminGrant(input: AdminCreateGrantInput): Promise<Ad
   })
 }
 
+// ---- Grants bulk spreadsheet import — see GrantImportService on the backend. The manual,
+// zero-API-cost replacement for the (currently disabled) Gemini-based discovery pipeline: an
+// admin uploads a CSV/Excel file of grants instead of paying for AI-driven "discovery". ----
+
+export interface AdminGrantImportPreviewRow {
+  rowNumber: number
+  name: string | null
+  provider: string | null
+  providerType: string | null
+  deadline: string | null
+  warnings: string[]
+  error: string | null
+}
+
+export interface AdminGrantImportPreview {
+  totalRows: number
+  detectedColumns: string[]
+  unrecognizedColumns: string[]
+  /** Set only for a multi-sheet Excel upload — only the first sheet is ever imported. */
+  note: string | null
+  sampleRows: AdminGrantImportPreviewRow[]
+}
+
+export async function previewAdminGrantImport(file: File): Promise<AdminGrantImportPreview> {
+  return uploadFile<AdminGrantImportPreview>('/admin/grants/import/preview', file, 'file')
+}
+
+export type AdminGrantImportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+
+export interface AdminGrantImportBatch {
+  id: string
+  originalFilename: string | null
+  status: AdminGrantImportStatus
+  totalRows: number
+  processedRows: number
+  createdCount: number
+  skippedCount: number
+  failedCount: number
+  errorMessage: string | null
+  startedAt: string | null
+  completedAt: string | null
+  createdAt: string
+}
+
+export async function startAdminGrantImport(file: File): Promise<AdminGrantImportBatch> {
+  return uploadFile<AdminGrantImportBatch>('/admin/grants/import', file, 'file')
+}
+
+export async function listAdminGrantImports(params: { page?: number; size?: number } = {}): Promise<Page<AdminGrantImportBatch>> {
+  return getPagedResult<AdminGrantImportBatch>('/admin/grants/import', { ...params })
+}
+
+export async function getAdminGrantImport(id: string): Promise<AdminGrantImportBatch> {
+  return apiClient.get<AdminGrantImportBatch>(`/admin/grants/import/${id}`)
+}
+
+export interface AdminGrantImportIssue {
+  id: string
+  rowNumber: number
+  grantName: string | null
+  severity: 'WARNING' | 'ERROR'
+  message: string
+  createdAt: string
+}
+
+export async function listAdminGrantImportIssues(
+  batchId: string,
+  params: { page?: number; size?: number } = {},
+): Promise<Page<AdminGrantImportIssue>> {
+  return getPagedResult<AdminGrantImportIssue>(`/admin/grants/import/${batchId}/issues`, { ...params })
+}
+
 export interface AdminPostRow {
   id: string
   authorId: string
