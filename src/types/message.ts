@@ -1,6 +1,6 @@
-import type { Post } from '@/types/feed'
+import type { AttachmentKind, Post } from '@/types/feed'
 
-export type MessageType = 'TEXT' | 'SHARED_POST'
+export type MessageType = 'TEXT' | 'SHARED_POST' | 'IMAGE' | 'VIDEO' | 'PDF' | 'FILE'
 export type ConversationType = 'DIRECT' | 'GROUP'
 export type GroupRole = 'ADMIN' | 'MEMBER'
 
@@ -11,6 +11,14 @@ export interface RepliedMessagePreview {
   contentSnippet: string
 }
 
+export interface MessageAttachment {
+  /** A presigned, time-limited URL (6h) — never a permanent link. Re-fetching the conversation always
+   * gets a fresh one; don't cache this beyond the current page load. */
+  url: string
+  kind: AttachmentKind
+  fileName?: string
+}
+
 export interface Message {
   id: string
   conversationId: string
@@ -19,6 +27,11 @@ export interface Message {
   content: string
   sharedPostId?: string
   sharedPost?: Post
+  attachment?: MessageAttachment
+  /** Client-only, never sent by the server: the already-uploaded object's key (not a URL), kept only so
+   * a failed send (the upload succeeded, the final sendMessage call didn't) can retry without uploading
+   * the file a second time. */
+  attachmentRef?: { key: string; kind: string; fileName?: string }
   replyToMessageId?: string
   replyTo?: RepliedMessagePreview
   createdAt: string

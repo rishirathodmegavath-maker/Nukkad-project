@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -23,6 +23,11 @@ import {
   Pencil,
   Undo2,
   Play,
+  Paperclip,
+  Camera,
+  Image as ImageIcon,
+  Video,
+  FileText,
 } from 'lucide-react'
 import {
   useConversations,
@@ -32,6 +37,7 @@ import {
   useHideMessagesForMe,
   useEditMessage,
   useUnsendMessage,
+  useUploadMessageAttachment,
 } from '@/hooks/useConversations'
 import { useUser } from '@/hooks/useUser'
 import { useSwipeToReply } from '@/hooks/useSwipeToReply'
@@ -45,11 +51,14 @@ import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
 import { PillTabs } from '@/components/ui/Tabs'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { UploadSpinnerOverlay, type UploadPhase } from '@/components/ui/UploadButton'
 import { ReportModal } from '@/components/domain/ReportModal'
 import { CreateGroupModal } from '@/components/domain/CreateGroupModal'
+import { DocumentIcon } from '@/components/domain/DocumentIcon'
+import { attachmentKindOf, FILE_ACCEPT, MAX_ATTACHMENT_BYTES, UNSUPPORTED_FILE_MESSAGE } from '@/lib/attachments'
 import { toast } from '@/store/toast.store'
 import { cn, formatRelativeTime, formatDateTime, formatSeenTime, pluralize } from '@/lib/utils'
-import type { Conversation, Message, User } from '@/types'
+import type { AttachmentKind, Conversation, Message, User } from '@/types'
 
 function groupDisplayName(conversation: Conversation): string {
   return conversation.group?.name || 'Group'
@@ -109,6 +118,64 @@ function SharedPostPreview({ message, conversationId }: { message: Message; conv
   )
 }
 
+function isAttachmentMessage(type: Message['type']): type is 'IMAGE' | 'VIDEO' | 'PDF' | 'FILE' {
+  return type === 'IMAGE' || type === 'VIDEO' || type === 'PDF' || type === 'FILE'
+}
+
+/** A short label for a message whose real content is an attachment — used wherever a message shows up
+ * as plain text (the conversation list's last-message line, a reply quote): "📷 Photo" rather than
+ * blank when there's no caption. Returns null for a message type this doesn't apply to. */
+function attachmentLabel(msg: Pick<Message, 'type' | 'attachment'>): string | null {
+  switch (msg.type) {
+    case 'IMAGE':
+      return '📷 Photo'
+    case 'VIDEO':
+      return '🎥 Video'
+    case 'PDF':
+    case 'FILE':
+      return `📎 ${msg.attachment?.fileName ?? 'File'}`
+    default:
+      return null
+  }
+}
+
+/** The actual media/file card for an IMAGE/VIDEO/PDF/FILE message — parallels SharedPostPreview's role
+ * for a SHARED_POST message. A missing attachment (defensive only; the backend never omits it for these
+ * types) renders nothing rather than a broken card. */
+function AttachmentPreview({ message }: { message: Message }) {
+  const attachment = message.attachment
+  if (!attachment) return null
+
+  if (attachment.kind === 'image') {
+    return (
+      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="block w-64 max-w-full overflow-hidden rounded-xl border border-border-subtle">
+        <img src={attachment.url} alt={attachment.fileName ?? ''} className="max-h-72 w-full object-cover" />
+      </a>
+    )
+  }
+  if (attachment.kind === 'video') {
+    return (
+      <video
+        src={attachment.url}
+        controls
+        preload="metadata"
+        className="max-h-72 w-64 max-w-full rounded-xl border border-border-subtle bg-black"
+      />
+    )
+  }
+  return (
+    <a
+      href={attachment.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2.5 w-64 max-w-full rounded-xl border border-border-subtle bg-surface px-3.5 py-3 hover:bg-surface-hover transition-colors"
+    >
+      <DocumentIcon fileName={attachment.fileName} className="size-6 shrink-0 text-accent-500" />
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-fg">{attachment.fileName ?? 'File'}</span>
+    </a>
+  )
+}
+
 function ConversationListItem({ conversation, active }: { conversation: Conversation; active: boolean }) {
   const navigate = useNavigate()
   const isGroup = conversation.type === 'GROUP'
@@ -142,7 +209,11 @@ function ConversationListItem({ conversation, active }: { conversation: Conversa
               ? lastMessage.content
                 ? `Shared a post · ${lastMessage.content}`
                 : 'Shared a post'
-              : lastMessage.content
+              : attachmentLabel(lastMessage)
+                ? lastMessage.content
+                  ? `${attachmentLabel(lastMessage)} · ${lastMessage.content}`
+                  : attachmentLabel(lastMessage)
+                : lastMessage.content
             : 'Say hello'}
         </p>
       </div>
@@ -937,7 +1008,7 @@ function MessageRow({
             </button>
           )}
 
-          {msg.type === 'SHARED_POST' ? (
+          {msg.type === 'SHARED_POST' || isAttachmentMessage(msg.type) ? (
             <>
               {/* iconSlot + content share one never-reversed inner row, so growing the icon
                   always pushes THIS content right — a direct sibling of the reversed outer
@@ -952,7 +1023,11 @@ function MessageRow({
                     highlightedMessageId === msg.id && 'ring-2 ring-brand-500',
                   )}
                 >
-                  <SharedPostPreview message={msg} conversationId={conversationId} />
+                  {msg.type === 'SHARED_POST' ? (
+                    <SharedPostPreview message={msg} conversationId={conversationId} />
+                  ) : (
+                    <AttachmentPreview message={msg} />
+                  )}
                   {msg.content && (
                     <div
                       className={cn(
@@ -1048,7 +1123,9 @@ function ComposerReplyPreview({
         <Reply className="size-3.5 text-brand-500 shrink-0 mt-0.5" />
         <div className="min-w-0">
           <p className="font-semibold text-fg truncate">Replying to {label}</p>
-          <p className="text-fg-muted truncate">{replyingTo.type === 'SHARED_POST' ? '📷 Shared a post' : replyingTo.content}</p>
+          <p className="text-fg-muted truncate">
+            {replyingTo.type === 'SHARED_POST' ? '📷 Shared a post' : (attachmentLabel(replyingTo) ?? replyingTo.content)}
+          </p>
         </div>
       </div>
       <button type="button" onClick={onCancel} className="text-fg-muted hover:text-fg cursor-pointer shrink-0" aria-label="Cancel reply">
@@ -1082,6 +1159,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
   const { data: otherUser } = useUser(otherUserId)
   const { data: messages, isLoading, isError, refetch } = useMessages(conversationId)
   const sendMutation = useSendMessage(conversationId)
+  const uploadAttachmentMutation = useUploadMessageAttachment(conversationId)
   const editMutation = useEditMessage(conversationId)
   const unsendMutation = useUnsendMessage(conversationId)
   const markReadMutation = useMarkConversationRead(conversationId)
@@ -1096,9 +1174,83 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
   const [editingMessage, setEditingMessage] = useState<Message | null>(null)
   const [unsendTarget, setUnsendTarget] = useState<Message | null>(null)
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  // Select → preview → optional caption → send: picking a file never sends anything by itself, it only
+  // populates this — the composer swaps to a preview bar until Send (or Cancel) is pressed.
+  const [pendingAttachment, setPendingAttachment] = useState<{ file: File; kind: AttachmentKind; previewUrl?: string } | null>(null)
+  const [attachmentPhase, setAttachmentPhase] = useState<UploadPhase>('idle')
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false)
   const messageRowRefs = useRef(new Map<string, HTMLDivElement>())
   const composerInputRef = useRef<HTMLInputElement>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const myId = getCurrentUserId()
+
+  function revokePendingPreview() {
+    if (pendingAttachment?.previewUrl) URL.revokeObjectURL(pendingAttachment.previewUrl)
+  }
+
+  function pickAttachment(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const kind = attachmentKindOf(file)
+    if (!kind) {
+      toast.error(UNSUPPORTED_FILE_MESSAGE)
+      return
+    }
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      toast.error('That file is over 50 MB. Attach a smaller one.')
+      return
+    }
+    revokePendingPreview()
+    const previewUrl = kind === 'image' || kind === 'video' ? URL.createObjectURL(file) : undefined
+    setPendingAttachment({ file, kind, previewUrl })
+  }
+
+  function cancelAttachment() {
+    revokePendingPreview()
+    setPendingAttachment(null)
+  }
+
+  // Upload happens first (never sent as WebSocket bytes — see sendMessage/uploadMessageAttachment),
+  // then the message is created with the resulting ref. A failure leaves pendingAttachment in place
+  // (never discarded) so re-pressing Send is a real retry, matching the file-picker toolbar's own
+  // failed-upload-retry requirement.
+  async function sendWithAttachment() {
+    if (!pendingAttachment) return
+    setAttachmentPhase('uploading')
+    try {
+      const attachment = await uploadAttachmentMutation.mutateAsync(pendingAttachment.file)
+      const replyToPreview: Message['replyTo'] = replyingTo
+        ? {
+            id: replyingTo.id,
+            senderId: replyingTo.senderId,
+            type: replyingTo.type,
+            contentSnippet: replyingTo.type === 'SHARED_POST' ? 'Shared a post' : (attachmentLabel(replyingTo) ?? replyingTo.content.slice(0, 120)),
+          }
+        : undefined
+      // The local blob preview is what the optimistic bubble actually renders (the server hasn't
+      // responded yet, so there's no real presigned URL to show) — it must stay alive until the real
+      // message (with a real presigned URL) replaces that optimistic row, so it's only revoked on
+      // success here, not immediately. On failure it deliberately stays alive too: the "Failed to
+      // send — Retry" bubble still shows the picked photo/video, not a broken image, and retryFailedMessage
+      // reuses this same attachmentRef without re-uploading.
+      const previewUrlToRevoke = pendingAttachment.previewUrl
+      sendMutation.mutate(
+        { content: draft.trim(), replyToMessageId: replyingTo?.id, replyToPreview, attachment, optimisticPreviewUrl: previewUrlToRevoke },
+        { onSuccess: () => { if (previewUrlToRevoke) URL.revokeObjectURL(previewUrlToRevoke) } },
+      )
+      setPendingAttachment(null)
+      setDraft('')
+      setReplyingTo(null)
+      setAttachmentPhase('idle')
+    } catch (err) {
+      setAttachmentPhase('idle')
+      toast.error(err instanceof Error ? err.message : 'Could not upload — try again')
+    }
+  }
 
   // Reply and edit share one composer, so starting one always cancels the other.
   function startReply(msg: Message) {
@@ -1110,6 +1262,9 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
     setReplyingTo(null)
     setEditingMessage(msg)
     setDraft(msg.content)
+    // Editing is text-only (see the editMessage javadoc) — an in-progress attachment pick wouldn't
+    // make sense alongside it, so it's abandoned rather than left stranded behind the edit banner.
+    cancelAttachment()
   }
 
   function cancelEdit() {
@@ -1179,6 +1334,12 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
     markRead()
     setReplyingTo(null)
     setEditingMessage(null)
+    // Switching conversations abandons any in-progress attachment pick — its preview URL must still
+    // be revoked, or the blob it points at just leaks for the rest of the session.
+    setPendingAttachment((current) => {
+      if (current?.previewUrl) URL.revokeObjectURL(current.previewUrl)
+      return null
+    })
   }, [conversationId, markRead])
 
   function handleScroll() {
@@ -1203,6 +1364,10 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
 
   function handleSend(e: FormEvent) {
     e.preventDefault()
+    if (pendingAttachment) {
+      sendWithAttachment()
+      return
+    }
     const trimmed = draft.trim()
     if (!trimmed) return
 
@@ -1229,7 +1394,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
           id: replyingTo.id,
           senderId: replyingTo.senderId,
           type: replyingTo.type,
-          contentSnippet: replyingTo.type === 'SHARED_POST' ? 'Shared a post' : replyingTo.content.slice(0, 120),
+          contentSnippet: replyingTo.type === 'SHARED_POST' ? 'Shared a post' : (attachmentLabel(replyingTo) ?? replyingTo.content.slice(0, 120)),
         }
       : undefined
     sendMutation.mutate({ content: trimmed, replyToMessageId: replyingTo?.id, replyToPreview })
@@ -1239,7 +1404,15 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
 
   function retryFailedMessage(msg: Message) {
     queryClient.setQueryData<Message[]>(['messages', conversationId], (existing) => existing?.filter((m) => m.id !== msg.id))
-    sendMutation.mutate({ content: msg.content, replyToMessageId: msg.replyToMessageId, replyToPreview: msg.replyTo })
+    sendMutation.mutate({
+      content: msg.content,
+      replyToMessageId: msg.replyToMessageId,
+      replyToPreview: msg.replyTo,
+      // Reuses the already-uploaded object (attachmentRef carries its key) rather than re-uploading the
+      // file a second time — the upload itself already succeeded; only the final send call failed.
+      attachment: msg.attachmentRef,
+      optimisticPreviewUrl: msg.attachment?.url,
+    })
   }
 
   const groups = messages ? groupMessages(messages) : []
@@ -1408,27 +1581,144 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
             ) : (
               replyingTo && <ComposerReplyPreview replyingTo={replyingTo} myId={myId} onCancel={() => setReplyingTo(null)} />
             )}
-            <form onSubmit={handleSend} className="flex items-center gap-2 px-4 py-3">
-              <input
-                ref={composerInputRef}
-                id="message-composer"
-                name="message-composer"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Write a message…"
-                aria-label="Write a message"
-                className="flex-1 rounded-full border border-border bg-surface-sunken/70 px-4 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!draft.trim()}
-                aria-label={editingMessage ? 'Save edit' : 'Send message'}
-                className="size-10 rounded-full"
-              >
-                {editingMessage ? <Check className="size-4" /> : <Send className="size-4" />}
-              </Button>
-            </form>
+
+            {pendingAttachment ? (
+              <form onSubmit={handleSend} className="flex flex-col gap-2.5 px-4 py-3">
+                <div className="flex items-center gap-3 rounded-xl border border-border/80 bg-surface-sunken/50 p-2.5">
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-border/70 bg-surface">
+                    {pendingAttachment.kind === 'image' && pendingAttachment.previewUrl ? (
+                      <img src={pendingAttachment.previewUrl} alt="" className="size-full object-cover" />
+                    ) : pendingAttachment.kind === 'video' && pendingAttachment.previewUrl ? (
+                      <video src={pendingAttachment.previewUrl} muted className="size-full object-cover" />
+                    ) : (
+                      <div className="flex size-full items-center justify-center">
+                        <DocumentIcon fileName={pendingAttachment.file.name} className="size-5 text-accent-500" />
+                      </div>
+                    )}
+                    <UploadSpinnerOverlay phase={attachmentPhase} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold text-fg">{pendingAttachment.file.name}</p>
+                    <p className="text-xs text-fg-muted">{(pendingAttachment.file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  </div>
+                  {attachmentPhase === 'idle' && (
+                    <button
+                      type="button"
+                      onClick={cancelAttachment}
+                      aria-label="Remove attachment"
+                      className="flex size-7 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="message-composer-caption"
+                    name="message-composer-caption"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder="Add a caption… (optional)"
+                    aria-label="Add a caption"
+                    disabled={attachmentPhase === 'uploading'}
+                    className="flex-1 rounded-full border border-border bg-surface-sunken/70 px-4 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted disabled:opacity-60"
+                  />
+                  <Button type="button" variant="secondary" size="sm" onClick={cancelAttachment} disabled={attachmentPhase === 'uploading'}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="icon" isLoading={attachmentPhase === 'uploading'} aria-label="Send" className="size-10 rounded-full shrink-0">
+                    <Send className="size-4" />
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSend} className="flex items-center gap-1.5 px-4 py-3">
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setAttachMenuOpen((v) => !v)}
+                    aria-label="Attach a photo, video or file"
+                    aria-expanded={attachMenuOpen}
+                    disabled={!!editingMessage}
+                    className="flex size-9 items-center justify-center rounded-full text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    <Paperclip className="size-4.5" />
+                  </button>
+                  {attachMenuOpen && (
+                    <>
+                      {/* Backdrop, not a blur/dim — just something behind the menu to catch an outside click and close it. */}
+                      <div className="fixed inset-0 z-10" onClick={() => setAttachMenuOpen(false)} />
+                      <div className="absolute bottom-full left-0 z-20 mb-2 flex w-44 flex-col gap-0.5 rounded-xl border border-border/80 bg-surface p-1.5 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            photoInputRef.current?.click()
+                            setAttachMenuOpen(false)
+                          }}
+                          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg cursor-pointer"
+                        >
+                          <ImageIcon className="size-4 text-fg-brand" /> Photos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            videoInputRef.current?.click()
+                            setAttachMenuOpen(false)
+                          }}
+                          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg cursor-pointer"
+                        >
+                          <Video className="size-4 text-fg-brand" /> Videos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            fileInputRef.current?.click()
+                            setAttachMenuOpen(false)
+                          }}
+                          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg cursor-pointer"
+                        >
+                          <FileText className="size-4 text-accent-500" /> Files
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  aria-label="Take a photo"
+                  disabled={!!editingMessage}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Camera className="size-4.5" />
+                </button>
+                <input ref={photoInputRef} type="file" accept="image/*" hidden onChange={pickAttachment} />
+                <input ref={videoInputRef} type="file" accept="video/*" hidden onChange={pickAttachment} />
+                <input ref={fileInputRef} type="file" accept={FILE_ACCEPT} hidden onChange={pickAttachment} />
+                {/* capture="environment" opens the device's own camera app on mobile; desktop browsers
+                    fall back to their normal file picker (some offer a webcam option there too). */}
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" hidden onChange={pickAttachment} />
+                <input
+                  ref={composerInputRef}
+                  id="message-composer"
+                  name="message-composer"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Write a message…"
+                  aria-label="Write a message"
+                  className="flex-1 rounded-full border border-border bg-surface-sunken/70 px-4 py-2.5 text-sm text-fg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all placeholder:text-fg-muted"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!draft.trim()}
+                  aria-label={editingMessage ? 'Save edit' : 'Send message'}
+                  className="size-10 rounded-full shrink-0"
+                >
+                  {editingMessage ? <Check className="size-4" /> : <Send className="size-4" />}
+                </Button>
+              </form>
+            )}
           </div>
         )}
       </div>

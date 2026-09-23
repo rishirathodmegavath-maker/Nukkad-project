@@ -1,13 +1,28 @@
 import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { getCurrentUserId } from '@/services/users.service'
 import { mapPost, type PostDto } from '@/services/feed.service'
-import type { Conversation, ConversationType, GroupRole, Message, MessageType } from '@/types'
+import type { AttachmentKind, Conversation, ConversationType, GroupRole, Message, MessageType } from '@/types'
+
+/** What POST /conversations/{id}/attachments returns, and what sendMessage's attachment field takes —
+ * a private object KEY, never a URL (unlike feed's AttachmentRef): a chat attachment has no permanent
+ * public URL to hand back at upload time. */
+export interface ConversationAttachmentRef {
+  key: string
+  kind: string
+  fileName?: string
+}
 
 interface RepliedMessagePreviewDto {
   id: string
   senderId: string
   type: string
   contentSnippet: string
+}
+
+interface MessageAttachmentDto {
+  url: string
+  kind: string
+  fileName: string | null
 }
 
 export interface MessageDto {
@@ -18,6 +33,7 @@ export interface MessageDto {
   content: string
   sharedPostId: string | null
   sharedPost: PostDto | null
+  attachment: MessageAttachmentDto | null
   replyToMessageId: string | null
   replyTo: RepliedMessagePreviewDto | null
   isRead: boolean
@@ -63,6 +79,9 @@ export function mapMessage(dto: MessageDto): Message {
     content: dto.content,
     sharedPostId: dto.sharedPostId ?? undefined,
     sharedPost: dto.sharedPost ? mapPost(dto.sharedPost) : undefined,
+    attachment: dto.attachment
+      ? { url: dto.attachment.url, kind: dto.attachment.kind.toLowerCase() as AttachmentKind, fileName: dto.attachment.fileName ?? undefined }
+      : undefined,
     replyToMessageId: dto.replyToMessageId ?? undefined,
     replyTo: dto.replyTo
       ? { id: dto.replyTo.id, senderId: dto.replyTo.senderId, type: dto.replyTo.type as MessageType, contentSnippet: dto.replyTo.contentSnippet }
@@ -128,13 +147,24 @@ export async function sendMessage(
   content: string,
   sharedPostId?: string,
   replyToMessageId?: string,
+  attachment?: ConversationAttachmentRef,
 ): Promise<Message> {
   const dto = await apiClient.post<MessageDto>(`/conversations/${conversationId}/messages`, {
     content,
     sharedPostId,
     replyToMessageId,
+    attachment,
   })
   return mapMessage(dto)
+}
+
+/** Uploads a chat attachment and returns a ref (a private object key, never a URL) — a separate step
+ * from {@link sendMessage}, matching the required "select → preview → send" flow: the file lands in
+ * private storage before anything is sent, but no message exists yet until the caller actually sends.
+ * The returned key is meaningless to render directly — the eventual message carries a real, presigned,
+ * time-limited URL instead (see {@link mapMessage}'s attachment.url). */
+export async function uploadMessageAttachment(conversationId: string, file: File): Promise<ConversationAttachmentRef> {
+  return uploadFile<ConversationAttachmentRef>(`/conversations/${conversationId}/attachments`, file)
 }
 
 /** Updates the existing message's content in place — a new "Edited" indicator, not a new message. */

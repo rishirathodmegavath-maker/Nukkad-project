@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as messagesService from '@/services/messages.service'
 import { getCurrentUserId } from '@/services/users.service'
 import { onSocketReconnect, subscribeToConversation, subscribeToConversationReads, subscribeToUserConversations } from '@/lib/socket-client'
-import type { Conversation, Message } from '@/types'
-import { mapConversation, mapMessage, type ConversationDto, type MessageDto } from '@/services/messages.service'
+import type { AttachmentKind, Conversation, Message } from '@/types'
+import { mapConversation, mapMessage, type ConversationAttachmentRef, type ConversationDto, type MessageDto } from '@/services/messages.service'
 
 export function useConversations() {
   const queryClient = useQueryClient()
@@ -138,6 +138,14 @@ interface SendMessageVariables {
   /** Built by the caller from the message it already has in hand (the one being replied to), so
    * the optimistic bubble can render a real reply quote immediately instead of a blank one. */
   replyToPreview?: Message['replyTo']
+  /** Already-uploaded attachment ref (see useUploadMessageAttachment) — sendMessage never uploads a
+   * file itself, only attaches a ref to one that's already stored. Carries a private object KEY, not a
+   * URL, so it's never used directly for display. */
+  attachment?: ConversationAttachmentRef
+  /** A local blob: URL (from URL.createObjectURL on the picked File) for the optimistic bubble to show
+   * immediately — the real, presigned URL only exists once the server responds. Never sent to the
+   * server; the caller owns revoking it once the real message replaces this optimistic one. */
+  optimisticPreviewUrl?: string
 }
 
 /** Optimistic send: a "Sending…" placeholder appears immediately (client-generated temp id),
@@ -147,17 +155,23 @@ interface SendMessageVariables {
 export function useSendMessage(conversationId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ content, replyToMessageId }: SendMessageVariables) =>
-      messagesService.sendMessage(conversationId!, content, undefined, replyToMessageId),
-    onMutate: ({ content, replyToMessageId, replyToPreview }) => {
+    mutationFn: ({ content, replyToMessageId, attachment }: SendMessageVariables) =>
+      messagesService.sendMessage(conversationId!, content, undefined, replyToMessageId, attachment),
+    onMutate: ({ content, replyToMessageId, replyToPreview, attachment, optimisticPreviewUrl }) => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       const myId = getCurrentUserId() ?? ''
       const optimistic: Message = {
         id: tempId,
         conversationId: conversationId!,
         senderId: myId,
-        type: 'TEXT',
+        type: attachment ? (attachment.kind.toUpperCase() as Message['type']) : 'TEXT',
         content,
+        // The local blob preview, not the (inaccessible without a signature) object key — falls back to
+        // an empty src rather than the key itself, which would just 404/fail to load as an image URL.
+        attachment: attachment
+          ? { url: optimisticPreviewUrl ?? '', kind: attachment.kind.toLowerCase() as AttachmentKind, fileName: attachment.fileName }
+          : undefined,
+        attachmentRef: attachment,
         replyToMessageId,
         replyTo: replyToPreview,
         createdAt: new Date().toISOString(),
@@ -182,6 +196,15 @@ export function useSendMessage(conversationId: string | undefined) {
         existing?.map((m) => (m.id === context.tempId ? { ...m, pending: false, failed: true } : m)),
       )
     },
+  })
+}
+
+/** Uploads a chat attachment (photo, video or file) and returns a ref to attach to the next
+ * {@link useSendMessage} call — a separate step so the composer can show a select → preview → send
+ * flow instead of firing off a message the moment a file is picked. */
+export function useUploadMessageAttachment(conversationId: string | undefined) {
+  return useMutation({
+    mutationFn: (file: File) => messagesService.uploadMessageAttachment(conversationId!, file),
   })
 }
 
