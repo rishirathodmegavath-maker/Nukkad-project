@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { investorLogoSrc } from '@/lib/investor-logo'
 import { formatCurrency } from '@/lib/utils'
+import { computeInvestorMatchScore } from '@/lib/investor-match'
 
 const VISIBLE_SECTORS = 3
 
@@ -22,11 +23,10 @@ export function CatalogInvestorRow({
   onRequestIntro,
 }: {
   investor: CatalogInvestor
-  myStartup?: { sector?: string; stage?: string }
+  myStartup?: { sector?: string; stage?: string; location?: string }
   onRequestIntro: () => void
 }) {
-  const matchesSector = !!myStartup?.sector && investor.sectors.some((s) => s.toLowerCase() === myStartup.sector!.toLowerCase())
-  const matchesStage = !!myStartup?.stage && investor.stages.some((s) => s.toLowerCase() === myStartup.stage!.toLowerCase())
+  const matchScore = computeInvestorMatchScore(investor, myStartup)
   const hasChequeRange = investor.chequeMin !== undefined || investor.chequeMax !== undefined
   const hasActivity = investor.investmentCount !== undefined || investor.exitCount !== undefined
   const extraSectors = investor.sectors.length - VISIBLE_SECTORS
@@ -44,7 +44,7 @@ export function CatalogInvestorRow({
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <p className="font-bold text-fg truncate text-[15px]">{investor.name}</p>
             <Badge tone="brand">{investor.investorType}</Badge>
-            {(matchesSector || matchesStage) && <Badge tone="success">Matches your startup</Badge>}
+            {matchScore > 0 && <Badge tone={matchScore >= 80 ? 'success' : matchScore >= 50 ? 'primary' : 'warning'}>{matchScore}% match</Badge>}
           </div>
 
           {investor.description && <p className="mt-1 text-xs text-fg-secondary leading-relaxed line-clamp-1">{investor.description}</p>}
