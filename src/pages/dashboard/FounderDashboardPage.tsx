@@ -62,11 +62,17 @@ export default function FounderDashboardPage() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* No link: there's no per-viewer breakdown anywhere in the app today, so this stays a plain number
+            rather than a link to a page that doesn't exist. */}
         <StatTile icon={<Eye className="size-5" />} label="Profile views" value={data.profileViews} />
-        <StatTile icon={<Handshake className="size-5" />} label="Investor interests" value={data.investorInterests} />
-        <StatTile icon={<Briefcase className="size-5" />} label="Job applications" value={data.jobApplications} />
-        <StatTile icon={<Heart className="size-5" />} label="Followers" value={data.followers} />
-        <StatTile icon={<CalendarDays className="size-5" />} label="Event RSVPs" value={data.eventRsvps} />
+        <StatTile icon={<Handshake className="size-5" />} label="Investor interests" value={data.investorInterests} to="/investors/requests" />
+        <StatTile icon={<Briefcase className="size-5" />} label="Job applications" value={data.jobApplications} to="/opportunities/posted" />
+        {data.primaryStartupId && (
+          <>
+            <StatTile icon={<Heart className="size-5" />} label="Followers" value={data.followers} to={`/startups/${data.primaryStartupId}`} />
+            <StatTile icon={<CalendarDays className="size-5" />} label="Event RSVPs" value={data.eventRsvps} to={`/startups/${data.primaryStartupId}?tab=events`} />
+          </>
+        )}
       </div>
 
       <Card>
