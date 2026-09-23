@@ -101,6 +101,14 @@ export async function getCatalogFacets(): Promise<CatalogFacets> {
   return apiClient.get<CatalogFacets>('/investor-catalog/facets')
 }
 
+/** A real live count for one filter combination (e.g. `{ type: 'VC' }`) — reads `totalElements` off a
+ *  1-row page rather than fetching and counting rows client-side, so it stays correct at any catalog
+ *  size. Used for the Investor Discovery sidebar's "Investor database" stats — real numbers, not copy. */
+export async function countCatalogInvestors(filters: CatalogInvestorFilters = {}): Promise<number> {
+  const result = await listCatalogInvestors(filters, 0, 1)
+  return result.totalElements
+}
+
 export async function getCatalogInvestor(id: string): Promise<CatalogInvestor | null> {
   try {
     return mapCatalogInvestor(await apiClient.get<CatalogInvestorDto>(`/investor-catalog/${id}`))

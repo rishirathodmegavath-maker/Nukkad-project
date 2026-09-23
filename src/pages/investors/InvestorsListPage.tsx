@@ -7,13 +7,16 @@ import { getCatalogFacets, hasInvestorDiscoveryAccess, listCatalogInvestors } fr
 import { listStartups, listMyFoundedStartups, getStartupMembers, getStartup } from '@/services/startups.service'
 import { listIdeas } from '@/services/ideas.service'
 import { toast } from '@/store/toast.store'
+import { computeInvestorMatchScore } from '@/lib/investor-match'
 import { CatalogInvestorRow } from '@/components/domain/CatalogInvestorRow'
 import { CatalogIntroductionModal } from '@/components/domain/CatalogIntroductionModal'
 import { InvestorDiscoveryLocked } from '@/components/domain/InvestorDiscoveryLocked'
+import { InvestorMatchCard } from '@/components/domain/InvestorMatchCard'
+import { InvestorSidebar } from '@/components/domain/InvestorSidebar'
 import { IntroRequestModal } from '@/components/domain/IntroRequestModal'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
-import { Tabs } from '@/components/ui/Tabs'
+import { Tabs, PillTabs } from '@/components/ui/Tabs'
 import { Input, Select } from '@/components/ui/Input'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -154,6 +157,16 @@ export default function InvestorsListPage() {
   // Real data for the "Matches your startup" badge — never a fabricated match score.
   const myStartupsQuery = useQuery({ queryKey: ['startups', 'me', 'founding'], queryFn: listMyFoundedStartups, enabled: tab === 'investors' && hasAccess })
   const myStartup = myStartupsQuery.data?.[0]
+  // Top real matches from the page already on screen — never a separate fetch just for this, and never
+  // shown at all once the founder has paged or filtered past the default view.
+  const recommended = useMemo(() => {
+    if (!myStartup || catalogPage !== 0 || !catalogQuery.data) return []
+    return catalogQuery.data.content
+      .map((investor) => ({ investor, score: computeInvestorMatchScore(investor, { sector: myStartup.sector, stage: myStartup.stage, location: myStartup.location }) }))
+      .filter((m) => m.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4)
+  }, [catalogQuery.data, myStartup, catalogPage])
   const fundraisesQuery = useQuery({ queryKey: ['fundraises', 'open'], queryFn: () => listFundraises({ status: 'Open' }), enabled: tab === 'raising' })
   const earlyStartupsQuery = useQuery({
     queryKey: ['startups', 'early-stage'],
@@ -162,6 +175,17 @@ export default function InvestorsListPage() {
   })
   const earlyIdeasQuery = useQuery({ queryKey: ['ideas', 'early-stage'], queryFn: () => listIdeas(), enabled: tab === 'early' })
   const { data: myInvestorProfile } = useQuery({ queryKey: ['investors', 'me'], queryFn: getMyInvestorProfile })
+
+  function findMyInvestors() {
+    if (!myStartup) return
+    setInvestorType('')
+    setSector(myStartup.sector || '')
+    setStage(myStartup.stage || '')
+    setGeography('')
+    setCountry('')
+    setChequeSize('')
+    setCatalogPage(0)
+  }
 
   async function requestIntroForStartup(startup: Startup) {
     const members = await getStartupMembers(startup.id)
@@ -207,80 +231,110 @@ export default function InvestorsListPage() {
         ) : !hasAccess ? (
           <InvestorDiscoveryLocked />
         ) : (
-          <>
-            <SearchFilterBar query={query} onQueryChange={(v) => { setQuery(v); setCatalogPage(0) }} placeholder="Search investors by name, firm or thesis…">
-              <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                <Select label="Type" value={investorType} onChange={(e) => { setInvestorType(e.target.value); setCatalogPage(0) }}>
-                  <option value="">Any type</option>
-                  {INVESTOR_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </Select>
-                <Select label="Sector" value={sector} onChange={(e) => { setSector(e.target.value); setCatalogPage(0) }}>
-                  <option value="">Any sector</option>
-                  {facetsQuery.data?.sectors.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </Select>
-                <Select label="Stage" value={stage} onChange={(e) => { setStage(e.target.value); setCatalogPage(0) }}>
-                  <option value="">Any stage</option>
-                  {facetsQuery.data?.stages.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </Select>
-                <Input label="Location" value={geography} onChange={(e) => { setGeography(e.target.value); setCatalogPage(0) }} placeholder="e.g. Bangalore" />
-                <Input label="Country" value={country} onChange={(e) => { setCountry(e.target.value); setCatalogPage(0) }} placeholder="e.g. India" />
-                <Input
-                  label="Cheque size (₹)"
-                  type="number"
-                  min={0}
-                  value={chequeSize}
-                  onChange={(e) => { setChequeSize(e.target.value); setCatalogPage(0) }}
-                  placeholder="e.g. 2000000"
-                />
-                {hasActiveFilters && (
-                  <Button variant="ghost" size="sm" className="col-span-full justify-self-start" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
-                    Clear filters
-                  </Button>
-                )}
-              </div>
-            </SearchFilterBar>
-            {catalogQuery.isLoading ? (
-              <CardSkeletonGrid count={6} />
-            ) : catalogQuery.data && catalogQuery.data.content.length > 0 ? (
-              <>
-                <p className="mb-3 text-sm font-medium text-fg-muted">{catalogQuery.data.totalElements} investors</p>
-                <div className="flex flex-col gap-3">
-                  {catalogQuery.data.content.map((inv) => (
-                    <CatalogInvestorRow
-                      key={inv.id}
-                      investor={inv}
-                      myStartup={myStartup ? { sector: myStartup.sector, stage: myStartup.stage } : undefined}
-                      onRequestIntro={() => setIntroInvestor(inv)}
-                    />
-                  ))}
+          <div className="grid gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
+            <div className="min-w-0">
+              <SearchFilterBar query={query} onQueryChange={(v) => { setQuery(v); setCatalogPage(0) }} placeholder="Search investors by name, firm or thesis…">
+                <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  <Select label="Type" value={investorType} onChange={(e) => { setInvestorType(e.target.value); setCatalogPage(0) }}>
+                    <option value="">Any type</option>
+                    {INVESTOR_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </Select>
+                  <Select label="Sector" value={sector} onChange={(e) => { setSector(e.target.value); setCatalogPage(0) }}>
+                    <option value="">Any sector</option>
+                    {facetsQuery.data?.sectors.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
+                  <Select label="Stage" value={stage} onChange={(e) => { setStage(e.target.value); setCatalogPage(0) }}>
+                    <option value="">Any stage</option>
+                    {facetsQuery.data?.stages.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
+                  <Input label="Location" value={geography} onChange={(e) => { setGeography(e.target.value); setCatalogPage(0) }} placeholder="e.g. Bangalore" />
+                  <Input label="Country" value={country} onChange={(e) => { setCountry(e.target.value); setCatalogPage(0) }} placeholder="e.g. India" />
+                  <Input
+                    label="Cheque size (₹)"
+                    type="number"
+                    min={0}
+                    value={chequeSize}
+                    onChange={(e) => { setChequeSize(e.target.value); setCatalogPage(0) }}
+                    placeholder="e.g. 2000000"
+                  />
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" className="col-span-full justify-self-start" leftIcon={<X className="size-3.5" />} onClick={clearFilters}>
+                      Clear filters
+                    </Button>
+                  )}
                 </div>
-                <Pagination page={catalogQuery.data.page} totalPages={catalogQuery.data.totalPages} totalElements={catalogQuery.data.totalElements} onPageChange={setCatalogPage} />
-              </>
-            ) : hasActiveFilters || query ? (
-              <EmptyState
-                icon={<Landmark className="size-5" />}
-                title="No investors match your filters"
-                description="Try widening the sector, stage, location, country or cheque size — or clear filters to see everyone."
-                action={
-                  <Button variant="secondary" size="sm" onClick={() => { setQuery(''); clearFilters() }}>
-                    Clear all filters
-                  </Button>
-                }
+              </SearchFilterBar>
+
+              <PillTabs
+                label="Quick filter by investor type"
+                value={investorType}
+                onChange={(k) => { setInvestorType(k); setCatalogPage(0) }}
+                scrollable
+                className="mb-5"
+                items={[{ key: '', label: 'All' }, ...INVESTOR_TYPES.map((t) => ({ key: t, label: t }))]}
               />
-            ) : (
-              <EmptyState
-                icon={<Landmark className="size-5" />}
-                title="No investors on BuildAdda yet"
-                description="Our team is building out the investor database. Check back soon."
-              />
-            )}
-          </>
+
+              {catalogQuery.isLoading ? (
+                <CardSkeletonGrid count={6} />
+              ) : catalogQuery.data && catalogQuery.data.content.length > 0 ? (
+                <>
+                  {recommended.length > 0 && (
+                    <div className="mb-6">
+                      <div className="mb-3 flex items-center justify-between">
+                        <h2 className="text-base font-semibold text-fg">Recommended for you</h2>
+                        <p className="text-xs text-fg-muted">Based on your startup's sector and stage</p>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        {recommended.map(({ investor, score }) => (
+                          <InvestorMatchCard key={investor.id} investor={investor} matchScore={score} onRequestIntro={() => setIntroInvestor(investor)} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="mb-3 text-sm font-medium text-fg-muted">{catalogQuery.data.totalElements} investors</p>
+                  <div className="flex flex-col gap-3">
+                    {catalogQuery.data.content.map((inv) => (
+                      <CatalogInvestorRow
+                        key={inv.id}
+                        investor={inv}
+                        myStartup={myStartup ? { sector: myStartup.sector, stage: myStartup.stage, location: myStartup.location } : undefined}
+                        onRequestIntro={() => setIntroInvestor(inv)}
+                      />
+                    ))}
+                  </div>
+                  <Pagination page={catalogQuery.data.page} totalPages={catalogQuery.data.totalPages} totalElements={catalogQuery.data.totalElements} onPageChange={setCatalogPage} />
+                </>
+              ) : hasActiveFilters || query ? (
+                <EmptyState
+                  icon={<Landmark className="size-5" />}
+                  title="No investors match your filters"
+                  description="Try widening the sector, stage, location, country or cheque size — or clear filters to see everyone."
+                  action={
+                    <Button variant="secondary" size="sm" onClick={() => { setQuery(''); clearFilters() }}>
+                      Clear all filters
+                    </Button>
+                  }
+                />
+              ) : (
+                <EmptyState
+                  icon={<Landmark className="size-5" />}
+                  title="No investors on BuildAdda yet"
+                  description="Our team is building out the investor database. Check back soon."
+                />
+              )}
+            </div>
+
+            <aside className="lg:order-last">
+              <InvestorSidebar myStartup={myStartup} onFindMyInvestors={findMyInvestors} />
+            </aside>
+          </div>
         )
       )}
 
