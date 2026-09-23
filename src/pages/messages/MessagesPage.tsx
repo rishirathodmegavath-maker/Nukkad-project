@@ -1575,7 +1575,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
             You can't reply to this conversation
           </div>
         ) : (
-          <div className="border-t border-border/70 bg-surface">
+          <div className="relative z-50 border-t border-border/70 bg-surface">
             {editingMessage ? (
               <ComposerEditingBanner onCancel={cancelEdit} />
             ) : (
@@ -1652,6 +1652,16 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                         <button
                           type="button"
                           onClick={() => {
+                            cameraInputRef.current?.click()
+                            setAttachMenuOpen(false)
+                          }}
+                          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg cursor-pointer"
+                        >
+                          <Camera className="size-4 text-fg-brand" /> Camera
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
                             photoInputRef.current?.click()
                             setAttachMenuOpen(false)
                           }}
@@ -1683,15 +1693,6 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                     </>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  aria-label="Take a photo"
-                  disabled={!!editingMessage}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  <Camera className="size-4.5" />
-                </button>
                 <input ref={photoInputRef} type="file" accept="image/*" hidden onChange={pickAttachment} />
                 <input ref={videoInputRef} type="file" accept="video/*" hidden onChange={pickAttachment} />
                 <input ref={fileInputRef} type="file" accept={FILE_ACCEPT} hidden onChange={pickAttachment} />
