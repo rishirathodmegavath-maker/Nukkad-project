@@ -1454,7 +1454,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
 
   return (
     <div className="flex h-full flex-1 min-w-0">
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
         <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-border/70 bg-surface">
           {selectMode ? (
             <>
@@ -1841,7 +1841,11 @@ export default function MessagesPage() {
     // the box ends 0.5rem above that nav (10rem = 4 + 1.5 + 4 + 0.5), and -mb-10 hands back the 2.5rem
     // of reserved space that would otherwise push the page 2.5rem past the viewport. From lg up there
     // is no bottom nav and the shell uses 2rem of padding top and bottom (8rem).
-    <div className="h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+    // `svh` (not `dvh`) below lg: `dvh` tracks the mobile browser chrome in real time, so it — and
+    // this frame's height with it — visibly shrinks/grows as the address bar collapses mid-scroll.
+    // `svh` is fixed to the smallest-chrome-shown viewport and never moves once painted. Desktop has
+    // no collapsing chrome, so `dvh` there is already stable and is left as-is.
+    <div className="h-[calc(100svh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
       {/* Left conversation list */}
       <div
         className={cn(
