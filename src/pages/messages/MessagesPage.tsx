@@ -256,11 +256,16 @@ function groupMessages(messages: Message[]): MessageGroup[] {
 
 function ToggleSwitch({ on }: { on: boolean }) {
   return (
-    <span className={cn('relative h-5 w-9 shrink-0 rounded-full transition-colors', on ? 'bg-brand-500' : 'bg-surface-sunken border border-border')}>
+    <span
+      className={cn(
+        'relative h-5 w-9 shrink-0 rounded-full border transition-colors',
+        on ? 'bg-brand-500 border-transparent' : 'bg-surface-sunken border-border',
+      )}
+    >
       <span
         className={cn(
-          'absolute top-0.5 size-4 rounded-full bg-white transition-transform',
-          on ? 'translate-x-4' : 'translate-x-0.5',
+          'absolute left-px top-px size-4 rounded-full bg-white transition-transform',
+          on ? 'translate-x-4' : 'translate-x-0',
         )}
       />
     </span>
