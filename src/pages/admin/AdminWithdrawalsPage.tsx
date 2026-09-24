@@ -17,6 +17,37 @@ import { formatMoney, formatRelativeTime } from '@/lib/utils'
 
 const statusTone = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger', CANCELLED: 'neutral' } as const
 
+function ApproveModal({
+  request,
+  onClose,
+  isPending,
+  onConfirm,
+}: {
+  request: AdminWithdrawal
+  onClose: () => void
+  isPending: boolean
+  onConfirm: () => void
+}) {
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Approve withdrawal of ${formatMoney(request.amountMinorUnits, request.currency)}?`}
+      description="This only marks the request approved in Nukkad's internal ledger — no payment provider is integrated, so no money moves automatically. The funds were already held from the user's balance when they requested it; you still need to send the actual payout (bank transfer, UPI, etc.) to them manually, outside the app."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button isLoading={isPending} onClick={onConfirm}>
+            Approve
+          </Button>
+        </>
+      }
+    >
+      <p className="text-sm text-fg-secondary">User: {request.userName ?? 'Unknown'} ({request.userEmail})</p>
+    </Modal>
+  )
+}
+
 function RejectModal({
   request,
   onClose,
@@ -66,6 +97,7 @@ export default function AdminWithdrawalsPage() {
   const [status, setStatus] = useState(searchParams.get('status') ?? 'PENDING')
   const [page, setPage] = useState(Number(searchParams.get('page') ?? 0))
   const [rejecting, setRejecting] = useState<AdminWithdrawal | null>(null)
+  const [approving, setApproving] = useState<AdminWithdrawal | null>(null)
   const queryClient = useQueryClient()
   const filters = useMemo(
     () => ({ status: (status === 'all' ? undefined : status) as WithdrawalStatus | undefined, page, size: 20 }),
@@ -90,7 +122,8 @@ export default function AdminWithdrawalsPage() {
     mutationFn: (id: string) => approveWithdrawal(id),
     onSuccess: () => {
       invalidate()
-      toast.success('Withdrawal approved')
+      toast.success('Withdrawal approved — remember to send the payout manually, outside the app')
+      setApproving(null)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not approve this withdrawal'),
   })
@@ -154,7 +187,7 @@ export default function AdminWithdrawalsPage() {
                       <td className="px-4 py-3 text-right">
                         {w.status === 'PENDING' && (
                           <div className="flex items-center justify-end gap-3">
-                            <Button size="sm" isLoading={approveMutation.isPending} onClick={() => approveMutation.mutate(w.id)}>
+                            <Button size="sm" onClick={() => setApproving(w)}>
                               Approve
                             </Button>
                             <Button size="sm" variant="danger-subtle" onClick={() => setRejecting(w)}>
@@ -174,6 +207,15 @@ export default function AdminWithdrawalsPage() {
           </Card>
           <Pagination page={data.page} totalPages={data.totalPages} totalElements={data.totalElements} onPageChange={setPage} />
         </>
+      )}
+
+      {approving && (
+        <ApproveModal
+          request={approving}
+          onClose={() => setApproving(null)}
+          isPending={approveMutation.isPending}
+          onConfirm={() => approveMutation.mutate(approving.id)}
+        />
       )}
 
       {rejecting && (
