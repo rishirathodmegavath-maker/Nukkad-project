@@ -560,32 +560,35 @@ function BlockedUsersSection() {
     },
   })
 
-  if (isLoading) return <Skeleton className="h-24 w-full rounded-xl" />
-  if (!blockedUsers || blockedUsers.length === 0) return null
-
   return (
     <Card>
       <h2 className="font-semibold text-fg mb-1">Blocked accounts</h2>
       <p className="text-sm text-fg-muted mb-3">People you've blocked can't message you or find your profile.</p>
-      <div className="flex flex-col divide-y divide-border-subtle">
-        {blockedUsers.map((user) => (
-          <div key={user.id} className="flex items-center justify-between gap-3 py-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-              <span className="text-sm font-medium text-fg truncate">{user.name}</span>
+      {isLoading ? (
+        <Skeleton className="h-16 w-full rounded-xl" />
+      ) : !blockedUsers || blockedUsers.length === 0 ? (
+        <p className="text-sm text-fg-muted">You haven't blocked anyone.</p>
+      ) : (
+        <div className="flex flex-col divide-y divide-border-subtle">
+          {blockedUsers.map((user) => (
+            <div key={user.id} className="flex items-center justify-between gap-3 py-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+                <span className="text-sm font-medium text-fg truncate">{user.name}</span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                leftIcon={<UserX className="size-3.5" />}
+                isLoading={unblockMutation.isPending && unblockMutation.variables === user.id}
+                onClick={() => unblockMutation.mutate(user.id)}
+              >
+                Unblock
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="secondary"
-              leftIcon={<UserX className="size-3.5" />}
-              isLoading={unblockMutation.isPending && unblockMutation.variables === user.id}
-              onClick={() => unblockMutation.mutate(user.id)}
-            >
-              Unblock
-            </Button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </Card>
   )
 }
@@ -602,31 +605,34 @@ function MutedAccountsSection() {
     },
   })
 
-  if (isLoading) return <Skeleton className="h-24 w-full rounded-xl" />
-  if (!mutedUsers || mutedUsers.length === 0) return null
-
   return (
     <Card>
       <h2 className="font-semibold text-fg mb-1">Muted accounts</h2>
       <p className="text-sm text-fg-muted mb-3">You won't get notifications about their activity. You're still connected.</p>
-      <div className="flex flex-col divide-y divide-border-subtle">
-        {mutedUsers.map((user) => (
-          <div key={user.id} className="flex items-center justify-between gap-3 py-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-              <span className="text-sm font-medium text-fg truncate">{user.name}</span>
+      {isLoading ? (
+        <Skeleton className="h-16 w-full rounded-xl" />
+      ) : !mutedUsers || mutedUsers.length === 0 ? (
+        <p className="text-sm text-fg-muted">You haven't muted anyone.</p>
+      ) : (
+        <div className="flex flex-col divide-y divide-border-subtle">
+          {mutedUsers.map((user) => (
+            <div key={user.id} className="flex items-center justify-between gap-3 py-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+                <span className="text-sm font-medium text-fg truncate">{user.name}</span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                isLoading={unmuteMutation.isPending && unmuteMutation.variables === user.id}
+                onClick={() => unmuteMutation.mutate(user.id)}
+              >
+                Unmute
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="secondary"
-              isLoading={unmuteMutation.isPending && unmuteMutation.variables === user.id}
-              onClick={() => unmuteMutation.mutate(user.id)}
-            >
-              Unmute
-            </Button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </Card>
   )
 }
