@@ -53,6 +53,50 @@ import * as feedService from '@/services/feed.service'
 
 const CONTENT_CLAMP_CHARS = 280
 
+/**
+ * Applies `mapPost` to every post in a feed-shaped cache entry, regardless of which shape that
+ * entry happens to be: a plain flat array (Home's teaser, tag/type-filtered Feed browsing) or a
+ * `useInfiniteQuery` `{pages}` entry (the personalized feed's infinite scroll). Without this, a
+ * cache patch keyed on the bare `['feed']` prefix silently no-ops against the `{pages}` shape —
+ * `Array.isArray` is false for it — so a like/hide would stop updating instantly the moment a
+ * personalized-feed page is open. `mapPost` returning `null` removes that post (used by hiding);
+ * returning the post unchanged for anything that isn't the one being acted on is the caller's job,
+ * same as the existing `flip`/`reconcile` helpers below already do.
+ *
+ * `moveToEndId`, when given, moves that post to the end of a FLAT-ARRAY entry only — Home's
+ * one-shot teaser can reshuffle in place like this; the personalized feed's `{pages}` entry never
+ * does (moving a post across `useInfiniteQuery` page boundaries mid-scroll is a real source of
+ * visual glitches), so it's silently ignored for that shape. The signal update (affinity bump)
+ * that actually deprioritizes this post in future rankings happens server-side either way.
+ */
+function mapFeedCache(data: unknown, mapPost: (post: Post) => Post | null, moveToEndId?: string): unknown {
+  if (Array.isArray(data)) {
+    const mapped = (data as Post[]).flatMap((p) => {
+      const m = mapPost(p)
+      return m ? [m] : []
+    })
+    if (moveToEndId) {
+      const idx = mapped.findIndex((p) => p.id === moveToEndId)
+      if (idx >= 0 && idx < mapped.length - 1) mapped.push(...mapped.splice(idx, 1))
+    }
+    return mapped
+  }
+  if (data && typeof data === 'object' && Array.isArray((data as { pages?: unknown }).pages)) {
+    const paged = data as { pages: { content: Post[]; hasMore: boolean }[] }
+    return {
+      ...paged,
+      pages: paged.pages.map((page) => ({
+        ...page,
+        content: page.content.flatMap((p) => {
+          const mapped = mapPost(p)
+          return mapped ? [mapped] : []
+        }),
+      })),
+    }
+  }
+  return data
+}
+
 /** A tap on a feed video opens this instead of the browser's native fullscreen — defaults to a
  *  portrait frame regardless of the source video's own aspect ratio (letterboxed via
  *  object-contain), with a toggle to switch to a landscape frame. No native controls anywhere
@@ -514,17 +558,30 @@ export function PostCard({ post }: { post: Post }) {
       const flip = (p: Post): Post =>
         p.id === post.id ? { ...p, isLiked: !wasLiked, likesCount: p.likesCount + (wasLiked ? -1 : 1) } : p
 
-      // Every feed listing — Home (['feed','home']), the Feed page per filter/tag
-      // (['feed', kindFilter, tag]), a profile's own posts (['feed', {authorId}]) — is cached under
+      // Every feed listing — Home (['feed','personalized','home',size]), the Feed page per filter/
+      // tag (['feed', kindFilter, tag]), a profile's own posts (['feed', {authorId}]), the
+      // personalized feed's infinite-scroll pages (['feed','personalized',size]) — is cached under
       // its own compound key, never the bare ['feed'] this used to look for with an exact-match
       // getQueryData/setQueryData. That always missed, so the heart/count never visibly moved on
       // click even though the request itself succeeded — only a later refetch (e.g. a full page
       // reload) would show it. exact: false catches every one of them, the same way `prevSaved`
-      // below already does for ['savedPosts']; Array.isArray guards against the other cache entries
-      // that also live under the 'feed' prefix (comment lists, trending topics, a single post detail).
-      const prevFeeds = queryClient.getQueriesData<Post[]>({ queryKey: ['feed'], exact: false })
-      queryClient.setQueriesData<Post[]>({ queryKey: ['feed'], exact: false }, (data) =>
-        Array.isArray(data) ? data.map(flip) : data,
+      // below already does for ['savedPosts']; mapFeedCache handles both the flat-array shape and
+      // the personalized feed's {pages} shape in one pass.
+      //
+      // Home's teaser is the one exception: a fresh like (not an unlike) also moves the post to
+      // the end of its flat array, matching the product spec's "liked post moves down the
+      // immediate stack" — Feed's {pages} entries never reshuffle (see mapFeedCache's moveToEndId
+      // doc). Two disjoint predicates, not one broad call plus a second pass, so Home's entry is
+      // never flip()'d twice.
+      const isHomeFeedKey = (key: readonly unknown[]) => key[0] === 'feed' && key[1] === 'personalized' && key[2] === 'home'
+      const prevFeeds = queryClient.getQueriesData<unknown>({ queryKey: ['feed'], exact: false })
+      queryClient.setQueriesData<unknown>(
+        { queryKey: ['feed'], exact: false, predicate: (query) => !isHomeFeedKey(query.queryKey) },
+        (data: unknown) => mapFeedCache(data, flip),
+      )
+      queryClient.setQueriesData<unknown>(
+        { queryKey: ['feed'], exact: false, predicate: (query) => isHomeFeedKey(query.queryKey) },
+        (data: unknown) => mapFeedCache(data, flip, !wasLiked ? post.id : undefined),
       )
 
       const prevDetail = queryClient.getQueryData<Post>(['feed', post.id, 'detail'])
@@ -539,9 +596,7 @@ export function PostCard({ post }: { post: Post }) {
     },
     onSuccess: (updated) => {
       const reconcile = (p: Post) => (p.id === updated.id ? updated : p)
-      queryClient.setQueriesData<Post[]>({ queryKey: ['feed'], exact: false }, (data) =>
-        Array.isArray(data) ? data.map(reconcile) : data,
-      )
+      queryClient.setQueriesData<unknown>({ queryKey: ['feed'], exact: false }, (data: unknown) => mapFeedCache(data, reconcile))
       queryClient.setQueryData<Post>(['feed', updated.id, 'detail'], (prev) => (prev ? updated : prev))
       queryClient.setQueriesData<Page<Post>>({ queryKey: ['savedPosts'], exact: false }, (prev) =>
         prev ? { ...prev, content: prev.content.map(reconcile) } : prev,
@@ -561,6 +616,24 @@ export function PostCard({ post }: { post: Post }) {
       queryClient.invalidateQueries({ queryKey: ['savedPosts'] })
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
+  })
+  // Optimistic removal (not a flip): once hidden, this post shouldn't still be sitting in the
+  // feed the viewer is looking at right now, not just excluded from the next fetch.
+  const hideMutation = useMutation({
+    mutationFn: () => feedService.toggleHidePost(post.id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['feed'] })
+      const prevFeeds = queryClient.getQueriesData<unknown>({ queryKey: ['feed'], exact: false })
+      queryClient.setQueriesData<unknown>({ queryKey: ['feed'], exact: false }, (data: unknown) =>
+        mapFeedCache(data, (p) => (p.id === post.id ? null : p)),
+      )
+      toast.info("Post hidden — you won't see this again in your feed")
+      return { prevFeeds }
+    },
+    onError: (err, _vars, context) => {
+      context?.prevFeeds?.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      toast.error(err instanceof Error ? err.message : 'Could not hide this post')
+    },
   })
   const deleteMutation = useMutation({
     mutationFn: () => feedService.deletePost(post.id),
@@ -693,6 +766,9 @@ export function PostCard({ post }: { post: Post }) {
                   About this account
                 </DropdownItem>
               )}
+              <DropdownItem icon={<EyeOff className="size-4" />} onClick={() => hideMutation.mutate()}>
+                Hide this post
+              </DropdownItem>
               <DropdownDivider />
               <DropdownItem danger icon={<Flag className="size-4" />} onClick={() => setReportOpen(true)}>
                 Report post

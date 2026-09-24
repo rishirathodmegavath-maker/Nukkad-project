@@ -21,7 +21,7 @@ import { listStartups } from '@/services/startups.service'
 import { listOpportunities, listRecommendedOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { getChapter } from '@/services/chapters.service'
-import { listFeed } from '@/services/feed.service'
+import { listPersonalizedFeed } from '@/services/feed.service'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { HomeEventRow } from '@/components/domain/HomeEventRow'
@@ -144,7 +144,13 @@ export default function HomePage() {
     enabled: !recommendedOppsQuery.data || recommendedOppsQuery.data.length === 0,
   })
   const eventsQuery = useQuery({ queryKey: ['events', 'upcoming'], queryFn: () => listEvents({ upcoming: true }) })
-  const feedQuery = useQuery({ queryKey: ['feed', 'home'], queryFn: () => listFeed(undefined, 5) })
+  // The same canonical personalized-feed engine the dedicated Feed page's main tab uses — Home
+  // just requests a smaller one-shot batch for its teaser, with "Explore all posts" linking to
+  // the full infinite-scroll experience.
+  const feedQuery = useQuery({
+    queryKey: ['feed', 'personalized', 'home', 5],
+    queryFn: async () => (await listPersonalizedFeed(5)).content,
+  })
   const chapterQuery = useQuery({
     queryKey: ['chapter', currentUser?.chapterId],
     queryFn: () => getChapter(currentUser!.chapterId!),

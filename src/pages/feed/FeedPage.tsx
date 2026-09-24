@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Video, Bookmark, Sparkles, Plus, FileText, Hash, X } from 'lucide-react'
 import { listFeed, listSavedPosts } from '@/services/feed.service'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { useInfinitePersonalizedFeed } from '@/hooks/useInfinitePersonalizedFeed'
 import { PostCard } from '@/components/domain/PostCard'
 import { CreatePostModal } from '@/components/domain/CreatePostModal'
 import { typeMeta, memberPostKinds } from '@/lib/postTypeMeta'
@@ -14,6 +15,7 @@ import { Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
+import { InfiniteScrollSentinel } from '@/components/ui/InfiniteScrollSentinel'
 import { cn } from '@/lib/utils'
 import type { Post, PostType, SavedPostsSort } from '@/types'
 
@@ -21,6 +23,8 @@ const FEED_TABS = [
   { key: 'all', label: 'Feed' },
   { key: 'saved', label: 'Saved' },
 ]
+
+const PERSONALIZED_PAGE_SIZE = 10
 
 /** Shared by both composer prompts below — only the content inside the button differs. */
 const COMPOSER_BUTTON =
@@ -235,11 +239,23 @@ export default function FeedPage({ fixedKind }: { fixedKind?: PostType } = {}) {
   const kindFilter = fixedKind ?? pickedKind
   const fixedMeta = fixedKind ? memberPostKinds.find((k) => k.key === fixedKind) : undefined
 
-  const { data: posts, isLoading, isError, refetch } = useQuery({
+  // The untagged, unfiltered main tab is the canonical personalized feed — the same ranking
+  // engine Home uses, with real infinite scroll. An explicit kind filter or a clicked hashtag is
+  // a deliberate browse action, not a request for personalized discovery, so it keeps the plain
+  // chronological listing unchanged.
+  const usePersonalized = tab === 'all' && kindFilter === 'all' && !tag
+
+  const chronologicalQuery = useQuery({
     queryKey: ['feed', kindFilter, tag],
     queryFn: () => listFeed(undefined, undefined, kindFilter === 'all' ? undefined : (kindFilter as PostType), tag || undefined),
-    enabled: tab === 'all',
+    enabled: tab === 'all' && !usePersonalized,
   })
+  const personalizedQuery = useInfinitePersonalizedFeed(PERSONALIZED_PAGE_SIZE, usePersonalized)
+
+  const posts = usePersonalized ? personalizedQuery.data?.pages.flatMap((page) => page.content) : chronologicalQuery.data
+  const isLoading = usePersonalized ? personalizedQuery.isLoading : chronologicalQuery.isLoading
+  const isError = usePersonalized ? personalizedQuery.isError : chronologicalQuery.isError
+  const refetch = usePersonalized ? personalizedQuery.refetch : chronologicalQuery.refetch
 
   return (
     <div className="max-w-[620px] mx-auto flex flex-col gap-6">
@@ -326,6 +342,15 @@ export default function FeedPage({ fixedKind }: { fixedKind?: PostType } = {}) {
           {posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
+          {usePersonalized && (
+            <>
+              {personalizedQuery.isFetchingNextPage && <CardSkeletonGrid count={1} />}
+              <InfiniteScrollSentinel
+                enabled={!!personalizedQuery.hasNextPage && !personalizedQuery.isFetchingNextPage}
+                onIntersect={() => personalizedQuery.fetchNextPage()}
+              />
+            </>
+          )}
         </div>
       ) : tag ? (
         <EmptyState
