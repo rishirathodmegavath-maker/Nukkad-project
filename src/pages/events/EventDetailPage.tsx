@@ -74,7 +74,6 @@ export default function EventDetailPage() {
     mutationFn: () => rsvpToEvent(id!),
     onSuccess: () => {
       invalidateEvent()
-      toast.success("You're registered for this event!")
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not register'),
   })
@@ -83,7 +82,6 @@ export default function EventDetailPage() {
     mutationFn: () => cancelEventRsvp(id!),
     onSuccess: () => {
       invalidateEvent()
-      toast.info('Registration cancelled')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not cancel registration'),
   })
@@ -95,7 +93,6 @@ export default function EventDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['events'] })
       queryClient.invalidateQueries({ queryKey: ['startup', startup.id, 'events'] })
       setStartupToRemove(null)
-      toast.info(`${startup.name} was taken off this event`)
     },
     onError: (err) => {
       setStartupToRemove(null)

@@ -29,7 +29,6 @@ export function FundraiseEditModal({ open, onClose, fundraise }: { open: boolean
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fundraise', fundraise.id] })
       queryClient.invalidateQueries({ queryKey: ['fundraise', 'by-startup', fundraise.startupId] })
-      toast.success('Fundraise updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update this fundraise'),

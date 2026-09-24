@@ -36,7 +36,6 @@ export function AddChapterMemberModal({ chapterId, chapterName, existingMemberId
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'chapter', chapterId] })
       queryClient.invalidateQueries({ queryKey: ['chapter', chapterId] })
-      toast.success('Added to the chapter')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not add member'),
   })

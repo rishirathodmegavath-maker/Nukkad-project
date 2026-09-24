@@ -88,10 +88,9 @@ export default function ResourceDetailPage() {
 
   const saveMutation = useMutation({
     mutationFn: () => toggleSaveResource(id!),
-    onSuccess: (result) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resource', id] })
       queryClient.invalidateQueries({ queryKey: ['resources'] })
-      toast.success(result.saved ? 'Saved' : 'Removed from saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
   })

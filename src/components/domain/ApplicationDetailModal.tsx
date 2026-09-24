@@ -53,7 +53,6 @@ export function ApplicationDetailModal({ application, onClose }: ApplicationDeta
     mutationFn: () => opportunitiesService.rejectApplication(application!.id),
     onSuccess: () => {
       invalidate()
-      toast.info('Application rejected')
       onClose()
     },
   })

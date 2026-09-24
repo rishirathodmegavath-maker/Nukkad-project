@@ -19,7 +19,6 @@ export function ChapterEditModal({ open, onClose, chapter }: { open: boolean; on
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter', chapter.id] })
       queryClient.invalidateQueries({ queryKey: ['chapters'] })
-      toast.success('Chapter updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update chapter'),

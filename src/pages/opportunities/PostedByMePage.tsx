@@ -23,7 +23,6 @@ export default function PostedByMePage() {
     mutationFn: (id: string) => closeOpportunity(id),
     onSuccess: () => {
       invalidate()
-      toast.success('Opportunity closed — it no longer accepts new applications')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not close this opportunity'),
   })
@@ -32,7 +31,6 @@ export default function PostedByMePage() {
     mutationFn: (id: string) => reopenOpportunity(id),
     onSuccess: () => {
       invalidate()
-      toast.success('Opportunity reopened')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not reopen this opportunity'),
   })

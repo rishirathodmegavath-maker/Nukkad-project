@@ -175,7 +175,6 @@ export default function DiscussionDetailPage() {
     mutationFn: () => feedToggleSave(id!),
     onSuccess: (updatedPost) => {
       queryClient.setQueryData<Discussion>(['discussions', id], (prev) => (prev ? { ...prev, isSaved: updatedPost.isSaved ?? false } : prev))
-      toast.success(updatedPost.isSaved ? 'Saved' : 'Removed from saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
   })

@@ -31,7 +31,6 @@ export default function MyApplicationsPage() {
     mutationFn: (opportunityId: string) => withdrawApplication(opportunityId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities', 'mine', 'applications'] })
-      toast.info('Application withdrawn')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not withdraw'),
   })

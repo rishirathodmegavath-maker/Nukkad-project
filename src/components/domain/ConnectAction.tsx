@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { MessageAction } from '@/components/domain/MessageAction'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import * as usersService from '@/services/users.service'
-import { toast } from '@/store/toast.store'
 
 interface ConnectActionProps {
   user: { id: string; name: string; connectionStatus?: ConnectionStatus }
@@ -36,12 +35,6 @@ export function ConnectAction({ user, size = 'sm' }: ConnectActionProps) {
     onSuccess: (updated) => {
       setStatus(updated.connectionStatus)
       invalidate()
-      const messages: Record<string, string> = {
-        PENDING_OUTGOING: `Connection request sent to ${user.name}`,
-        CONNECTED: `You're now connected with ${user.name}`,
-        NONE: 'Removed connection',
-      }
-      toast.success(messages[updated.connectionStatus ?? 'NONE'])
     },
   })
 
@@ -50,7 +43,6 @@ export function ConnectAction({ user, size = 'sm' }: ConnectActionProps) {
     onSuccess: (updated) => {
       setStatus(updated.connectionStatus)
       invalidate()
-      toast.info(`Declined ${user.name}'s request`)
     },
   })
 

@@ -35,7 +35,6 @@ export function ApplicationCard({ application, onView }: ApplicationCardProps) {
     mutationFn: () => opportunitiesService.shortlistApplication(application.id),
     onSuccess: () => {
       invalidate()
-      toast.success(`${application.applicant.name} shortlisted`)
     },
   })
 
@@ -51,7 +50,6 @@ export function ApplicationCard({ application, onView }: ApplicationCardProps) {
     mutationFn: () => opportunitiesService.rejectApplication(application.id),
     onSuccess: () => {
       invalidate()
-      toast.info(`${application.applicant.name}'s application rejected`)
     },
   })
 

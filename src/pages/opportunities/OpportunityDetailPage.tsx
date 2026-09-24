@@ -90,7 +90,6 @@ export default function OpportunityDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', id] })
       queryClient.invalidateQueries({ queryKey: ['opportunities'] })
-      toast.info('Application withdrawn')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not withdraw application'),
   })
@@ -104,7 +103,6 @@ export default function OpportunityDetailPage() {
     mutationFn: () => closeOpportunity(id!),
     onSuccess: (updated) => {
       queryClient.setQueryData(['opportunity', id], updated)
-      toast.success('Opportunity closed — it no longer accepts new applications')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not close this opportunity'),
   })
@@ -113,7 +111,6 @@ export default function OpportunityDetailPage() {
     mutationFn: () => reopenOpportunity(id!),
     onSuccess: (updated) => {
       queryClient.setQueryData(['opportunity', id], updated)
-      toast.success('Opportunity reopened')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not reopen this opportunity'),
   })
