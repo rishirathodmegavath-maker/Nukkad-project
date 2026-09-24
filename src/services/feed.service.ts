@@ -27,6 +27,7 @@ export interface PostDto {
   removalReason: string | null
   visibility: string
   linkUrl: string | null
+  postedAsPlatform: boolean
 }
 
 /** Ref to an already-uploaded, not-yet-attached file — same shape the upload endpoint returns and create-post expects. */
@@ -61,6 +62,7 @@ export function mapPost(dto: PostDto): Post {
     // Older responses (and a backend that has not been updated yet) have no visibility: those posts are public.
     visibility: dto.visibility === 'CONNECTIONS' ? 'CONNECTIONS' : 'PUBLIC',
     linkUrl: dto.linkUrl ?? undefined,
+    postedAsPlatform: dto.postedAsPlatform,
   }
 }
 
