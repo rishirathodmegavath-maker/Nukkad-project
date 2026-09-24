@@ -688,9 +688,11 @@ export function PostCard({ post }: { post: Post }) {
               <DropdownItem icon={<ExternalLink className="size-4" />} onClick={() => navigate(`/feed/${post.id}`)}>
                 Go to post
               </DropdownItem>
-              <DropdownItem icon={<Info className="size-4" />} onClick={() => navigate(`/people/${post.authorId}`)}>
-                About this account
-              </DropdownItem>
+              {!post.postedAsPlatform && (
+                <DropdownItem icon={<Info className="size-4" />} onClick={() => navigate(`/people/${post.authorId}`)}>
+                  About this account
+                </DropdownItem>
+              )}
               <DropdownDivider />
               <DropdownItem danger icon={<Flag className="size-4" />} onClick={() => setReportOpen(true)}>
                 Report post
