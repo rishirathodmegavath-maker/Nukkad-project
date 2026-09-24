@@ -486,7 +486,9 @@ const ACTION_BUTTON =
   'flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-medium text-fg-secondary transition-colors hover:bg-surface-hover hover:text-fg cursor-pointer'
 
 export function PostCard({ post }: { post: Post }) {
-  const { data: author } = useUser(post.authorId)
+  // A platform post's authorId is a confidential admin account (getUser 404s it for anyone else),
+  // so there's nothing to fetch for it — and nothing to wait on before showing "BuildAdda" below.
+  const { data: author } = useUser(post.postedAsPlatform ? undefined : post.authorId)
   const { data: currentUser } = useCurrentUser()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -599,26 +601,22 @@ export function PostCard({ post }: { post: Post }) {
   return (
     <Card padding="none" className="overflow-hidden border border-border/80 shadow-xs rounded-xl bg-surface">
       <div className="flex items-start gap-3 px-4 sm:px-5 py-3.5">
-        {author ? (
-          post.postedAsPlatform ? (
-            <Avatar src={buildAddaLogoUrl} name="BuildAdda" size="md" />
-          ) : (
-            <Avatar src={author.avatarUrl} name={author.name} size="md" />
-          )
+        {post.postedAsPlatform ? (
+          <Avatar src={buildAddaLogoUrl} name="BuildAdda" size="md" />
+        ) : author ? (
+          <Avatar src={author.avatarUrl} name={author.name} size="md" />
         ) : (
           <Skeleton className="size-10 rounded-full" />
         )}
         <div className="min-w-0 flex-1">
-          {author ? (
+          {post.postedAsPlatform ? (
+            <span className="text-sm font-bold text-fg">BuildAdda</span>
+          ) : author ? (
             <>
-              {post.postedAsPlatform ? (
-                <span className="text-sm font-bold text-fg">BuildAdda</span>
-              ) : (
-                <Link to={`/people/${author.id}`} className="text-sm font-bold text-fg hover:underline">
-                  {author.name}
-                </Link>
-              )}
-              {!post.postedAsPlatform && author.headline && <p className="text-xs text-fg-muted truncate">{author.headline}</p>}
+              <Link to={`/people/${author.id}`} className="text-sm font-bold text-fg hover:underline">
+                {author.name}
+              </Link>
+              {author.headline && <p className="text-xs text-fg-muted truncate">{author.headline}</p>}
             </>
           ) : (
             <Skeleton className="h-4 w-28" />
