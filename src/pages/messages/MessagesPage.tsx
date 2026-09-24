@@ -81,7 +81,9 @@ function GroupAvatar({ conversation, size = 'md' }: { conversation: Conversation
 
 function SharedPostPreview({ message, conversationId }: { message: Message; conversationId: string }) {
   const post = message.sharedPost
-  const { data: author } = useUser(post?.authorId)
+  // A platform post's authorId is a confidential admin account (getUser 404s it for anyone else) —
+  // nothing to fetch for it, and the render below never needs author for that case.
+  const { data: author } = useUser(post?.postedAsPlatform ? undefined : post?.authorId)
   const image = post?.attachments.find((a) => a.kind === 'image')
   const video = !image ? post?.attachments.find((a) => a.kind === 'video') : undefined
 
