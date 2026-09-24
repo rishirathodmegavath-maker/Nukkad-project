@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ShieldCheck, ShieldOff, Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Lock, LockOpen } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, ShieldOff, ArrowDownLeft, ArrowUpRight, Lock, LockOpen, Plus, Minus } from 'lucide-react'
 import { getAdminUser, updateUserRole, updateUserStatus } from '@/services/admin.service'
 import { adjustWalletBalance, getAdminWallet, listAdminWalletTransactions, setWalletStatus } from '@/services/wallet.service'
 import type { AccountStatus } from '@/types/admin'
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
-import { Input, Select, Textarea } from '@/components/ui/Input'
+import { Input, Textarea } from '@/components/ui/Input'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
 import { toast } from '@/store/toast.store'
@@ -132,18 +132,21 @@ function WalletStatusModal({
   )
 }
 
+/** Fixed to whichever of "+ Add Money" / "− Deduct Money" the admin clicked — direction is no
+ *  longer a dropdown the admin could get wrong, it's baked into which button opened this. */
 function AdjustWalletModal({
   open,
   onClose,
+  direction,
   onConfirm,
   isPending,
 }: {
   open: boolean
   onClose: () => void
+  direction: 'CREDIT' | 'DEBIT'
   onConfirm: (direction: 'CREDIT' | 'DEBIT', amountMinorUnits: number, reason: string, idempotencyKey: string) => void
   isPending: boolean
 }) {
-  const [direction, setDirection] = useState<'CREDIT' | 'DEBIT'>('CREDIT')
   const [amount, setAmount] = useState('')
   const [reason, setReason] = useState('')
   // One key per open modal, not per click: a double-click before the button disables reuses this
@@ -155,9 +158,9 @@ function AdjustWalletModal({
 
   const amountMinorUnits = Math.round(Number(amount) * 100)
   const canSubmit = amount.trim() !== '' && amountMinorUnits > 0 && reason.trim().length > 0
+  const isCredit = direction === 'CREDIT'
 
   function handleClose() {
-    setDirection('CREDIT')
     setAmount('')
     setReason('')
     onClose()
@@ -167,27 +170,23 @@ function AdjustWalletModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="Adjust wallet balance"
-      description="There is no way to set a balance directly — this records a new, reasoned ledger entry. A mandatory reason is required and this action is audited."
+      title={isCredit ? 'Add money to wallet' : 'Deduct money from wallet'}
+      description="This is an internal Nukkad ledger entry, not a bank/UPI transfer. There is no way to set a balance directly — a mandatory reason is required and this action is audited."
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>Cancel</Button>
           <Button
-            variant={direction === 'DEBIT' ? 'danger' : 'primary'}
+            variant={isCredit ? 'primary' : 'danger'}
             isLoading={isPending}
             disabled={!canSubmit}
             onClick={() => onConfirm(direction, amountMinorUnits, reason.trim(), idempotencyKeyRef.current)}
           >
-            {direction === 'CREDIT' ? 'Credit wallet' : 'Debit wallet'}
+            {isCredit ? 'Add Money' : 'Deduct Money'}
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-4">
-        <Select label="Direction" value={direction} onChange={(e) => setDirection(e.target.value as 'CREDIT' | 'DEBIT')}>
-          <option value="CREDIT">Credit (add money)</option>
-          <option value="DEBIT">Debit (remove money)</option>
-        </Select>
         <Input
           label="Amount (₹)"
           type="number"
@@ -203,7 +202,7 @@ function AdjustWalletModal({
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
-          placeholder="e.g. promotional credit, refund correction, manual reconciliation"
+          placeholder={isCredit ? 'e.g. promotional credit, refund correction, manual reconciliation' : 'e.g. correction, policy violation, manual reconciliation'}
           required
         />
       </div>
@@ -217,7 +216,7 @@ export default function AdminUserDetailPage() {
   const queryClient = useQueryClient()
   const [statusModalTarget, setStatusModalTarget] = useState<AccountStatus | null>(null)
   const [confirmAdminChange, setConfirmAdminChange] = useState(false)
-  const [adjustWalletOpen, setAdjustWalletOpen] = useState(false)
+  const [adjustWalletDirection, setAdjustWalletDirection] = useState<'CREDIT' | 'DEBIT' | null>(null)
   const [walletStatusModalOpen, setWalletStatusModalOpen] = useState(false)
 
   const { data: user, isLoading, isError, refetch } = useQuery({
@@ -240,9 +239,9 @@ export default function AdminUserDetailPage() {
   const adjustWalletMutation = useMutation({
     mutationFn: (vars: { direction: 'CREDIT' | 'DEBIT'; amountMinorUnits: number; reason: string; idempotencyKey: string }) =>
       adjustWalletBalance(id!, vars),
-    onSuccess: () => {
-      toast.success('Wallet balance adjusted')
-      setAdjustWalletOpen(false)
+    onSuccess: (_data, vars) => {
+      toast.success(vars.direction === 'CREDIT' ? 'Money added to wallet' : 'Money deducted from wallet')
+      setAdjustWalletDirection(null)
       queryClient.invalidateQueries({ queryKey: ['admin', 'wallets', id] })
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Failed to adjust wallet balance'),
@@ -370,8 +369,11 @@ export default function AdminUserDetailPage() {
               >
                 {walletQuery.data?.status === 'FROZEN' ? 'Unfreeze' : 'Freeze'}
               </Button>
-              <Button variant="outline" size="sm" leftIcon={<WalletIcon className="size-3.5" />} onClick={() => setAdjustWalletOpen(true)}>
-                Adjust balance
+              <Button variant="outline" size="sm" leftIcon={<Plus className="size-3.5" />} onClick={() => setAdjustWalletDirection('CREDIT')}>
+                Add Money
+              </Button>
+              <Button variant="outline" size="sm" leftIcon={<Minus className="size-3.5" />} onClick={() => setAdjustWalletDirection('DEBIT')}>
+                Deduct Money
               </Button>
             </div>
           )}
@@ -383,11 +385,15 @@ export default function AdminUserDetailPage() {
           <p className="text-sm text-fg-muted">Couldn't load this user's wallet.</p>
         ) : (
           <>
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-2xl font-bold text-fg tabular-nums">
-                {formatMoney(walletQuery.data.balanceMinorUnits, walletQuery.data.currency)}
-              </span>
-              {walletQuery.data.status === 'FROZEN' && <Badge tone="danger">Frozen</Badge>}
+            <div className="mb-4">
+              <p className="text-xs font-medium text-fg-muted uppercase tracking-wide">Current Balance</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-fg tabular-nums">
+                  {formatMoney(walletQuery.data.balanceMinorUnits, walletQuery.data.currency)}
+                </span>
+                {walletQuery.data.status === 'FROZEN' && <Badge tone="danger">Frozen</Badge>}
+              </div>
+              <p className="text-xs text-fg-muted mt-1">Internal Nukkad ledger balance — not a bank account.</p>
             </div>
 
             {walletTxnsQuery.data && walletTxnsQuery.data.content.length > 0 ? (
@@ -477,8 +483,9 @@ export default function AdminUserDetailPage() {
       </Modal>
 
       <AdjustWalletModal
-        open={adjustWalletOpen}
-        onClose={() => setAdjustWalletOpen(false)}
+        open={adjustWalletDirection !== null}
+        direction={adjustWalletDirection ?? 'CREDIT'}
+        onClose={() => setAdjustWalletDirection(null)}
         isPending={adjustWalletMutation.isPending}
         onConfirm={(direction, amountMinorUnits, reason, idempotencyKey) =>
           adjustWalletMutation.mutate({ direction, amountMinorUnits, reason, idempotencyKey })}

@@ -154,6 +154,7 @@ function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePi
               <p className="text-2xl font-bold text-fg tabular-nums">
                 {formatMoney(walletQuery.data.balanceMinorUnits, walletQuery.data.currency)}
               </p>
+              <p className="text-xs text-fg-muted mt-0.5">Internal Nukkad ledger balance — not a bank account.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -171,7 +172,8 @@ function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePi
       )}
 
       <div>
-        <h2 className="text-sm font-semibold text-fg-secondary mb-3">Withdrawal requests</h2>
+        <h2 className="text-sm font-semibold text-fg-secondary mb-1">Withdrawal requests</h2>
+        <p className="text-xs text-fg-muted mb-3">A request to receive this balance externally — the payout is processed manually by an admin, outside the app.</p>
         {withdrawalsQuery.isLoading ? (
           <Skeleton className="h-20 rounded-xl" />
         ) : withdrawalsQuery.isError || !withdrawalsQuery.data ? (
