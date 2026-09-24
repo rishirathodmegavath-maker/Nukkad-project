@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   HandCoins,
   MessagesSquare,
+  TrendingUp,
 } from 'lucide-react'
 
 export const navSections = [
@@ -29,6 +30,7 @@ export const navSections = [
     items: [
       { to: '/ideas', label: 'Ideas', icon: Lightbulb, end: false },
       { to: '/startups', label: 'Startups', icon: Rocket, end: false },
+      { to: '/industries', label: 'Industries', icon: TrendingUp, end: false },
       { to: '/opportunities', label: 'Opportunities', icon: Briefcase, end: false },
       { to: '/grants', label: 'Grants', icon: HandCoins, end: false },
       { to: '/investors', label: 'Investors', icon: Landmark, end: false },

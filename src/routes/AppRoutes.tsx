@@ -24,6 +24,8 @@ import StartupsListPage from '@/pages/startups/StartupsListPage'
 import RegisterStartupPage from '@/pages/startups/RegisterStartupPage'
 import StartupDetailPage from '@/pages/startups/StartupDetailPage'
 import ManageStartupPage from '@/pages/startups/ManageStartupPage'
+import IndustriesListPage from '@/pages/industries/IndustriesListPage'
+import IndustryDetailPage from '@/pages/industries/IndustryDetailPage'
 import OpportunitiesListPage from '@/pages/opportunities/OpportunitiesListPage'
 import JobsPage from '@/pages/opportunities/JobsPage'
 import PostOpportunityPage from '@/pages/opportunities/PostOpportunityPage'
@@ -97,6 +99,9 @@ export function AppRoutes() {
           <Route path="/startups/new" element={<RegisterStartupPage />} />
           <Route path="/startups/:id" element={<StartupDetailPage />} />
           <Route path="/startups/:id/manage" element={<ManageStartupPage />} />
+
+          <Route path="/industries" element={<IndustriesListPage />} />
+          <Route path="/industries/:slug" element={<IndustryDetailPage />} />
 
           <Route path="/opportunities" element={<OpportunitiesListPage />} />
           <Route path="/opportunities/new" element={<PostOpportunityPage />} />
