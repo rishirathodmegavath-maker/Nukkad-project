@@ -27,6 +27,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Post, PostAttachment, PostComment } from '@/types'
 import type { Page } from '@/lib/api-client'
+// Same asset the app's own brand mark uses (see Logo.tsx) — reused here as the public author avatar
+// for an admin-published, unattributed post, imported (not from /public) for a content-hashed URL.
+import buildAddaLogoUrl from '@/assets/logo.png'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -597,17 +600,25 @@ export function PostCard({ post }: { post: Post }) {
     <Card padding="none" className="overflow-hidden border border-border/80 shadow-xs rounded-xl bg-surface">
       <div className="flex items-start gap-3 px-4 sm:px-5 py-3.5">
         {author ? (
-          <Avatar src={author.avatarUrl} name={author.name} size="md" />
+          post.postedAsPlatform ? (
+            <Avatar src={buildAddaLogoUrl} name="BuildAdda" size="md" />
+          ) : (
+            <Avatar src={author.avatarUrl} name={author.name} size="md" />
+          )
         ) : (
           <Skeleton className="size-10 rounded-full" />
         )}
         <div className="min-w-0 flex-1">
           {author ? (
             <>
-              <Link to={`/people/${author.id}`} className="text-sm font-bold text-fg hover:underline">
-                {author.name}
-              </Link>
-              {author.headline && <p className="text-xs text-fg-muted truncate">{author.headline}</p>}
+              {post.postedAsPlatform ? (
+                <span className="text-sm font-bold text-fg">BuildAdda</span>
+              ) : (
+                <Link to={`/people/${author.id}`} className="text-sm font-bold text-fg hover:underline">
+                  {author.name}
+                </Link>
+              )}
+              {!post.postedAsPlatform && author.headline && <p className="text-xs text-fg-muted truncate">{author.headline}</p>}
             </>
           ) : (
             <Skeleton className="h-4 w-28" />

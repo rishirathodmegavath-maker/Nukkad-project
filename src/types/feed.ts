@@ -50,6 +50,9 @@ export interface Post {
   savedAt?: string
   removedByAdmin?: boolean
   removalReason?: string
+  /** True for an admin-published post left unattributed to any member — show BuildAdda as the
+   *  public author instead of the underlying admin account. */
+  postedAsPlatform?: boolean
 }
 
 export type SavedPostsSort = 'newestSaved' | 'oldestSaved' | 'newestPost' | 'oldestPost'
