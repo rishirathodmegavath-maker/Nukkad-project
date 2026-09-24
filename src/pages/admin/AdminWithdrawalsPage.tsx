@@ -33,7 +33,7 @@ function ApproveModal({
       open
       onClose={onClose}
       title={`Approve withdrawal of ${formatMoney(request.amountMinorUnits, request.currency)}?`}
-      description="This only marks the request approved in Nukkad's internal ledger — no payment provider is integrated, so no money moves automatically. The funds were already held from the user's balance when they requested it; you still need to send the actual payout (bank transfer, UPI, etc.) to them manually, outside the app."
+      description="This only marks the request approved in BuildAdda's internal ledger — no payment provider is integrated, so no money moves automatically. The funds were already held from the user's balance when they requested it; you still need to send the actual payout (bank transfer, UPI, etc.) to them manually, outside the app."
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>

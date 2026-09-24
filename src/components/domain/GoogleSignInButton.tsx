@@ -6,7 +6,7 @@ import { linkGoogleAccount } from '@/services/auth.service'
 import { ApiError } from '@/lib/api-client'
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-const OAUTH_STATE_KEY = 'nukkad.google_oauth_state'
+const OAUTH_STATE_KEY = 'buildadda.google_oauth_state'
 
 function GoogleLogo() {
   return (

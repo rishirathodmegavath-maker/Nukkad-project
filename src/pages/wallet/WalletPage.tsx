@@ -154,7 +154,7 @@ function WalletContent({ onLock, onChangePin }: { onLock: () => void; onChangePi
               <p className="text-2xl font-bold text-fg tabular-nums">
                 {formatMoney(walletQuery.data.balanceMinorUnits, walletQuery.data.currency)}
               </p>
-              <p className="text-xs text-fg-muted mt-0.5">Internal Nukkad ledger balance — not a bank account.</p>
+              <p className="text-xs text-fg-muted mt-0.5">Internal BuildAdda ledger balance — not a bank account.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

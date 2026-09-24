@@ -8,7 +8,7 @@ import { toast } from '@/store/toast.store'
 import { ApiError } from '@/lib/api-client'
 import type { GoogleLoginNotice } from './LoginPage'
 
-const OAUTH_STATE_KEY = 'nukkad.google_oauth_state'
+const OAUTH_STATE_KEY = 'buildadda.google_oauth_state'
 
 /**
  * Landing page for Google's OAuth redirect (`GOOGLE_CALLBACK_PATH`). Google navigates the browser

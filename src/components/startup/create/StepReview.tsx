@@ -206,7 +206,7 @@ export function StepReview({ draft, defaultChapterId, onEditStep, onChange, prob
               onChange={(visibility) => onChange({ visibility })}
               options={[
                 { value: 'Public', label: 'Public', description: 'Anyone can find and view your startup.', icon: <Globe className="size-3.5 text-fg-muted" aria-hidden="true" /> },
-                { value: 'Nukkad Members', label: 'Nukkad Members', description: 'Only signed-in BuildAdda members can find and view it.', icon: <Lock className="size-3.5 text-fg-muted" aria-hidden="true" /> },
+                { value: 'Nukkad Members', label: 'BuildAdda Members', description: 'Only signed-in BuildAdda members can find and view it.', icon: <Lock className="size-3.5 text-fg-muted" aria-hidden="true" /> },
               ]}
             />
           </div>

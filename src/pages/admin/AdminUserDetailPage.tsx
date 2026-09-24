@@ -171,7 +171,7 @@ function AdjustWalletModal({
       open={open}
       onClose={handleClose}
       title={isCredit ? 'Add money to wallet' : 'Deduct money from wallet'}
-      description="This is an internal Nukkad ledger entry, not a bank/UPI transfer. There is no way to set a balance directly — a mandatory reason is required and this action is audited."
+      description="This is an internal BuildAdda ledger entry, not a bank/UPI transfer. There is no way to set a balance directly — a mandatory reason is required and this action is audited."
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>Cancel</Button>
@@ -393,7 +393,7 @@ export default function AdminUserDetailPage() {
                 </span>
                 {walletQuery.data.status === 'FROZEN' && <Badge tone="danger">Frozen</Badge>}
               </div>
-              <p className="text-xs text-fg-muted mt-1">Internal Nukkad ledger balance — not a bank account.</p>
+              <p className="text-xs text-fg-muted mt-1">Internal BuildAdda ledger balance — not a bank account.</p>
             </div>
 
             {walletTxnsQuery.data && walletTxnsQuery.data.content.length > 0 ? (
