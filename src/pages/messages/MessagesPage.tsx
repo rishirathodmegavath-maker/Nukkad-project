@@ -46,6 +46,7 @@ import * as usersService from '@/services/users.service'
 import * as messagesService from '@/services/messages.service'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
+import { IconButton } from '@/components/ui/IconButton'
 import { Modal } from '@/components/ui/Modal'
 import { ImageLightbox } from '@/components/ui/ImageLightbox'
 import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
@@ -1446,13 +1447,9 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
           {selectMode ? (
             <>
               <div className="flex items-center gap-2.5 min-w-0">
-                <button
-                  onClick={exitSelectMode}
-                  aria-label="Cancel selection"
-                  className="flex size-8 items-center justify-center rounded-lg text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors"
-                >
+                <IconButton label="Cancel selection" onClick={exitSelectMode} className="size-8 text-fg-muted">
                   <X className="size-5" />
-                </button>
+                </IconButton>
                 <p className="text-sm font-semibold text-fg">{selectedIds.size} selected</p>
               </div>
               <Button
@@ -1514,7 +1511,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
           )}
         </div>
 
-        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-8 py-4">
+        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-8 py-4">
           {/* min-h-full + justify-end anchors a short conversation to the bottom, right above the
               composer, instead of pinning it to the top and leaving a large dead gap above the
               input — matches how every mainstream chat app lays out a thread with few messages.
@@ -1879,7 +1876,7 @@ export default function MessagesPage() {
         ) : isError ? (
           <ErrorState title="Couldn't load conversations" onRetry={refetch} />
         ) : filteredConversations && filteredConversations.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 px-1">
             {filteredConversations.map((c) => (
               <ConversationListItem key={c.id} conversation={c} active={c.id === conversationId} />
             ))}

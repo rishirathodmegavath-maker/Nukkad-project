@@ -146,7 +146,7 @@ export function DesktopSidebar() {
             <span className="flex items-center gap-1.5 min-w-0">
               <span className="flex min-w-0 flex-col leading-tight">
                 <span className="text-lg font-bold text-fg tracking-tight truncate">BuildAdda</span>
-                <span className="text-[11px] font-medium text-fg-muted truncate">Where builders meet.</span>
+                <span className="text-xs font-medium text-fg-muted truncate">Where builders meet.</span>
               </span>
             </span>
           )}
@@ -159,7 +159,7 @@ export function DesktopSidebar() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain py-3">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain py-3">
         {collapsed && (
           <div className="flex justify-center pb-2">
             <IconButton label="Expand sidebar" aria-expanded={false} onClick={toggleSidebar}>
@@ -195,7 +195,7 @@ export function MobileDrawer() {
             <Logo size="sm" />
             <span className="flex flex-col leading-tight">
               <span className="text-lg font-bold text-fg tracking-tight">BuildAdda</span>
-              <span className="text-[11px] font-medium text-fg-muted">Where builders meet.</span>
+              <span className="text-xs font-medium text-fg-muted">Where builders meet.</span>
             </span>
           </Link>
           <button
