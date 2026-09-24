@@ -91,6 +91,25 @@ async function refreshAccessToken(currentRefreshToken: string): Promise<Session>
   return refreshPromise
 }
 
+/**
+ * The stored session, refreshed first if its access token is already expired (or about to). Several
+ * pages fire a dozen queries in parallel on mount, so without this they'd all race the same expired
+ * token, each get a 401, and log as failed requests before the shared refresh-and-retry below quietly
+ * fixes them — noisy in devtools even though nothing was actually broken. A failed proactive refresh
+ * just falls through with the stale session; the reactive 401 handling in `request()` still catches it.
+ */
+async function getValidSession(): Promise<Session | null> {
+  const session = getStoredSession()
+  if (!session) return null
+  const expiresInMs = new Date(session.expiresAt).getTime() - Date.now()
+  if (expiresInMs > 5_000 || !session.refreshToken) return session
+  try {
+    return await refreshAccessToken(session.refreshToken)
+  } catch {
+    return session
+  }
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
@@ -100,7 +119,7 @@ interface RequestOptions {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const session = getStoredSession()
+  const session = await getValidSession()
   const headers: Record<string, string> = { ...options.headers }
   if (options.body !== undefined) headers['Content-Type'] = 'application/json'
   if (session?.token) headers.Authorization = `Bearer ${session.token}`
