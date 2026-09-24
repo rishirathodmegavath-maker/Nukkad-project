@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { MessageSquare, ExternalLink, Plus } from 'lucide-react'
 import { listAdminPosts, setPostRemoved } from '@/services/admin.service'
+import { memberAppUrl } from '@/lib/portal'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
 import { AdminPostFormModal } from '@/components/domain/AdminPostFormModal'
 import { Card } from '@/components/ui/Card'
@@ -90,9 +91,12 @@ export default function AdminFeedPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <Link to={`/people/${post.authorId}`} className="text-xs font-semibold text-fg-brand hover:underline">
+                  <a href={memberAppUrl(`/feed/${post.id}`)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-fg-brand hover:underline">
+                    View <ExternalLink className="size-3 inline" />
+                  </a>
+                  <a href={memberAppUrl(`/people/${post.authorId}`)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-fg-brand hover:underline">
                     Author <ExternalLink className="size-3 inline" />
-                  </Link>
+                  </a>
                   <Button
                     size="sm"
                     variant={post.removedByAdmin ? 'secondary' : 'danger-subtle'}

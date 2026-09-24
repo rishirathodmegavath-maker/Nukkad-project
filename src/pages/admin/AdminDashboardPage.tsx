@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
         <StatCard icon={<Users className="size-5" />} label="Total users" value={data.totalUsers} to="/admin/users" />
         <StatCard icon={<UserCheck className="size-5" />} label="Active users" value={data.activeUsers} to="/admin/users?status=ACTIVE" />
         <StatCard icon={<ShieldAlert className="size-5" />} label="Suspended / disabled" value={data.suspendedUsers + data.disabledUsers} to="/admin/users?status=SUSPENDED" />
-        <StatCard icon={<Landmark className="size-5" />} label="Investors" value={data.investors} />
+        <StatCard icon={<Landmark className="size-5" />} label="Investors" value={data.investors} to="/admin/users?role=INVESTOR" />
         <StatCard icon={<Rocket className="size-5" />} label="Startups" value={data.totalStartups} to="/admin/startups" />
         <StatCard icon={<Lightbulb className="size-5" />} label="Ideas" value={data.totalIdeas} to="/admin/ideas" />
         <StatCard icon={<Briefcase className="size-5" />} label="Open opportunities" value={data.openOpportunities} to="/admin/opportunities" />
@@ -70,8 +70,8 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4">
-        <StatCard icon={<MapPin className="size-5" />} label="Chapter presidents" value={data.chapterPresidents} />
-        <StatCard icon={<Users className="size-5" />} label="Founders" value={data.founders} />
+        <StatCard icon={<MapPin className="size-5" />} label="Chapter presidents" value={data.chapterPresidents} to="/admin/users?role=CHAPTER_PRESIDENT" />
+        <StatCard icon={<Users className="size-5" />} label="Founders" value={data.founders} to="/admin/users?role=FOUNDER" />
         <StatCard icon={<ShieldAlert className="size-5" />} label="Admins" value={data.admins} to="/admin/users?role=ADMIN" />
       </div>
 
