@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Loader2, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, X } from 'lucide-react'
+import { Search, Loader2, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, TrendingUp, X } from 'lucide-react'
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn, initials, formatDateOnly } from '@/lib/utils'
@@ -11,6 +11,7 @@ import type { Opportunity } from '@/types/opportunity'
 import type { NukkadEvent } from '@/types/event'
 import type { Grant } from '@/types/grant'
 import type { CatalogInvestor } from '@/types/investor'
+import type { Industry } from '@/services/industries.service'
 
 type FlatItem =
   | { kind: 'person'; data: User }
@@ -20,7 +21,13 @@ type FlatItem =
   | { kind: 'event'; data: NukkadEvent }
   | { kind: 'grant'; data: Grant }
   | { kind: 'investor'; data: CatalogInvestor }
+  | { kind: 'industry'; data: Industry }
+  | { kind: 'industries-shortcut' }
   | { kind: 'search-all' }
+
+/** "Industries"/"Industry" is the feature's own name, not an entity — searching it should get you
+ *  to the Industries page even when no single industry is literally named that. */
+const INDUSTRIES_SHORTCUT_PATTERN = /^industr/i
 
 function routeFor(item: FlatItem, query: string): string {
   switch (item.kind) {
@@ -38,6 +45,10 @@ function routeFor(item: FlatItem, query: string): string {
       return `/grants/${item.data.id}`
     case 'investor':
       return `/investors/catalog/${item.data.id}`
+    case 'industry':
+      return `/industries/${item.data.slug}`
+    case 'industries-shortcut':
+      return '/industries'
     case 'search-all':
       return `/search?q=${encodeURIComponent(query)}`
   }
@@ -101,7 +112,9 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
       ...suggestions.events.map((data): FlatItem => ({ kind: 'event', data })),
       ...suggestions.grants.map((data): FlatItem => ({ kind: 'grant', data })),
       ...suggestions.investors.map((data): FlatItem => ({ kind: 'investor', data })),
+      ...suggestions.industries.map((data): FlatItem => ({ kind: 'industry', data })),
     ]
+    if (INDUSTRIES_SHORTCUT_PATTERN.test(trimmed)) list.push({ kind: 'industries-shortcut' })
     if (trimmed) list.push({ kind: 'search-all' })
     return list
   }, [suggestions, trimmed])
@@ -426,7 +439,53 @@ export function GlobalSearchBox({ variant = 'desktop' }: { variant?: 'desktop' |
                   })}
                 </>
               )}
+
+              {suggestions.industries.length > 0 && (
+                <>
+                  <CategoryHeading icon={<TrendingUp className="size-3.5" />} label="Industries" />
+                  {suggestions.industries.map((industry, i) => {
+                    const idx =
+                      suggestions.people.length +
+                      suggestions.ideas.length +
+                      suggestions.startups.length +
+                      suggestions.opportunities.length +
+                      suggestions.events.length +
+                      suggestions.grants.length +
+                      suggestions.investors.length +
+                      i
+                    return (
+                      <SuggestionRow
+                        key={industry.slug}
+                        active={highlightedIndex === idx}
+                        onSelect={() => goTo({ kind: 'industry', data: industry })}
+                        onHover={() => setHighlightedIndex(idx)}
+                      >
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-sunken border border-border/70 text-fg-secondary">
+                          <TrendingUp className="size-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-fg truncate">{industry.name}</p>
+                          <p className="text-xs text-fg-muted truncate">
+                            {industry.startupCount} {industry.startupCount === 1 ? 'startup' : 'startups'}
+                          </p>
+                        </div>
+                      </SuggestionRow>
+                    )
+                  })}
+                </>
+              )}
             </div>
+          )}
+
+          {!suggestions.isLoading && INDUSTRIES_SHORTCUT_PATTERN.test(trimmed) && (
+            <SuggestionRow
+              active={highlightedIndex === items.findIndex((item) => item.kind === 'industries-shortcut')}
+              onSelect={() => goTo({ kind: 'industries-shortcut' })}
+              onHover={() => setHighlightedIndex(items.findIndex((item) => item.kind === 'industries-shortcut'))}
+            >
+              <TrendingUp className="size-4 text-fg-muted shrink-0" />
+              <span className="text-sm font-medium text-fg">Go to Industries</span>
+            </SuggestionRow>
           )}
 
           {!suggestions.isLoading && !suggestions.isError && trimmed && (

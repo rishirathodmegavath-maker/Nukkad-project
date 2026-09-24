@@ -7,6 +7,7 @@ import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { listGrants } from '@/services/grants.service'
 import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
+import { listIndustries } from '@/services/industries.service'
 
 const SUGGESTIONS_PER_CATEGORY = 5
 const DEBOUNCE_MS = 250
@@ -63,8 +64,13 @@ export function useSearchSuggestions(rawQuery: string) {
     queryFn: async () => (await listCatalogInvestors({ query: debounced })).content.slice(0, SUGGESTIONS_PER_CATEGORY),
     enabled: enabled && investorAccess.data === true,
   })
+  const industries = useQuery({
+    queryKey: ['search-suggestions', 'industries', debounced],
+    queryFn: async () => (await listIndustries({ q: debounced })).slice(0, SUGGESTIONS_PER_CATEGORY),
+    enabled,
+  })
 
-  const queries = [people, ideas, startups, opportunities, events, grants, investors]
+  const queries = [people, ideas, startups, opportunities, events, grants, investors, industries]
   const isLoading = enabled && queries.some((q) => q.isLoading)
   const isError = queries.some((q) => q.isError)
   const totalCount =
@@ -74,7 +80,8 @@ export function useSearchSuggestions(rawQuery: string) {
     (opportunities.data?.length ?? 0) +
     (events.data?.length ?? 0) +
     (grants.data?.length ?? 0) +
-    (investors.data?.length ?? 0)
+    (investors.data?.length ?? 0) +
+    (industries.data?.length ?? 0)
 
   return {
     debounced,
@@ -89,5 +96,6 @@ export function useSearchSuggestions(rawQuery: string) {
     events: events.data ?? [],
     grants: grants.data ?? [],
     investors: investors.data ?? [],
+    industries: industries.data ?? [],
   }
 }

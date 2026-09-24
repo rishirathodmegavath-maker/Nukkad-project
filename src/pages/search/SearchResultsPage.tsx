@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Search as SearchIcon, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, ArrowRight } from 'lucide-react'
+import { Search as SearchIcon, Users, Lightbulb, Rocket, Briefcase, CalendarDays, HandCoins, Landmark, TrendingUp, ArrowRight } from 'lucide-react'
 import { listUsers } from '@/services/users.service'
 import { listIdeas } from '@/services/ideas.service'
 import { listStartups } from '@/services/startups.service'
@@ -9,6 +9,7 @@ import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { listGrants } from '@/services/grants.service'
 import { hasInvestorDiscoveryAccess, listCatalogInvestors } from '@/services/investor-catalog.service'
+import { listIndustries } from '@/services/industries.service'
 import { PersonCard } from '@/components/domain/PersonCard'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
@@ -16,6 +17,7 @@ import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { EventCard } from '@/components/domain/EventCard'
 import { GrantCard } from '@/components/domain/GrantCard'
 import { CatalogInvestorCard } from '@/components/domain/CatalogInvestorCard'
+import { IndustryCard } from '@/components/domain/IndustryCard'
 import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -105,6 +107,11 @@ export default function SearchResultsPage() {
     queryFn: () => listCatalogInvestors(filters),
     enabled: !!trimmed && investorAccessQuery.data === true,
   })
+  const industriesQuery = useQuery({
+    queryKey: ['search', 'industries', trimmed],
+    queryFn: () => listIndustries({ q: trimmed }),
+    enabled: !!trimmed,
+  })
 
   const isLoading =
     peopleQuery.isLoading ||
@@ -113,7 +120,8 @@ export default function SearchResultsPage() {
     opportunitiesQuery.isLoading ||
     eventsQuery.isLoading ||
     grantsQuery.isLoading ||
-    investorsQuery.isLoading
+    investorsQuery.isLoading ||
+    industriesQuery.isLoading
   const totalCount =
     (peopleQuery.data?.length ?? 0) +
     (ideasQuery.data?.length ?? 0) +
@@ -121,7 +129,8 @@ export default function SearchResultsPage() {
     (opportunitiesQuery.data?.length ?? 0) +
     (eventsQuery.data?.length ?? 0) +
     (grantsQuery.data?.length ?? 0) +
-    (investorsQuery.data?.content.length ?? 0)
+    (investorsQuery.data?.content.length ?? 0) +
+    (industriesQuery.data?.length ?? 0)
   const encodedQuery = encodeURIComponent(trimmed)
 
   return (
@@ -203,6 +212,16 @@ export default function SearchResultsPage() {
             viewAllHref="/investors"
           >
             {investorsQuery.data?.content.slice(0, PREVIEW_COUNT).map((investor) => <CatalogInvestorCard key={investor.id} investor={investor} />)}
+          </ResultSection>
+
+          <ResultSection
+            title="Industries"
+            icon={<TrendingUp className="size-4 text-fg-secondary" />}
+            count={industriesQuery.data?.length ?? 0}
+            isLoading={industriesQuery.isLoading}
+            viewAllHref="/industries"
+          >
+            {industriesQuery.data?.slice(0, PREVIEW_COUNT).map((industry) => <IndustryCard key={industry.slug} industry={industry} />)}
           </ResultSection>
 
           {!isLoading && totalCount === 0 && (
