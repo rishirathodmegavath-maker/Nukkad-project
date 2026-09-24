@@ -132,6 +132,37 @@ export async function toggleSave(id: string): Promise<Post> {
   return mapPost(dto)
 }
 
+/** "Hide this post" — removes it from the viewer's own personalized feed going forward; never
+ *  shown as an option for anyone else's view of it. */
+export async function toggleHidePost(id: string): Promise<Post> {
+  const dto = await apiClient.post<PostDto>(`/feed/${id}/hide`)
+  return mapPost(dto)
+}
+
+export interface PersonalizedFeedResult {
+  content: Post[]
+  hasMore: boolean
+}
+
+interface PersonalizedFeedResultDto {
+  content: PostDto[]
+  hasMore: boolean
+}
+
+/**
+ * The canonical personalized feed — the same ranking service Home and the Feed page's main tab
+ * both call, so there is one recommendation engine, never two. Not offset-paginated: `excludeIds`
+ * is every post id already shown in this scroll session, and the server excludes them directly,
+ * so a dynamically-reranked feed never repeats or skips a post across batches the way naive page
+ * numbers would once ranking shifts between fetches.
+ */
+export async function listPersonalizedFeed(size: number, excludeIds: string[] = []): Promise<PersonalizedFeedResult> {
+  const query = new URLSearchParams({ size: String(size) })
+  for (const id of excludeIds) query.append('excludeIds', id)
+  const result = await apiClient.get<PersonalizedFeedResultDto>(`/feed/personalized?${query.toString()}`)
+  return { content: result.content.map(mapPost), hasMore: result.hasMore }
+}
+
 export async function getPost(id: string): Promise<Post> {
   const dto = await apiClient.get<PostDto>(`/feed/${id}`)
   return mapPost(dto)
