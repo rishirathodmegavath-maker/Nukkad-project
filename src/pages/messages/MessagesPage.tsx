@@ -1829,17 +1829,18 @@ export default function MessagesPage() {
   }, [conversationId, navigate, refetch])
 
   return (
-    // Sized to the space the app shell actually leaves, so the page itself never scrolls — only the
-    // message history / conversation list inside do. Below lg the shell adds 4rem sticky header +
-    // 1.5rem top padding and reserves 7rem at the bottom (main's pb-28) for the fixed 4rem bottom nav:
-    // the box ends 0.5rem above that nav (10rem = 4 + 1.5 + 4 + 0.5), and -mb-10 hands back the 2.5rem
-    // of reserved space that would otherwise push the page 2.5rem past the viewport. From lg up there
-    // is no bottom nav and the shell uses 2rem of padding top and bottom (8rem).
-    // `svh` (not `dvh`) below lg: `dvh` tracks the mobile browser chrome in real time, so it — and
-    // this frame's height with it — visibly shrinks/grows as the address bar collapses mid-scroll.
-    // `svh` is fixed to the smallest-chrome-shown viewport and never moves once painted. Desktop has
-    // no collapsing chrome, so `dvh` there is already stable and is left as-is.
-    <div className="h-[calc(100svh-10rem-env(safe-area-inset-bottom))] -mb-10 lg:mb-0 lg:h-[calc(100dvh-8rem)] flex rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+    // Below lg this is `fixed`, not sized from the flow it sits in: the app shell's <main> only has
+    // `min-h-screen`, not a hard cap, so any attempt to make this box "the right height to leave no
+    // scroll room" (rem math against 100dvh/100svh) was still one rounding error away from letting
+    // the real *page* scroll — and once it does, a swipe on the message list chains into scrolling
+    // the whole document, carrying this box (and the sticky topbar above it) with it. `fixed` removes
+    // it from that flow entirely: its position is set directly against the viewport, immune to
+    // whatever height <main> ends up with. top/bottom reuse the app's real, already-fixed chrome
+    // sizes (Topbar is h-16 = 4rem; the bottom liquid-dock is 64px = 4rem), with the same 1.5rem /
+    // 0.5rem gaps the old calc() used, so the on-screen position is unchanged — only how it's held in
+    // place is. From lg up there's no bottom nav and no scroll-chaining risk, so it stays in normal
+    // flow exactly as before.
+    <div className="fixed left-4 right-4 top-[5.5rem] bottom-[calc(4.5rem+env(safe-area-inset-bottom))] lg:static lg:left-auto lg:right-auto lg:top-auto lg:bottom-auto lg:h-[calc(100dvh-8rem)] flex rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
       {/* Left conversation list */}
       <div
         className={cn(
