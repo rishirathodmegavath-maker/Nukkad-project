@@ -84,7 +84,6 @@ export function StartupMaterialsSection({ startupId, canManage }: { startupId: s
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['startup', startupId, 'materials'] })
       setToDelete(null)
-      toast.info('Material removed')
     },
     onError: (err) => {
       setToDelete(null)

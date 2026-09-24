@@ -25,7 +25,6 @@ export function LogoField({ startup }: { startup: Startup }) {
     mutationFn: (file: File) => uploadStartupLogo(startup.id, file),
     onSuccess: () => {
       refresh()
-      toast.success('Logo updated')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'The logo couldn’t be uploaded'),
   })
@@ -33,7 +32,6 @@ export function LogoField({ startup }: { startup: Startup }) {
     mutationFn: () => removeStartupLogo(startup.id),
     onSuccess: () => {
       refresh()
-      toast.success('Logo removed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'The logo couldn’t be removed'),
   })

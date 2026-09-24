@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/Button'
 import { MatchReasons } from '@/components/domain/MatchReasons'
 import { MessageAction } from '@/components/domain/MessageAction'
 import * as usersService from '@/services/users.service'
-import { toast } from '@/store/toast.store'
 
 export function PersonCard({
   user,
@@ -26,21 +25,14 @@ export function PersonCard({
   const queryClient = useQueryClient()
   const connectMutation = useMutation({
     mutationFn: () => usersService.toggleConnect(user.id, user.connectionStatus),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      const messages: Record<string, string> = {
-        PENDING_OUTGOING: `Connection request sent to ${user.name}`,
-        CONNECTED: `You're now connected with ${user.name}`,
-        NONE: 'Removed connection',
-      }
-      toast.success(messages[updated.connectionStatus ?? 'NONE'])
     },
   })
   const declineMutation = useMutation({
     mutationFn: () => usersService.declineConnection(user.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.info(`Declined ${user.name}'s request`)
     },
   })
 

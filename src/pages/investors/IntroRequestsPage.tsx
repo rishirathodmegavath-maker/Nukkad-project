@@ -134,7 +134,6 @@ export default function IntroRequestsPage() {
     mutationFn: (id: string) => rejectIntroRequest(id),
     onSuccess: () => {
       invalidate()
-      toast.info('Introduction declined')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not decline this request'),
   })
@@ -142,7 +141,6 @@ export default function IntroRequestsPage() {
     mutationFn: (id: string) => withdrawIntroRequest(id),
     onSuccess: () => {
       invalidate()
-      toast.info('Request withdrawn')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not withdraw this request'),
   })

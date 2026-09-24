@@ -20,7 +20,6 @@ export function HomeEventRow({ event }: { event: NukkadEvent }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] })
       queryClient.invalidateQueries({ queryKey: ['event', event.id] })
-      toast.success(`You’re registered for ${event.title}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not register for this event'),
   })

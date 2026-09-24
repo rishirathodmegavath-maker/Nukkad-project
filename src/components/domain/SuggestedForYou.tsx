@@ -4,7 +4,6 @@ import type { User } from '@/types'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import * as usersService from '@/services/users.service'
-import { toast } from '@/store/toast.store'
 import { cn } from '@/lib/utils'
 
 function SuggestionRow({ user }: { user: User }) {
@@ -12,21 +11,14 @@ function SuggestionRow({ user }: { user: User }) {
 
   const connectMutation = useMutation({
     mutationFn: () => usersService.toggleConnect(user.id, user.connectionStatus ?? 'NONE'),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      const messages: Record<string, string> = {
-        PENDING_OUTGOING: `Connection request sent to ${user.name}`,
-        CONNECTED: `You're now connected with ${user.name}`,
-        NONE: 'Removed connection',
-      }
-      toast.success(messages[updated.connectionStatus ?? 'NONE'])
     },
   })
   const declineMutation = useMutation({
     mutationFn: () => usersService.declineConnection(user.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.info(`Declined ${user.name}'s request`)
     },
   })
 

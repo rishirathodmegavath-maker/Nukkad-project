@@ -153,7 +153,6 @@ export default function ChapterDetailPage() {
       // The member count shown on ChapterCard in the chapters grid comes from this separate
       // plural query — without this it stays stale there until its own staleTime expires.
       queryClient.invalidateQueries({ queryKey: ['chapters'] })
-      toast.success(`Joined ${chapter?.name}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not join this chapter'),
   })
@@ -164,7 +163,6 @@ export default function ChapterDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['chapters'] })
-      toast.success(`Left ${chapter?.name}`)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not leave this chapter'),
   })
@@ -178,7 +176,6 @@ export default function ChapterDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['users', 'chapter', id] })
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
       queryClient.invalidateQueries({ queryKey: ['chapters'] })
-      toast.success('Removed from chapter')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove member'),
   })
@@ -207,7 +204,6 @@ export default function ChapterDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
       setCoverPhase('done')
       setTimeout(() => setCoverPhase('idle'), 1200)
-      toast.success('Cover photo updated')
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
@@ -219,7 +215,6 @@ export default function ChapterDetailPage() {
     mutationFn: () => removeChapterCover(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter', id] })
-      toast.success('Cover photo removed')
       setShowRemoveCoverModal(false)
     },
   })

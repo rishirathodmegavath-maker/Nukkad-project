@@ -30,7 +30,6 @@ export function StartupLogo({ startup, canManage }: { startup: Startup; canManag
       refresh()
       setPhase('done')
       setTimeout(() => setPhase('idle'), 1200)
-      toast.success('Logo updated')
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
@@ -42,7 +41,6 @@ export function StartupLogo({ startup, canManage }: { startup: Startup; canManag
     mutationFn: () => removeStartupLogo(startup.id),
     onSuccess: () => {
       refresh()
-      toast.success('Logo removed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove logo'),
   })

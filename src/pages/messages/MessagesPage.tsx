@@ -305,9 +305,8 @@ function DirectDetailsPanel({
 
   const muteMutation = useMutation({
     mutationFn: () => messagesService.toggleMuteConversation(conversation.id),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
-      toast.success(updated.muted ? 'Messages muted' : 'Messages unmuted')
     },
   })
 
@@ -498,7 +497,6 @@ function GroupMemberRow({ conversation, userId, role }: { conversation: Conversa
     mutationFn: (newRole: 'ADMIN' | 'MEMBER') => messagesService.updateGroupRole(conversation.id, userId, newRole),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
-      toast.success('Role updated')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update role'),
   })
@@ -507,7 +505,6 @@ function GroupMemberRow({ conversation, userId, role }: { conversation: Conversa
     mutationFn: () => messagesService.removeGroupMember(conversation.id, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
-      toast.success(user ? `Removed ${user.name}` : 'Member removed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove member'),
   })
@@ -636,7 +633,6 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
       setEditingName(false)
-      toast.success('Group renamed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not rename group'),
   })
@@ -645,7 +641,6 @@ function GroupDetailsPanel({ conversation, onClose }: { conversation: Conversati
     mutationFn: (file: File) => messagesService.setGroupAvatar(conversation.id, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
-      toast.success('Group photo updated')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update group photo'),
   })
@@ -1340,7 +1335,6 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
     if (!deleteTarget) return
     hideMessagesMutation.mutate(deleteTarget, {
       onSuccess: () => {
-        toast.success(deleteTarget.length > 1 ? 'Messages removed from your view' : 'Message removed from your view')
         setDeleteTarget(null)
         exitSelectMode()
       },

@@ -47,7 +47,6 @@ function AvatarUpload({ user }: { user: User }) {
     mutationFn: uploadAvatar,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-      toast.success('Profile picture updated')
       setPhase('done')
       setTimeout(() => setPhase('idle'), 1400)
     },
@@ -338,7 +337,6 @@ function NotificationPreferencesSection() {
     mutationFn: (updates: Partial<Record<NotificationType, boolean>>) => updateNotificationPreferences(updates),
     onSuccess: (updated) => {
       queryClient.setQueryData(['notification-preferences'], updated)
-      toast.success('Notification preferences saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save preferences'),
   })
@@ -421,7 +419,6 @@ function AccountPrivacySection() {
     mutationFn: (updates: Partial<AccountPrivacySettings>) => updateAccountPrivacy(updates),
     onSuccess: (updated) => {
       queryClient.setQueryData(['account-privacy'], updated)
-      toast.success('Privacy settings saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save privacy settings'),
   })
@@ -483,7 +480,6 @@ function AppearanceSection() {
     setRestoringDefault(true)
     try {
       await resetToDefault()
-      toast.success('Restored BuildAdda default appearance')
     } finally {
       setRestoringDefault(false)
     }
@@ -556,7 +552,6 @@ function BlockedUsersSection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'blocked'] })
       queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.success('Unblocked')
     },
   })
 
@@ -601,7 +596,6 @@ function MutedAccountsSection() {
     mutationFn: (userId: string) => unmuteUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'muted'] })
-      toast.success('Unmuted')
     },
   })
 

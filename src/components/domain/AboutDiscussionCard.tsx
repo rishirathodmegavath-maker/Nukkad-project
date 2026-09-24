@@ -51,7 +51,6 @@ export function AboutDiscussionCard({ discussion }: { discussion: Discussion }) 
     mutationFn: () => toggleFollowDiscussion(discussion.id),
     onSuccess: (result) => {
       queryClient.setQueryData<Discussion>(['discussions', discussion.id], (prev) => (prev ? { ...prev, isFollowing: result.following } : prev))
-      toast.success(result.following ? "You're following this discussion" : 'Unfollowed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update follow'),
   })

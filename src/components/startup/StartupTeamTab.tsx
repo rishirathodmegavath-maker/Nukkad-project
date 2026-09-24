@@ -181,7 +181,6 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
     mutationFn: (memberId: string) => acceptStartupJoinRequest(memberId),
     onSuccess: () => {
       refresh()
-      toast.success('Added to the team')
     },
     onError: fail('Could not accept request'),
   })
@@ -189,7 +188,6 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
     mutationFn: (memberId: string) => rejectStartupJoinRequest(memberId),
     onSuccess: () => {
       refresh()
-      toast.info('Request declined')
     },
     onError: fail('Could not decline request'),
   })
@@ -198,7 +196,6 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
     onSuccess: () => {
       refresh()
       setRemoveTarget(null)
-      toast.info('Removed from the team')
     },
     onError: (err) => {
       setRemoveTarget(null)
@@ -207,9 +204,8 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
   })
   const changeRole = useMutation({
     mutationFn: ({ userId, teamRole }: { userId: string; teamRole: 'ADMIN' | 'MEMBER' }) => updateStartupTeamMemberRole(startup.id, userId, teamRole),
-    onSuccess: (member) => {
+    onSuccess: () => {
       refresh()
-      toast.success(member.teamRole === 'ADMIN' ? 'Promoted to Admin' : 'Moved back to Member')
     },
     onError: fail("Could not update this teammate's role"),
   })
@@ -218,7 +214,6 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
     onSuccess: () => {
       refresh()
       setConfirmLeave(false)
-      toast.info('You left the team')
     },
     onError: (err) => {
       setConfirmLeave(false)

@@ -121,7 +121,6 @@ export default function IdeaDetailPage() {
     mutationFn: (userId: string) => addToTeam(id!, userId),
     onSuccess: () => {
       invalidateIdea()
-      toast.success('Added to the team')
     },
   })
 
@@ -129,7 +128,6 @@ export default function IdeaDetailPage() {
     mutationFn: (interestId: string) => shortlistInterest(interestId),
     onSuccess: () => {
       invalidateIdea()
-      toast.success('Shortlisted')
     },
   })
 
@@ -137,7 +135,6 @@ export default function IdeaDetailPage() {
     mutationFn: (interestId: string) => rejectInterest(interestId),
     onSuccess: () => {
       invalidateIdea()
-      toast.info('Interest declined')
     },
   })
 
@@ -145,7 +142,6 @@ export default function IdeaDetailPage() {
     mutationFn: () => withdrawInterest(id!),
     onSuccess: () => {
       invalidateIdea()
-      toast.info('Interest withdrawn')
     },
   })
 
@@ -153,7 +149,6 @@ export default function IdeaDetailPage() {
     mutationFn: () => removeFromTeam(id!, currentUser!.id),
     onSuccess: () => {
       invalidateIdea()
-      toast.info('You left the team')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not leave the team'),
   })
@@ -162,7 +157,6 @@ export default function IdeaDetailPage() {
     mutationFn: (userId: string) => removeFromTeam(id!, userId),
     onSuccess: () => {
       invalidateIdea()
-      toast.info('Removed from the team')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not remove teammate'),
   })

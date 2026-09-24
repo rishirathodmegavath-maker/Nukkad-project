@@ -305,7 +305,6 @@ function CommentItem({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed', post.id, 'comments'] })
       queryClient.invalidateQueries({ queryKey: ['feed'] })
-      toast.success('Comment deleted')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete comment'),
   })
@@ -555,7 +554,6 @@ export function PostCard({ post }: { post: Post }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
       queryClient.invalidateQueries({ queryKey: ['savedPosts'] })
-      toast.success(post.isSaved ? 'Removed from saved posts' : 'Post saved')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update save'),
   })
@@ -563,7 +561,6 @@ export function PostCard({ post }: { post: Post }) {
     mutationFn: () => feedService.deletePost(post.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
-      toast.success('Post deleted')
       setShowDeleteModal(false)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not delete post'),
@@ -572,23 +569,20 @@ export function PostCard({ post }: { post: Post }) {
     mutationFn: (content: string) => feedService.updatePost(post.id, content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
-      toast.success('Post updated')
       setShowEditModal(false)
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update post'),
   })
   const hideLikeCountMutation = useMutation({
     mutationFn: () => feedService.toggleHideLikeCount(post.id),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
-      toast.success(updated.hideLikeCount ? 'Like count hidden from others' : 'Like count is now visible to others')
     },
   })
   const commentsDisabledMutation = useMutation({
     mutationFn: () => feedService.toggleCommentsDisabled(post.id),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feed'] })
-      toast.success(updated.commentsDisabled ? 'Commenting turned off' : 'Commenting turned on')
     },
   })
 

@@ -40,7 +40,6 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
     mutationFn: (userId: string) => addStartupTeamMember(startupId, userId, undefined, canGrantAdmin ? teamRole : undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['startup', startupId] })
-      toast.success('Added to the team')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not add teammate'),
   })

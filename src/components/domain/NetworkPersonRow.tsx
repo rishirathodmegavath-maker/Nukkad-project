@@ -6,7 +6,6 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import * as usersService from '@/services/users.service'
 import { getOrCreateConversationWith } from '@/services/messages.service'
-import { toast } from '@/store/toast.store'
 
 /** Row layout shared by every "My Network" list (Connections / Requests / Sent) — actions differ
  *  by relationship, but identity, invalidation and error handling stay identical across all three. */
@@ -29,7 +28,6 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
     mutationFn: () => usersService.toggleConnect(user.id, 'PENDING_INCOMING'),
     onSuccess: () => {
       invalidateAll()
-      toast.success(`You're now connected with ${user.name}`)
     },
   })
 
@@ -37,7 +35,6 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
     mutationFn: () => usersService.declineConnection(user.id),
     onSuccess: () => {
       invalidateAll()
-      toast.info(`Declined ${user.name}'s request`)
     },
   })
 
@@ -45,7 +42,6 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
     mutationFn: () => usersService.toggleConnect(user.id, 'PENDING_OUTGOING'),
     onSuccess: () => {
       invalidateAll()
-      toast.info(`Cancelled your request to ${user.name}`)
     },
   })
 
@@ -53,7 +49,6 @@ export function NetworkPersonRow({ user, variant }: { user: User; variant: Netwo
     mutationFn: () => usersService.toggleConnect(user.id, 'CONNECTED'),
     onSuccess: () => {
       invalidateAll()
-      toast.info(`Removed ${user.name} from your connections`)
     },
   })
 

@@ -96,7 +96,6 @@ export function EditProfileModal({ open, onClose, user }: { open: boolean; onClo
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Profile updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update profile'),

@@ -56,7 +56,6 @@ export function EventEditModal({ open, onClose, event }: { open: boolean; onClos
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event', event.id] })
       queryClient.invalidateQueries({ queryKey: ['events'] })
-      toast.success('Event updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update event'),

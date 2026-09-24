@@ -126,7 +126,6 @@ export default function StartupDetailPage() {
     onSuccess: (updated) => {
       queryClient.setQueryData(['startup', id], updated)
       queryClient.invalidateQueries({ queryKey: ['startups'] })
-      toast.success(updated.isFollowing ? `Following ${updated.name}` : 'Unfollowed')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update your follow'),
   })

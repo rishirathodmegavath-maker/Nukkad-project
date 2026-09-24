@@ -176,7 +176,6 @@ function ExperienceFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Experience updated' : 'Experience added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save experience'),
@@ -226,7 +225,6 @@ function ExperienceSection({ user, isSelf }: { user: User; isSelf: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Experience removed')
       setDeleteId(null)
     },
   })
@@ -356,7 +354,6 @@ function EducationFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Education updated' : 'Education added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save education'),
@@ -401,7 +398,6 @@ function EducationSection({ user, isSelf }: { user: User; isSelf: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Education removed')
       setDeleteId(null)
     },
   })
@@ -522,7 +518,6 @@ function ProjectFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Project updated' : 'Project added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save project'),
@@ -573,7 +568,6 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Project removed')
       setDeleteId(null)
     },
   })
@@ -711,7 +705,6 @@ function AchievementFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Achievement updated' : 'Achievement added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save achievement'),
@@ -752,7 +745,6 @@ function AchievementsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Achievement removed')
       setDeleteId(null)
     },
   })
@@ -867,7 +859,6 @@ function CertificationFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Certification updated' : 'Certification added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save certification'),
@@ -909,7 +900,6 @@ function CertificationsSection({ user, isSelf }: { user: User; isSelf: boolean }
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Certification removed')
       setDeleteId(null)
     },
   })
@@ -1022,7 +1012,6 @@ function PublicationFormModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
-      toast.success(initial ? 'Publication updated' : 'Publication added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save publication'),
@@ -1063,7 +1052,6 @@ function PublicationsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
       queryClient.invalidateQueries({ queryKey: ['user', user.id] })
-      toast.success('Publication removed')
       setDeleteId(null)
     },
   })
@@ -1263,7 +1251,6 @@ function PendingRecommendationsCard({ userId }: { userId: string }) {
       queryClient.invalidateQueries({ queryKey: ['recommendations', 'pending'] })
       queryClient.invalidateQueries({ queryKey: ['user', userId] })
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-      toast.success('Recommendation approved')
     },
   })
 
@@ -1271,7 +1258,6 @@ function PendingRecommendationsCard({ userId }: { userId: string }) {
     mutationFn: (id: string) => recommendationsService.rejectRecommendation(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recommendations', 'pending'] })
-      toast.info('Recommendation declined')
     },
   })
 
@@ -1941,7 +1927,6 @@ export default function PersonProfilePage() {
       invalidate()
       setAvatarPhase('done')
       setTimeout(() => setAvatarPhase('idle'), 1200)
-      toast.success('Avatar updated')
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
@@ -1953,7 +1938,6 @@ export default function PersonProfilePage() {
     mutationFn: removeAvatar,
     onSuccess: () => {
       invalidate()
-      toast.success('Profile photo removed')
       setShowRemoveAvatarModal(false)
     },
   })
@@ -1964,7 +1948,6 @@ export default function PersonProfilePage() {
       invalidate()
       setCoverPhase('done')
       setTimeout(() => setCoverPhase('idle'), 1200)
-      toast.success('Cover photo updated')
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
@@ -1976,29 +1959,21 @@ export default function PersonProfilePage() {
     mutationFn: removeCoverPhoto,
     onSuccess: () => {
       invalidate()
-      toast.success('Cover photo removed')
       setShowRemoveCoverModal(false)
     },
   })
 
   const connectMutation = useMutation({
     mutationFn: () => toggleConnect(id!, user?.connectionStatus),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       invalidate()
-      const messages: Record<string, string> = {
-        PENDING_OUTGOING: `Connection request sent to ${updated.name}`,
-        CONNECTED: `You're now connected with ${updated.name}`,
-        NONE: 'Connection removed',
-      }
-      toast.success(messages[updated.connectionStatus ?? 'NONE'])
     },
   })
 
   const declineMutation = useMutation({
     mutationFn: () => declineConnection(id!),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       invalidate()
-      toast.info(`Declined ${updated.name}'s request`)
     },
   })
 

@@ -49,7 +49,6 @@ export function IdeaEditModal({ open, onClose, idea }: { open: boolean; onClose:
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['idea', idea.id] })
       queryClient.invalidateQueries({ queryKey: ['ideas'] })
-      toast.success('Idea updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update idea'),

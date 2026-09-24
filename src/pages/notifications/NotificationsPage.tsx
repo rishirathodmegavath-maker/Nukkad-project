@@ -30,7 +30,6 @@ import { PageHeader } from '@/components/domain/PageHeader'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
 import { cn, formatRelativeTime } from '@/lib/utils'
-import { toast } from '@/store/toast.store'
 import type { NotificationType, NukkadNotification } from '@/types'
 
 const typeIcon: Record<NotificationType, typeof Bell> = {
@@ -142,16 +141,14 @@ function NotificationRow({ notif }: { notif: NukkadNotification }) {
 
   const acceptMutation = useMutation({
     mutationFn: () => toggleConnect(notif.actorUserId!, 'PENDING_INCOMING'),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       refreshConnectionViews()
-      toast.success(`You are now connected with ${updated.name}`)
     },
   })
   const declineMutation = useMutation({
     mutationFn: () => declineConnection(notif.actorUserId!),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       refreshConnectionViews()
-      toast.info(`Declined ${updated.name}'s request`)
     },
   })
 

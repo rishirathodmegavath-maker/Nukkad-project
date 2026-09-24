@@ -50,7 +50,6 @@ export function StartupMaterialFormModal({
         : addStartupMaterial(startupId, materialType, { title: title || undefined, url: isExternal ? url : undefined, file: file ?? undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['startup', startupId, 'materials'] })
-      toast.success(editing ? 'Material updated' : 'Material added')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not save this material'),

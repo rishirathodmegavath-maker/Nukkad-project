@@ -31,7 +31,6 @@ export function StartupUpdatesTab({ startupId, canPost }: { startupId: string; c
     onSuccess: () => {
       setDraft('')
       queryClient.invalidateQueries({ queryKey: ['startup', startupId, 'updates'] })
-      toast.success('Update posted')
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not post this update'),
   })

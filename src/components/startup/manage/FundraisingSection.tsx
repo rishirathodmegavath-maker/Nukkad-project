@@ -321,7 +321,6 @@ export function FundraisingSection({ startup, onDirtyChange, onGo }: Fundraising
     onSuccess: () => {
       refresh()
       setConfirmStop(false)
-      toast.info('You’re no longer marked as raising')
     },
     onError: (err) => {
       setConfirmStop(false)
@@ -332,7 +331,6 @@ export function FundraisingSection({ startup, onDirtyChange, onGo }: Fundraising
     mutationFn: (id: string) => reopenFundraise(id),
     onSuccess: () => {
       refresh()
-      toast.success('You’re raising again')
     },
     onError: fail('Could not open the fundraise again'),
   })
@@ -340,7 +338,6 @@ export function FundraisingSection({ startup, onDirtyChange, onGo }: Fundraising
     mutationFn: () => updateStartup(startup.id, { isRaising: false }),
     onSuccess: () => {
       refresh()
-      toast.info('You’re no longer marked as raising')
     },
     onError: fail('Could not update your raising status'),
   })

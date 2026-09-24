@@ -40,7 +40,6 @@ export function InvestorProfileEditModal({ open, onClose, investor }: { open: bo
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investor', investor.id] })
       queryClient.invalidateQueries({ queryKey: ['investors'] })
-      toast.success('Investor profile updated')
       onClose()
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update your investor profile'),
