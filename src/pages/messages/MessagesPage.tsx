@@ -13,7 +13,6 @@ import {
   ImageOff,
   ArrowLeft,
   MoreHorizontal,
-  CheckSquare,
   Check,
   Reply,
   Users,
@@ -1324,6 +1323,14 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
     setSelectedIds(new Set())
   }
 
+  /** Entry point for select mode: "Delete for me" on a single message starts it with that message
+   * already checked, so picking more (or just confirming this one) both go through the same
+   * select → review → "Delete for me" flow, rather than a separate single-message shortcut. */
+  function startSelectingFrom(messageId: string) {
+    setSelectMode(true)
+    setSelectedIds(new Set([messageId]))
+  }
+
   function confirmDelete() {
     if (!deleteTarget) return
     hideMessagesMutation.mutate(deleteTarget, {
@@ -1487,15 +1494,6 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {messages && messages.length > 0 && (
-                  <button
-                    onClick={() => setSelectMode(true)}
-                    className="flex size-8 items-center justify-center rounded-lg text-fg-muted hover:bg-surface-hover hover:text-fg cursor-pointer transition-colors"
-                    aria-label="Select messages"
-                  >
-                    <CheckSquare className="size-4.5" />
-                  </button>
-                )}
                 <button
                   onClick={() => setDetailsOpen((o) => !o)}
                   className={cn(
@@ -1565,7 +1563,7 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
                         onReply={() => startReply(msg)}
                         onEdit={() => startEdit(msg)}
                         onUnsend={() => setUnsendTarget(msg)}
-                        onDelete={() => setDeleteTarget([msg.id])}
+                        onDelete={() => startSelectingFrom(msg.id)}
                         onJumpToMessage={jumpToMessage}
                         onRetry={() => retryFailedMessage(msg)}
                       />
