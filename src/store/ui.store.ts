@@ -1,9 +1,18 @@
 import { create } from 'zustand'
 
-const SIDEBAR_KEY = 'nukkad.sidebarCollapsed'
+const SIDEBAR_KEY = 'buildadda.sidebarCollapsed'
+/** Pre-rebrand key name — migrated on first read below so an existing preference isn't lost. */
+const LEGACY_SIDEBAR_KEY = 'nukkad.sidebarCollapsed'
 
 function getStoredSidebar(): boolean {
   if (typeof window === 'undefined') return false
+  if (localStorage.getItem(SIDEBAR_KEY) === null) {
+    const legacy = localStorage.getItem(LEGACY_SIDEBAR_KEY)
+    if (legacy !== null) {
+      localStorage.setItem(SIDEBAR_KEY, legacy)
+      localStorage.removeItem(LEGACY_SIDEBAR_KEY)
+    }
+  }
   return localStorage.getItem(SIDEBAR_KEY) === 'true'
 }
 

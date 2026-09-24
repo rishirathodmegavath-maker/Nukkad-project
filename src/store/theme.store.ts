@@ -26,10 +26,23 @@ const EMPTY_OVERRIDES: AdvancedOverrides = {
 
 let customColorPersistTimer: ReturnType<typeof setTimeout> | undefined
 
-const THEME_KEY = 'nukkad.theme'
-const CACHE_KEY = 'nukkad.appearance.cache'
-const RECENT_COLORS_KEY = 'nukkad.recentColors'
+const THEME_KEY = 'buildadda.theme'
+const CACHE_KEY = 'buildadda.appearance.cache'
+const RECENT_COLORS_KEY = 'buildadda.recentColors'
+// Pre-rebrand key names — each is migrated to its buildadda.* counterpart on first read below, so
+// an existing preference isn't silently reset to the default the moment this ships.
+const LEGACY_THEME_KEY = 'nukkad.theme'
+const LEGACY_CACHE_KEY = 'nukkad.appearance.cache'
+const LEGACY_RECENT_COLORS_KEY = 'nukkad.recentColors'
 const MAX_RECENT_COLORS = 8
+
+function migrateLegacyKey(legacyKey: string, key: string) {
+  if (localStorage.getItem(key) !== null) return
+  const legacy = localStorage.getItem(legacyKey)
+  if (legacy === null) return
+  localStorage.setItem(key, legacy)
+  localStorage.removeItem(legacyKey)
+}
 
 interface AppearanceCache {
   preset: ThemePresetId
@@ -44,6 +57,7 @@ function getSystemTheme(): ThemeMode {
 
 function getStoredPreference(): ThemePreference {
   if (typeof window === 'undefined') return 'system'
+  migrateLegacyKey(LEGACY_THEME_KEY, THEME_KEY)
   const stored = localStorage.getItem(THEME_KEY)
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
   return 'system'
@@ -60,6 +74,7 @@ function applyDataTheme(theme: ThemeMode) {
 function getCachedAppearance(): AppearanceCache {
   if (typeof window === 'undefined') return { preset: 'NUKKAD_INDIGO', customPrimaryColor: null, overrides: EMPTY_OVERRIDES }
   try {
+    migrateLegacyKey(LEGACY_CACHE_KEY, CACHE_KEY)
     const raw = localStorage.getItem(CACHE_KEY)
     if (!raw) return { preset: 'NUKKAD_INDIGO', customPrimaryColor: null, overrides: EMPTY_OVERRIDES }
     const parsed = JSON.parse(raw) as Partial<AppearanceCache>
@@ -81,6 +96,7 @@ function cacheAppearance(cache: AppearanceCache) {
 function getStoredRecentColors(): string[] {
   if (typeof window === 'undefined') return []
   try {
+    migrateLegacyKey(LEGACY_RECENT_COLORS_KEY, RECENT_COLORS_KEY)
     const raw = localStorage.getItem(RECENT_COLORS_KEY)
     const parsed = raw ? (JSON.parse(raw) as unknown) : []
     return Array.isArray(parsed) ? parsed.filter((c): c is string => typeof c === 'string') : []

@@ -187,7 +187,7 @@ export function AdminStartupFormModal({ onClose }: { onClose: () => void }) {
         >
           {VISIBILITIES.map((v) => (
             <option key={v} value={v}>
-              {v === 'Public' ? 'Public — anyone can find and view it' : 'Nukkad Members — only signed-in BuildAdda members'}
+              {v === 'Public' ? 'Public — anyone can find and view it' : 'BuildAdda Members — only signed-in BuildAdda members'}
             </option>
           ))}
         </Select>
