@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StartupMaterialFormModal } from '@/components/domain/StartupMaterialFormModal'
+import { safeHref } from '@/lib/links'
 import { toast } from '@/store/toast.store'
 import type { StartupMaterial, StartupMaterialType } from '@/types'
 
@@ -30,7 +31,7 @@ function MaterialRow({ material, canManage, onEdit, onDelete, deleting }: {
   const Icon = ICONS[material.materialType]
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border border-border/70 p-3 transition-colors hover:border-border-strong hover:bg-surface-hover">
-      <a href={material.url} target="_blank" rel="noopener noreferrer" className="group flex min-w-0 flex-1 items-center gap-3">
+      <a href={safeHref(material.url) ?? undefined} target="_blank" rel="noopener noreferrer" className="group flex min-w-0 flex-1 items-center gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-fg-brand">
           <Icon className="size-4" aria-hidden="true" />
         </span>

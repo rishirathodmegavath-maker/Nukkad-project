@@ -11,6 +11,7 @@ import * as opportunitiesService from '@/services/opportunities.service'
 import { ConnectAction } from '@/components/domain/ConnectAction'
 import { toast } from '@/store/toast.store'
 import { formatRelativeTime } from '@/lib/utils'
+import { safeHref } from '@/lib/links'
 
 const STATUS_TONE: Record<ApplicationStatus, BadgeTone> = {
   Pending: 'info',
@@ -144,20 +145,20 @@ export function ApplicationDetailModal({ application, onClose }: ApplicationDeta
           </div>
         </div>
 
-        {(application.applicant.socialLinks?.linkedin || application.applicant.socialLinks?.github || application.applicant.socialLinks?.portfolio) && (
+        {(safeHref(application.applicant.socialLinks?.linkedin ?? '') || safeHref(application.applicant.socialLinks?.github ?? '') || safeHref(application.applicant.socialLinks?.portfolio ?? '')) && (
           <div className="flex items-center gap-3 text-fg-muted">
-            {application.applicant.socialLinks?.linkedin && (
-              <a href={application.applicant.socialLinks.linkedin} target="_blank" rel="noreferrer" className="hover:text-fg" title="LinkedIn">
+            {safeHref(application.applicant.socialLinks?.linkedin ?? '') && (
+              <a href={safeHref(application.applicant.socialLinks?.linkedin ?? '')!} target="_blank" rel="noreferrer" className="hover:text-fg" title="LinkedIn">
                 <Link2 className="size-4" />
               </a>
             )}
-            {application.applicant.socialLinks?.github && (
-              <a href={application.applicant.socialLinks.github} target="_blank" rel="noreferrer" className="hover:text-fg" title="GitHub">
+            {safeHref(application.applicant.socialLinks?.github ?? '') && (
+              <a href={safeHref(application.applicant.socialLinks?.github ?? '')!} target="_blank" rel="noreferrer" className="hover:text-fg" title="GitHub">
                 <Link2 className="size-4" />
               </a>
             )}
-            {application.applicant.socialLinks?.portfolio && (
-              <a href={application.applicant.socialLinks.portfolio} target="_blank" rel="noreferrer" className="hover:text-fg" title="Portfolio">
+            {safeHref(application.applicant.socialLinks?.portfolio ?? '') && (
+              <a href={safeHref(application.applicant.socialLinks?.portfolio ?? '')!} target="_blank" rel="noreferrer" className="hover:text-fg" title="Portfolio">
                 <Globe className="size-4" />
               </a>
             )}
