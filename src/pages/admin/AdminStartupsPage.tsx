@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Rocket, ExternalLink, Plus } from 'lucide-react'
 import { listAdminStartups, setStartupRemoved } from '@/services/admin.service'
+import { memberAppUrl } from '@/lib/portal'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
@@ -123,9 +124,9 @@ export default function AdminStartupsPage() {
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(startup.createdAt)}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <Link to={`/startups/${startup.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
+                          <a href={memberAppUrl(`/startups/${startup.id}`)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
                             View <ExternalLink className="size-3" />
-                          </Link>
+                          </a>
                           <Button
                             size="sm"
                             variant={startup.removedByAdmin ? 'secondary' : 'danger-subtle'}

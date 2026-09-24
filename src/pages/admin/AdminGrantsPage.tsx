@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, ExternalLink, Plus, Sparkles, UploadCloud } from 'lucide-react'
 import { listAdminGrants, reviewGrantModeration, runGrantDiscoveryNow, setGrantRemoved } from '@/services/admin.service'
+import { memberAppUrl } from '@/lib/portal'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
@@ -192,9 +193,9 @@ export default function AdminGrantsPage() {
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(grant.createdAt)}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <Link to={`/grants/${grant.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
+                          <a href={memberAppUrl(`/grants/${grant.id}`)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
                             View <ExternalLink className="size-3" />
-                          </Link>
+                          </a>
                           {grant.moderationStatus === 'PENDING' && (
                             <>
                               <Button size="sm" onClick={() => setReviewing({ id: grant.id, label: grant.name, approving: true })}>
