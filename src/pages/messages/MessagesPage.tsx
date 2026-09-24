@@ -47,6 +47,7 @@ import * as messagesService from '@/services/messages.service'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { ImageLightbox } from '@/components/ui/ImageLightbox'
 import { DropdownMenu, DropdownItem } from '@/components/ui/DropdownMenu'
 import { PillTabs } from '@/components/ui/Tabs'
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState'
@@ -144,13 +145,24 @@ function attachmentLabel(msg: Pick<Message, 'type' | 'attachment'>): string | nu
  * types) renders nothing rather than a broken card. */
 function AttachmentPreview({ message }: { message: Message }) {
   const attachment = message.attachment
+  // Only ever set true by this exact image's own click below, so one instance's lightbox never
+  // opens for a different message — no shared/lifted state needed for what's otherwise a
+  // full-screen portal.
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   if (!attachment) return null
 
   if (attachment.kind === 'image') {
     return (
-      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="block w-64 max-w-full overflow-hidden rounded-xl border border-border-subtle">
-        <img src={attachment.url} alt={attachment.fileName ?? ''} className="max-h-72 w-full object-cover" />
-      </a>
+      <>
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="block w-64 max-w-full overflow-hidden rounded-xl border border-border-subtle cursor-pointer"
+        >
+          <img src={attachment.url} alt={attachment.fileName ?? ''} className="max-h-72 w-full object-cover" />
+        </button>
+        <ImageLightbox src={lightboxOpen ? attachment.url : null} alt={attachment.fileName ?? ''} onClose={() => setLightboxOpen(false)} />
+      </>
     )
   }
   if (attachment.kind === 'video') {
