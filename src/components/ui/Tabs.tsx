@@ -79,6 +79,11 @@ export function Tabs({ items, value, onChange, className, label }: TabsProps) {
   )
 }
 
+const pillSizeClasses = {
+  md: 'px-3.5 py-1.5 text-xs sm:text-sm',
+  sm: 'px-2.5 py-1 text-xs',
+}
+
 interface PillTabsProps {
   items: TabItem[]
   value: string
@@ -91,10 +96,13 @@ interface PillTabsProps {
   label?: string
   /** One row that scrolls sideways instead of wrapping onto several lines: for a long list of chips. */
   scrollable?: boolean
+  /** 'md' (default) matches every existing PillTabs call site; 'sm' is for a denser row sitting right
+   *  under other compact controls (e.g. a quick-filter row under a form-sized SearchFilterBar). */
+  size?: 'md' | 'sm'
 }
 
 /** Filter chips: narrow down the list on the page. Each chip is a toggle button. */
-export function PillTabs({ items, value, onChange, className, tone = 'soft', label, scrollable = false }: PillTabsProps) {
+export function PillTabs({ items, value, onChange, className, tone = 'soft', label, scrollable = false, size = 'md' }: PillTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   // `overflow-x-auto` already scrolls via the wheel (shift+scroll), a trackpad or touch — but a plain
   // mouse has no way to pan it at all, since click-and-drag isn't something the browser gives a plain
@@ -154,7 +162,8 @@ export function PillTabs({ items, value, onChange, className, tone = 'soft', lab
             aria-pressed={active}
             onClick={() => onChange(item.key)}
             className={cn(
-              'rounded-lg px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer border',
+              'rounded-lg font-medium transition-all duration-150 cursor-pointer border',
+              pillSizeClasses[size],
               scrollable && 'shrink-0 whitespace-nowrap',
               active
                 ? tone === 'soft'
