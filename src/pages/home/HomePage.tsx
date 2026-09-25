@@ -21,7 +21,7 @@ import { listStartups } from '@/services/startups.service'
 import { listOpportunities, listRecommendedOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { getChapter } from '@/services/chapters.service'
-import { listPersonalizedFeed } from '@/services/feed.service'
+import { useInfinitePersonalizedFeed } from '@/hooks/useInfinitePersonalizedFeed'
 import { IdeaCard } from '@/components/domain/IdeaCard'
 import { StartupCard } from '@/components/domain/StartupCard'
 import { HomeEventRow } from '@/components/domain/HomeEventRow'
@@ -36,6 +36,7 @@ import { Button } from '@/components/ui/Button'
 import { buttonClasses } from '@/components/ui/button-styles'
 import { Tabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
+import { InfiniteScrollSentinel } from '@/components/ui/InfiniteScrollSentinel'
 import { formatRelativeTime } from '@/lib/utils'
 import type { OpportunityMatch } from '@/types'
 
@@ -144,13 +145,11 @@ export default function HomePage() {
     enabled: !recommendedOppsQuery.data || recommendedOppsQuery.data.length === 0,
   })
   const eventsQuery = useQuery({ queryKey: ['events', 'upcoming'], queryFn: () => listEvents({ upcoming: true }) })
-  // The same canonical personalized-feed engine the dedicated Feed page's main tab uses — Home
-  // just requests a smaller one-shot batch for its teaser, with "Explore all posts" linking to
-  // the full infinite-scroll experience.
-  const feedQuery = useQuery({
-    queryKey: ['feed', 'personalized', 'home', 5],
-    queryFn: async () => (await listPersonalizedFeed(5)).content,
-  })
+  // The exact same canonical personalized-feed engine and infinite-scroll hook the dedicated Feed
+  // page's main tab uses (same query key too, so the two share one cache) — Home's "For You" tab
+  // now scrolls all the way to the last post, not just a small teaser batch.
+  const feedQuery = useInfinitePersonalizedFeed()
+  const feedPosts = feedQuery.data?.pages.flatMap((page) => page.content)
   const chapterQuery = useQuery({
     queryKey: ['chapter', currentUser?.chapterId],
     queryFn: () => getChapter(currentUser!.chapterId!),
@@ -291,11 +290,18 @@ export default function HomePage() {
                     Retry
                   </Button>
                 </Card>
-              ) : feedQuery.data && feedQuery.data.length > 0 ? (
+              ) : feedPosts && feedPosts.length > 0 ? (
                 <div className="flex flex-col gap-4">
-                  {feedQuery.data.map((post) => (
+                  {feedPosts.map((post) => (
                     <PostCard key={post.id} post={post} />
                   ))}
+                  {feedQuery.isFetchingNextPage && (
+                    <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse" />
+                  )}
+                  <InfiniteScrollSentinel
+                    enabled={!!feedQuery.hasNextPage && !feedQuery.isFetchingNextPage}
+                    onIntersect={() => feedQuery.fetchNextPage()}
+                  />
                 </div>
               ) : (
                 <Card className="p-6 text-center border border-border/80 shadow-xs">
