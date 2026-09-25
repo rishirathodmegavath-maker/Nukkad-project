@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { RouteFallback } from '@/components/ui/RouteFallback'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, KeyRound, LogOut } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
@@ -74,7 +75,9 @@ export function AdminPortalShell() {
         </div>
       </header>
       <main className="max-w-[1400px] w-full mx-auto px-4 py-6 lg:px-8 lg:py-8">
-        <Outlet />
+        <Suspense fallback={<RouteFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
       <AdminChangePasswordModal open={changingPassword} onClose={() => setChangingPassword(false)} />
       <Toaster />

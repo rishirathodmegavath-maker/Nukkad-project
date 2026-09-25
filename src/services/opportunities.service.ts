@@ -1,4 +1,4 @@
-import { apiClient, getPage } from '@/lib/api-client'
+import { ApiError, apiClient, getPage } from '@/lib/api-client'
 import { mapExperience, mapProject, mapUser, type ExperienceDto, type ProjectDto, type UserDto } from '@/services/users.service'
 import type {
   Application,
@@ -98,11 +98,13 @@ export async function listOpportunities(filters: OpportunityFilters = {}): Promi
   return dtos.map(mapOpportunity)
 }
 
+/** Undefined when there is no such posting for this person (deleted, taken down, or not yet approved: a 404). Any other failure throws. */
 export async function getOpportunity(id: string): Promise<Opportunity | undefined> {
   try {
     return mapOpportunity(await apiClient.get<OpportunityDto>(`/opportunities/${id}`))
-  } catch {
-    return undefined
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return undefined
+    throw error
   }
 }
 

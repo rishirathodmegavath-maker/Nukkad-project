@@ -120,7 +120,7 @@ export default function AdminStartupsPage() {
                       </td>
                       <td className="px-4 py-3 text-fg-muted">{startup.sector ?? '—'}</td>
                       <td className="px-4 py-3"><Badge tone="neutral">{startup.stage}</Badge></td>
-                      <td className="px-4 py-3 text-fg-muted">{startup.visibility}</td>
+                      <td className="px-4 py-3 text-fg-muted">{startup.visibility === 'Nukkad Members' ? 'BuildAdda Members' : startup.visibility}</td>
                       <td className="px-4 py-3 text-fg-muted whitespace-nowrap">{formatRelativeTime(startup.createdAt)}</td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">

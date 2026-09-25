@@ -49,9 +49,17 @@ interface EventDto {
   attendeeCount: number
   isAttending: boolean
   canManage: boolean
+  /** Absent only from a server that predates it; the client then works it out from the dates. */
+  status?: EventStatus
   startups: EventStartupSummaryDto[]
   createdAt: string
   updatedAt: string
+}
+
+function statusFromDates(startAt: string, endAt: string): EventStatus {
+  const now = Date.now()
+  if (now < new Date(startAt).getTime()) return 'UPCOMING'
+  return now > new Date(endAt).getTime() ? 'ENDED' : 'LIVE'
 }
 
 function mapEvent(dto: EventDto): NukkadEvent {
@@ -71,6 +79,7 @@ function mapEvent(dto: EventDto): NukkadEvent {
     capacity: dto.capacity ?? undefined,
     attendeeCount: dto.attendeeCount,
     isAttending: dto.isAttending,
+    status: dto.status ?? statusFromDates(dto.startAt, dto.endAt),
     canManage: dto.canManage,
     startups: (dto.startups ?? []).map((s): EventStartupSummary => ({ id: s.id, name: s.name, logoUrl: s.logoUrl ?? undefined, canUnlink: !!s.canUnlink })),
     createdAt: dto.createdAt,

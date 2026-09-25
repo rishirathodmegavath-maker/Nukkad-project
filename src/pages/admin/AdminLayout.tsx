@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { RouteFallback } from '@/components/ui/RouteFallback'
 import { cn } from '@/lib/utils'
 
 interface NavItem {
@@ -97,7 +99,9 @@ export default function AdminLayout() {
         </nav>
 
         <div className="min-w-0">
-          <Outlet />
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
     </div>

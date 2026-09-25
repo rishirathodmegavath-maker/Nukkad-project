@@ -107,7 +107,7 @@ export function MessagesMenu() {
       </IconButton>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-[360px] max-h-[460px] flex flex-col rounded-xl border border-border/80 bg-surface shadow-xl overflow-hidden animate-in">
+        <div className="absolute right-0 top-full mt-2 z-50 w-[360px] max-w-[85vw] max-h-[460px] flex flex-col rounded-xl border border-border/80 bg-surface shadow-xl overflow-hidden animate-in">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/60">
             <p className="font-bold text-fg text-sm">Recent messages</p>
             <IconButton label="Close recent messages" className="size-7" onClick={() => setOpen(false)}>

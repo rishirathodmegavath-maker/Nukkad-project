@@ -24,6 +24,8 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
   const queryClient = useQueryClient()
   const [query, setQuery] = useState('')
   const [teamRole, setTeamRole] = useState<StartupTeamRole>('MEMBER')
+  // People invited from this dialog: they are not on the team until they accept, so the list has to show they were asked.
+  const [invited, setInvited] = useState<ReadonlySet<string>>(() => new Set())
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users', 'search', query],
@@ -38,16 +40,17 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
 
   const addMutation = useMutation({
     mutationFn: (userId: string) => addStartupTeamMember(startupId, userId, undefined, canGrantAdmin ? teamRole : undefined),
-    onSuccess: () => {
+    onSuccess: (_member, userId) => {
+      setInvited((prev) => new Set(prev).add(userId))
       queryClient.invalidateQueries({ queryKey: ['startup', startupId] })
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not add teammate'),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not send the invitation'),
   })
 
   if (!open) return null
 
   return (
-    <Modal open onClose={onClose} title="Add a teammate" description={`Directly add someone to “${startupName}”.`} size="md">
+    <Modal open onClose={onClose} title="Invite a teammate" description={`Invite someone to “${startupName}”. They join the team once they accept.`} size="md">
       <div className="flex flex-col gap-4">
         <input
           id="add-teammate-search"
@@ -60,7 +63,7 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
         />
 
         {canGrantAdmin && (
-          <Select label="Add as" value={teamRole} onChange={(e) => setTeamRole(e.target.value as StartupTeamRole)}>
+          <Select label="Invite as" value={teamRole} onChange={(e) => setTeamRole(e.target.value as StartupTeamRole)}>
             <option value="MEMBER">Member</option>
             <option value="ADMIN">Admin</option>
           </Select>
@@ -83,16 +86,16 @@ export function AddTeammateModal({ startupId, startupName, existingMemberIds, ca
                   size="sm"
                   variant="secondary"
                   isLoading={addMutation.isPending && addMutation.variables === u.id}
-                  disabled={addMutation.isPending}
+                  disabled={addMutation.isPending || invited.has(u.id)}
                   onClick={() => addMutation.mutate(u.id)}
                 >
-                  Add
+                  {invited.has(u.id) ? 'Invited' : 'Invite'}
                 </Button>
               </div>
             ))
           ) : (
             <p className="text-sm text-fg-muted text-center py-4">
-              {query ? 'No one matches that search.' : 'Start typing a name to find someone to add.'}
+              {query ? 'No one matches that search.' : 'Start typing a name to find someone to invite.'}
             </p>
           )}
         </div>

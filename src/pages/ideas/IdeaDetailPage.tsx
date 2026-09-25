@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
+import { ContentUnavailable } from '@/components/domain/ContentUnavailable'
 import { Modal } from '@/components/ui/Modal'
 import { ExpressInterestModal } from '@/components/domain/ExpressInterestModal'
 import { IdeaEditModal } from '@/components/domain/IdeaEditModal'
@@ -91,7 +92,8 @@ export default function IdeaDetailPage() {
 
   const { data: idea, isLoading, isError, refetch } = useQuery({
     queryKey: ['idea', id],
-    queryFn: () => getIdea(id!),
+    // A 404 is an answer (nothing here for this person), not a failure, but a query may not resolve to undefined.
+    queryFn: async () => (await getIdea(id!)) ?? null,
     enabled: !!id,
   })
 
@@ -191,8 +193,11 @@ export default function IdeaDetailPage() {
     )
   }
 
-  if (isError || !idea) {
+  if (isError) {
     return <ErrorState title="Couldn’t load this idea" onRetry={refetch} />
+  }
+  if (!idea) {
+    return <ContentUnavailable noun="idea" browseTo="/ideas" browseLabel="Browse ideas" />
   }
 
   const isCreator = !!currentUser && idea.creatorId === currentUser.id

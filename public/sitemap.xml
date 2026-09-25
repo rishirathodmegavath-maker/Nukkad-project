@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Only the pages that are open without signing in. Everything else is for members, so it is not listed. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://app.buildadda.com/signup</loc>
+  </url>
+  <url>
+    <loc>https://app.buildadda.com/login</loc>
+  </url>
+</urlset>

@@ -2,11 +2,18 @@ import type { User } from './user'
 
 export type StartupStage = 'Idea' | 'MVP' | 'Early Traction' | 'Growth' | 'Scaling'
 
-export type StartupMembershipStatus = 'ACTIVE' | 'PENDING' | 'REJECTED'
+/** INVITED: a founder or admin asked this person to join and they have not answered yet (they are not on the team until they accept). */
+export type StartupMembershipStatus = 'ACTIVE' | 'PENDING' | 'REJECTED' | 'INVITED'
 
 export type StartupTeamRole = 'FOUNDER' | 'ADMIN' | 'MEMBER'
 
+/** The wire value is unchanged for API compatibility ('Nukkad Members' is what the backend's enum label
+ *  and its DB column still store) — only the text shown to a person should ever say BuildAdda. */
 export type StartupVisibility = 'Public' | 'Nukkad Members'
+
+export function startupVisibilityLabel(visibility: StartupVisibility): string {
+  return visibility === 'Nukkad Members' ? 'BuildAdda Members' : visibility
+}
 
 export type StartupMaterialType =
   | 'Website'

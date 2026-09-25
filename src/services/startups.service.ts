@@ -322,6 +322,16 @@ export async function removeStartupTeamMember(startupId: string, userId: string)
   await apiClient.delete(`/startups/${startupId}/members/${userId}`)
 }
 
+/** The person a founder or admin invited says yes: only now are they on the team. */
+export async function acceptStartupInvitation(startupId: string): Promise<StartupTeamMember> {
+  return mapTeamMember(await apiClient.post<StartupTeamMemberDto>(`/startups/${startupId}/invitation/accept`))
+}
+
+/** The person a founder or admin invited says no: the invitation is withdrawn. */
+export async function declineStartupInvitation(startupId: string): Promise<void> {
+  await apiClient.post(`/startups/${startupId}/invitation/decline`)
+}
+
 /** Founder-only — promotes a Member to Admin or demotes an Admin back to Member. The Founder's own role can't be changed. */
 export async function updateStartupTeamMemberRole(
   startupId: string,

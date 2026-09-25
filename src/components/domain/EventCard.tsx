@@ -8,7 +8,8 @@ import { detectMeetingProvider, formatTimeOnly, isPastDate } from '@/lib/utils'
 /** headingAs: 'h3' when the card sits under a section heading (home), 'h2' when it follows the page's h1 directly (events list). */
 export function EventCard({ event, headingAs: Heading = 'h3' }: { event: NukkadEvent; headingAs?: 'h2' | 'h3' }) {
   const date = new Date(event.startAt)
-  const isPast = isPastDate(event.endAt)
+  const isPast = event.status === 'ENDED' || isPastDate(event.endAt)
+  const isLive = event.status === 'LIVE' && !isPast
 
   return (
     <Card
@@ -47,6 +48,11 @@ export function EventCard({ event, headingAs: Heading = 'h3' }: { event: NukkadE
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-success-500 bg-success-500/10 border border-success-500/20 px-2 py-0.5 rounded-md">
                   <CheckCircle2 className="size-3" /> Registered
                 </span>
+              )}
+              {isLive && (
+                <Badge tone="success" dot className="text-xs py-0.5">
+                  Live now
+                </Badge>
               )}
               {isPast && (
                 <Badge tone="neutral" className="text-xs py-0.5 opacity-70">

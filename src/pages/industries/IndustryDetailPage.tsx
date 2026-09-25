@@ -20,7 +20,7 @@ export default function IndustryDetailPage() {
 
   const { data: industry, isLoading, isError, refetch } = useQuery({
     queryKey: ['industry', slug],
-    queryFn: () => getIndustry(slug!),
+    queryFn: async () => (await getIndustry(slug!)) ?? null,
     enabled: !!slug,
   })
 
