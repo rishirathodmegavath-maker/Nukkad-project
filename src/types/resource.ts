@@ -5,9 +5,9 @@ export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' |
 export type ResourceCategory =
   | 'free-learning'
   | 'videos'
-  | 'templates' // shown as "Pitch Deck"; the slug is unchanged so resources already filed here keep working
-  | 'playbooks' // shown as "Startup Essays"; same reason
-  | 'startup-blocks' // shown as "Startup Vlogs"; same reason
+  | 'templates' // shown as "Pitch Decks"; the slug is unchanged so resources already filed here keep working
+  | 'playbooks' // shown as "Founder Reads"; same reason
+  | 'startup-blocks' // shown as "Founder Stories"; same reason
   | 'programs'
   | 'tools'
   | 'government'
