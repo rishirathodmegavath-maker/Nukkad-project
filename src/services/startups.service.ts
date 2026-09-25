@@ -6,7 +6,6 @@ import type {
   StartupMaterial,
   StartupMaterialType,
   StartupMembershipStatus,
-  StartupRole,
   StartupStage,
   StartupTeamMember,
   StartupTeamRole,
@@ -287,14 +286,6 @@ function mapTeamMember(dto: StartupTeamMemberDto): StartupTeamMember {
   }
 }
 
-export async function requestToJoinStartup(id: string, roleId?: string, message?: string): Promise<StartupTeamMember> {
-  const dto = await apiClient.post<StartupTeamMemberDto>(`/startups/${id}/join`, {
-    roleId: roleId ?? null,
-    message: message?.trim() || null,
-  })
-  return mapTeamMember(dto)
-}
-
 export async function leaveStartup(id: string): Promise<void> {
   await apiClient.post(`/startups/${id}/leave`)
 }
@@ -403,21 +394,6 @@ export async function getStartupUpdates(startupId: string): Promise<StartupUpdat
 export async function postStartupUpdate(startupId: string, content: string): Promise<StartupUpdate> {
   const dto = await apiClient.post<StartupUpdateDto>(`/startups/${startupId}/updates`, { content })
   return { id: dto.id, content: dto.content, createdAt: dto.createdAt }
-}
-
-interface StartupRoleDto {
-  id: string
-  startupId: string
-  title: string
-  type: string
-  location: string | null
-  remote: boolean
-  createdAt: string
-}
-
-export async function getStartupRoles(startupId: string): Promise<StartupRole[]> {
-  const dtos = await apiClient.get<StartupRoleDto[]>(`/startups/${startupId}/roles`)
-  return dtos.map((r) => ({ id: r.id, title: r.title, type: r.type as StartupRole['type'], location: r.location ?? '', remote: r.remote }))
 }
 
 interface StartupMaterialDto {
