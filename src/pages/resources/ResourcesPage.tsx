@@ -157,7 +157,9 @@ export default function ResourcesPage() {
             <PillTabs
               items={[{ key: 'all', label: 'All' }, ...RESOURCE_CATEGORIES.map((c) => ({ key: c.key, label: c.label }))]}
               value={category ?? 'all'}
-              onChange={(key) => update({ category: key })}
+              // Clears any leftover type filter too — otherwise a shelf switch can silently stay
+              // narrowed to whatever type was selected before, making the new shelf look empty.
+              onChange={(key) => update({ category: key, type: '' })}
             />
             <Select
               aria-label="Filter by type"
@@ -260,7 +262,7 @@ export default function ResourcesPage() {
                 <section aria-labelledby="featured-heading">
                   <div className="mb-4 flex items-baseline justify-between gap-3">
                     <div>
-                      <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Picked for you</h2>
+                      <h2 id="featured-heading" className="text-xl font-bold tracking-tight text-fg">Featured Resources</h2>
                       <p className="text-sm text-fg-muted">A mix of videos, essays, pitch decks and more from across the library</p>
                     </div>
                     <Link to="/resources?category=all" className="inline-flex items-center gap-1 text-sm font-semibold text-fg-brand hover:underline">

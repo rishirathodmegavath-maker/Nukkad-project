@@ -32,27 +32,27 @@ export const RESOURCE_CATEGORIES: CategoryMeta[] = [
     gradient: 'from-red-500/25 via-red-500/10 to-orange-500/10',
   },
   {
-    // Stored as "templates" (see the ResourceCategory type); the shelf is called Pitch Deck.
+    // Stored as "templates" (see the ResourceCategory type); the shelf is called Pitch Decks.
     key: 'templates',
-    label: 'Pitch Deck',
+    label: 'Pitch Decks',
     blurb: 'Pitch decks and slide templates for founders',
     icon: Presentation,
     chip: 'bg-fuchsia-500/10 text-fuchsia-500',
     gradient: 'from-fuchsia-500/25 via-fuchsia-500/10 to-pink-500/10',
   },
   {
-    // Stored as "playbooks" (see the ResourceCategory type); the shelf is called Startup Essays.
+    // Stored as "playbooks" (see the ResourceCategory type); the shelf is called Founder Reads.
     key: 'playbooks',
-    label: 'Startup Essays',
+    label: 'Founder Reads',
     blurb: 'Essays and long reads for founders',
     icon: PenLine,
     chip: 'bg-emerald-500/10 text-emerald-500',
     gradient: 'from-emerald-500/25 via-emerald-500/10 to-teal-500/10',
   },
   {
-    // Stored as "startup-blocks" (see the ResourceCategory type); the shelf is called Startup Vlogs.
+    // Stored as "startup-blocks" (see the ResourceCategory type); the shelf is called Founder Stories.
     key: 'startup-blocks',
-    label: 'Startup Vlogs',
+    label: 'Founder Stories',
     blurb: 'Founder stories and behind-the-scenes vlogs',
     icon: Clapperboard,
     chip: 'bg-sky-500/10 text-sky-500',
