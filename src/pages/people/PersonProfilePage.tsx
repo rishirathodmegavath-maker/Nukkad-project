@@ -75,6 +75,7 @@ import { UserConnectionsModal } from '@/components/domain/UserConnectionsModal'
 import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { toast } from '@/store/toast.store'
 import { cn } from '@/lib/utils'
+import { safeHref } from '@/lib/links'
 import type {
   Achievement,
   Certification,
@@ -271,8 +272,8 @@ function ExperienceSection({ user, isSelf }: { user: User; isSelf: boolean }) {
                   {exp.location && ` · ${exp.location}`}
                 </p>
                 {exp.description && <p className="text-sm text-fg-secondary mt-2 leading-relaxed whitespace-pre-line">{exp.description}</p>}
-                {exp.companyUrl && (
-                  <a href={exp.companyUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
+                {safeHref(exp.companyUrl ?? '') && (
+                  <a href={safeHref(exp.companyUrl ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
                     Company website <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -640,15 +641,15 @@ function ProjectsSection({ user, isSelf }: { user: User; isSelf: boolean }) {
                 </div>
               )}
 
-              {(project.githubUrl || project.liveUrl) && (
+              {(safeHref(project.githubUrl ?? '') || safeHref(project.liveUrl ?? '')) && (
                 <div className="flex items-center gap-3 mt-3 pt-2.5 border-t border-border/50">
-                  {project.githubUrl && (
-                    <a href={project.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-fg-secondary hover:text-fg underline-offset-2 hover:underline">
+                  {safeHref(project.githubUrl ?? '') && (
+                    <a href={safeHref(project.githubUrl ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-fg-secondary hover:text-fg underline-offset-2 hover:underline">
                       GitHub <ExternalLink className="size-3" />
                     </a>
                   )}
-                  {project.liveUrl && (
-                    <a href={project.liveUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-fg-secondary hover:text-fg underline-offset-2 hover:underline">
+                  {safeHref(project.liveUrl ?? '') && (
+                    <a href={safeHref(project.liveUrl ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-fg-secondary hover:text-fg underline-offset-2 hover:underline">
                       Live Project <ExternalLink className="size-3" />
                     </a>
                   )}
@@ -780,8 +781,8 @@ function AchievementsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
                   {[a.organization, a.achievedOn && formatMonthYear(a.achievedOn)].filter(Boolean).join(' · ')}
                 </p>
                 {a.description && <p className="text-sm text-fg-secondary mt-1.5 leading-relaxed whitespace-pre-line">{a.description}</p>}
-                {a.credentialUrl && (
-                  <a href={a.credentialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
+                {safeHref(a.credentialUrl ?? '') && (
+                  <a href={safeHref(a.credentialUrl ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
                     View credential <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -935,8 +936,8 @@ function CertificationsSection({ user, isSelf }: { user: User; isSelf: boolean }
                   {[c.issuingOrg, c.issueDate && `Issued ${formatMonthYear(c.issueDate)}`, c.expiryDate && `Expires ${formatMonthYear(c.expiryDate)}`].filter(Boolean).join(' · ')}
                 </p>
                 {c.credentialId && <p className="text-xs text-fg-muted mt-0.5">Credential ID: {c.credentialId}</p>}
-                {c.credentialUrl && (
-                  <a href={c.credentialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
+                {safeHref(c.credentialUrl ?? '') && (
+                  <a href={safeHref(c.credentialUrl ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
                     Verify credential <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -1087,8 +1088,8 @@ function PublicationsSection({ user, isSelf }: { user: User; isSelf: boolean }) 
                   {[p.publisher, p.publishDate && formatMonthYear(p.publishDate)].filter(Boolean).join(' · ')}
                 </p>
                 {p.description && <p className="text-sm text-fg-secondary mt-1.5 leading-relaxed whitespace-pre-line">{p.description}</p>}
-                {p.url && (
-                  <a href={p.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
+                {safeHref(p.url ?? '') && (
+                  <a href={safeHref(p.url ?? '')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-fg-secondary hover:text-fg font-medium mt-2 underline-offset-2 hover:underline">
                     Read publication <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -1541,7 +1542,9 @@ function SkillsCard({ user, isSelf, onEdit }: { user: User; isSelf: boolean; onE
 }
 
 function LinksCard({ user, isSelf, onEdit }: { user: User; isSelf: boolean; onEdit: () => void }) {
-  const links = Object.entries(user.socialLinks ?? {}).filter(([, url]) => !!url)
+  const links = Object.entries(user.socialLinks ?? {})
+    .map(([platform, url]) => [platform, safeHref(url ?? '')] as const)
+    .filter((entry): entry is [string, string] => !!entry[1])
   if (links.length === 0 && !isSelf) return null
 
   return (

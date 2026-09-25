@@ -11,6 +11,7 @@ import * as opportunitiesService from '@/services/opportunities.service'
 import { ConnectAction } from '@/components/domain/ConnectAction'
 import { toast } from '@/store/toast.store'
 import { formatRelativeTime } from '@/lib/utils'
+import { safeHref } from '@/lib/links'
 
 const STATUS_TONE: Record<ApplicationStatus, BadgeTone> = {
   Pending: 'info',
@@ -144,25 +145,30 @@ export function ApplicationDetailModal({ application, onClose }: ApplicationDeta
           </div>
         </div>
 
-        {(application.applicant.socialLinks?.linkedin || application.applicant.socialLinks?.github || application.applicant.socialLinks?.portfolio) && (
-          <div className="flex items-center gap-3 text-fg-muted">
-            {application.applicant.socialLinks?.linkedin && (
-              <a href={application.applicant.socialLinks.linkedin} target="_blank" rel="noreferrer" className="hover:text-fg" title="LinkedIn">
-                <Link2 className="size-4" />
-              </a>
-            )}
-            {application.applicant.socialLinks?.github && (
-              <a href={application.applicant.socialLinks.github} target="_blank" rel="noreferrer" className="hover:text-fg" title="GitHub">
-                <Link2 className="size-4" />
-              </a>
-            )}
-            {application.applicant.socialLinks?.portfolio && (
-              <a href={application.applicant.socialLinks.portfolio} target="_blank" rel="noreferrer" className="hover:text-fg" title="Portfolio">
-                <Globe className="size-4" />
-              </a>
-            )}
-          </div>
-        )}
+        {(() => {
+          const linkedin = safeHref(application.applicant.socialLinks?.linkedin ?? '')
+          const github = safeHref(application.applicant.socialLinks?.github ?? '')
+          const portfolio = safeHref(application.applicant.socialLinks?.portfolio ?? '')
+          return (linkedin || github || portfolio) && (
+            <div className="flex items-center gap-3 text-fg-muted">
+              {linkedin && (
+                <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-fg" title="LinkedIn">
+                  <Link2 className="size-4" />
+                </a>
+              )}
+              {github && (
+                <a href={github} target="_blank" rel="noreferrer" className="hover:text-fg" title="GitHub">
+                  <Link2 className="size-4" />
+                </a>
+              )}
+              {portfolio && (
+                <a href={portfolio} target="_blank" rel="noreferrer" className="hover:text-fg" title="Portfolio">
+                  <Globe className="size-4" />
+                </a>
+              )}
+            </div>
+          )
+        })()}
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-fg-secondary mb-1.5">Why they're interested</p>
