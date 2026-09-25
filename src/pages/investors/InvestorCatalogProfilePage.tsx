@@ -13,6 +13,7 @@ import { CatalogIntroductionModal } from '@/components/domain/CatalogIntroductio
 import { InvestorDiscoveryLocked } from '@/components/domain/InvestorDiscoveryLocked'
 import { investorLogoSrc } from '@/lib/investor-logo'
 import { formatCurrency } from '@/lib/utils'
+import { safeHref } from '@/lib/links'
 
 // lucide-react no longer ships brand/social logos, so every link uses the same generic icon and is told
 // apart by its label instead.
@@ -57,7 +58,8 @@ export default function InvestorCatalogProfilePage() {
 
   const hasActivity = investor.investmentCount !== undefined || investor.exitCount !== undefined
   const hasChequeRange = investor.chequeMin !== undefined || investor.chequeMax !== undefined
-  const socialLinks = SOCIAL_LINKS.filter((s) => investor[s.key])
+  const websiteHref = safeHref(investor.website ?? '')
+  const socialLinks = SOCIAL_LINKS.map((s) => ({ ...s, href: safeHref(investor[s.key] ?? '') })).filter((s) => s.href)
 
   return (
     <div className="flex flex-col gap-6">
@@ -157,13 +159,13 @@ export default function InvestorCatalogProfilePage() {
                 <p className="text-sm font-medium text-fg">{[investor.location, investor.country].filter(Boolean).join(', ')}</p>
               </div>
             )}
-            {investor.website && (
-              <a href={investor.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
+            {websiteHref && (
+              <a href={websiteHref} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
                 <Globe className="size-3.5" /> Website
               </a>
             )}
-            {socialLinks.map(({ key, label }) => (
-              <a key={key} href={investor[key]} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
+            {socialLinks.map(({ key, label, href }) => (
+              <a key={key} href={href!} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
                 <Link2 className="size-3.5" /> {label}
               </a>
             ))}

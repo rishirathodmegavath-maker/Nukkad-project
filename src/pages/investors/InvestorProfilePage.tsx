@@ -14,6 +14,7 @@ import { Modal } from '@/components/ui/Modal'
 import { InvestorProfileEditModal } from '@/components/domain/InvestorProfileEditModal'
 import { IntroRequestModal } from '@/components/domain/IntroRequestModal'
 import { formatCurrency } from '@/lib/utils'
+import { safeHref } from '@/lib/links'
 import { toast } from '@/store/toast.store'
 
 export default function InvestorProfilePage() {
@@ -145,8 +146,8 @@ export default function InvestorProfilePage() {
             <p className="text-xs text-fg-muted">Portfolio</p>
             <p className="text-sm font-medium text-fg">{investor.portfolioCount} companies</p>
           </div>
-          {investor.website && (
-            <a href={investor.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
+          {safeHref(investor.website ?? '') && (
+            <a href={safeHref(investor.website ?? '')!} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700">
               <Globe className="size-3.5" /> Website
             </a>
           )}
