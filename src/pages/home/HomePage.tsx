@@ -27,17 +27,14 @@ import { StartupCard } from '@/components/domain/StartupCard'
 import { HomeEventRow } from '@/components/domain/HomeEventRow'
 import { TrendingTopicsCard } from '@/components/domain/TrendingTopicsCard'
 import { SuggestedForYou } from '@/components/domain/SuggestedForYou'
-import { MatchReasons } from '@/components/domain/MatchReasons'
 import { PostCard } from '@/components/domain/PostCard'
 import { CreatePostModal } from '@/components/domain/CreatePostModal'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { buttonClasses } from '@/components/ui/button-styles'
 import { Tabs } from '@/components/ui/Tabs'
 import { CardSkeletonGrid } from '@/components/ui/Skeleton'
 import { InfiniteScrollSentinel } from '@/components/ui/InfiniteScrollSentinel'
-import { formatRelativeTime } from '@/lib/utils'
 import type { OpportunityMatch } from '@/types'
 
 /* -------------------------------------------------------------------------- */
@@ -59,62 +56,27 @@ function StatChip({ to, icon: Icon, value, label }: { to: string; icon: LucideIc
   )
 }
 
+/** A compact opportunity row for the right rail — same idea as HomeEventRow: title, org, one match
+ *  reason, the whole thing clickable. The rail is narrow, so no badges/description here (those still
+ *  show on the full Opportunities page); this is a glanceable teaser, not the full card. */
 function HomeOpportunityRow({ match }: { match: OpportunityMatch }) {
   const opp = match.opportunity
 
   return (
     <Link
       to={`/opportunities/${opp.id}`}
-      className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-4 rounded-xl border border-border/80 bg-surface hover:border-border-strong hover:bg-surface-hover/50 transition-all shadow-2xs"
+      className="group flex items-center gap-3 rounded-lg border border-border/70 p-2.5 hover:border-border-strong hover:bg-surface-hover/50 transition-all"
     >
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2 mb-1">
-          <Badge tone="neutral" className="text-xs font-semibold">
-            {opp.type}
-          </Badge>
-          <span className="text-xs font-medium text-fg-brand bg-brand-500/10 px-2 py-0.5 rounded-md border border-brand-500/20">
-            {opp.workMode}
-          </span>
-          {opp.compensation && (
-            <span className="text-xs font-semibold text-fg-secondary bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
-              {opp.compensation}
-            </span>
-          )}
-          <span className="text-xs text-fg-muted font-medium ml-auto sm:ml-0">
-            {formatRelativeTime(opp.createdAt)}
-          </span>
-        </div>
-
-        <h3 className="font-bold text-fg text-sm sm:text-base group-hover:underline truncate">
-          {opp.title}
-        </h3>
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted mt-1">
-          <span className="font-medium text-fg-secondary flex items-center gap-1">
-            <Briefcase className="size-3 text-fg-muted shrink-0" />
-            {opp.organizationName}
-          </span>
-          {opp.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="size-3 text-fg-muted shrink-0" />
-              {opp.location}
-            </span>
-          )}
-        </div>
-
+        <p className="truncate text-sm font-bold text-fg group-hover:underline">{opp.title}</p>
+        <p className="truncate text-xs text-fg-muted mt-0.5">
+          {opp.organizationName} · {opp.workMode}
+        </p>
         {match.reasons && match.reasons.length > 0 && (
-          <div className="mt-2.5">
-            <MatchReasons reasons={match.reasons.slice(0, 2)} />
-          </div>
+          <p className="truncate text-xs text-fg-brand mt-0.5">{match.reasons[0]}</p>
         )}
       </div>
-
-      <div className="flex items-center justify-end sm:justify-center shrink-0">
-        <span className="inline-flex items-center gap-1 text-xs font-semibold text-fg bg-surface-sunken group-hover:bg-brand-600 group-hover:text-white px-3 py-1.5 rounded-lg border border-border/80 group-hover:border-brand-600 transition-colors shadow-2xs">
-          View details
-          <ChevronRight className="size-3.5" />
-        </span>
-      </div>
+      <ChevronRight className="size-4 text-fg-muted shrink-0" aria-hidden="true" />
     </Link>
   )
 }
@@ -369,57 +331,53 @@ export default function HomePage() {
               </div>
             )}
           </section>
-
-          {/* ------------------------------------------------------------ */}
-          {/* Section C: Opportunities & Roles (Compact & High Density)    */}
-          {/* ------------------------------------------------------------ */}
-          <section className="flex flex-col gap-3.5">
-            <div className="flex items-center justify-between pb-1 border-b border-border/60">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-fg">Opportunities for you</h2>
-                {currentUser?.skills && currentUser.skills.length > 0 && (
-                  <span className="hidden sm:inline-flex items-center gap-1 text-xs text-fg-muted font-medium bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
-                    <Sparkles className="size-3 text-accent-500" />
-                    Skill matched
-                  </span>
-                )}
-              </div>
-              <Link
-                to="/opportunities"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-fg hover:underline"
-              >
-                <span>View all roles</span>
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </div>
-
-            {recommendedOppsQuery.isLoading || (allOppsQuery.isLoading && !recommendedOppsQuery.data) ? (
-              <div className="flex flex-col gap-3">
-                <div className="h-20 w-full rounded-xl bg-surface-sunken/60 animate-pulse border border-border/70" />
-                <div className="h-20 w-full rounded-xl bg-surface-sunken/60 animate-pulse border border-border/70" />
-              </div>
-            ) : effectiveOpportunities.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {effectiveOpportunities.map((match) => (
-                  <HomeOpportunityRow key={match.opportunity.id} match={match} />
-                ))}
-              </div>
-            ) : (
-              <Card className="text-center py-8">
-                <Briefcase className="size-8 text-fg-muted mx-auto mb-2" />
-                <p className="text-sm font-semibold text-fg">No open opportunities right now</p>
-                <p className="text-xs text-fg-muted mt-1 max-w-sm mx-auto">
-                  New roles for co-founders, founding engineers, and interns will appear here.
-                </p>
-              </Card>
-            )}
-          </section>
         </div>
 
         {/* ============================================================== */}
         {/* Right Column / Community & Network Pulse (lg:col-span-4)       */}
         {/* ============================================================== */}
         <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
+          {/* ------------------------------------------------------------ */}
+          {/* Section C: Opportunities for you — lives in the rail, not     */}
+          {/* stacked below the feed, so this space doesn't sit empty       */}
+          {/* while the feed itself keeps scrolling.                       */}
+          {/* ------------------------------------------------------------ */}
+          <Card padding="none" className="overflow-hidden border border-border/80 shadow-2xs">
+            <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-1">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-fg">
+                <Briefcase className="size-4 text-fg-muted" aria-hidden="true" />
+                Opportunities for you
+              </h2>
+              <Link to="/opportunities" className="inline-flex items-center gap-1 text-xs font-semibold text-fg-brand hover:underline">
+                View all <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+            {currentUser?.skills && currentUser.skills.length > 0 && effectiveOpportunities.length > 0 && (
+              <div className="px-5 pt-1">
+                <span className="inline-flex items-center gap-1 text-xs text-fg-muted font-medium bg-surface-sunken px-2 py-0.5 rounded-md border border-border/60">
+                  <Sparkles className="size-3 text-accent-500" />
+                  Skill matched
+                </span>
+              </div>
+            )}
+            <div className="flex flex-col gap-2 px-5 pb-5 pt-2">
+              {recommendedOppsQuery.isLoading || (allOppsQuery.isLoading && !recommendedOppsQuery.data) ? (
+                <>
+                  <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse border border-border/70" />
+                  <div className="h-14 w-full rounded-lg bg-surface-sunken/60 animate-pulse border border-border/70" />
+                </>
+              ) : effectiveOpportunities.length > 0 ? (
+                effectiveOpportunities.slice(0, 4).map((match) => <HomeOpportunityRow key={match.opportunity.id} match={match} />)
+              ) : (
+                <div className="py-2 text-center">
+                  <Briefcase className="size-6 text-fg-muted mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-fg">No open opportunities right now</p>
+                  <p className="text-xs text-fg-muted mt-0.5">New roles will appear here.</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
           {/* ------------------------------------------------------------ */}
           {/* Section D: Trending Topics (real hashtags from recent posts)  */}
           {/* ------------------------------------------------------------ */}
