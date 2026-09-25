@@ -132,7 +132,7 @@ function RemoveMemberModal({ member, startupName, busy, onCancel, onConfirm }: {
       open={!!member}
       onClose={busy ? () => undefined : onCancel}
       title={`Remove ${name}?`}
-      description={`${name} will no longer be part of ${startupName}${member?.teamRole === 'ADMIN' ? ' and will lose their admin access' : ''}. They can ask to join again later.`}
+      description={`${name} will no longer be part of ${startupName}${member?.teamRole === 'ADMIN' ? ' and will lose their admin access' : ''}. You can invite them back later.`}
       size="sm"
       footer={
         <>
@@ -326,7 +326,7 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
         open={confirmLeave}
         onClose={() => setConfirmLeave(false)}
         title="Leave this team?"
-        description={`You’ll no longer be listed as part of ${startup.name}. You can ask to join again later.`}
+        description={`You’ll no longer be listed as part of ${startup.name}. A founder can add you back to the team later.`}
         size="sm"
         footer={
           <>

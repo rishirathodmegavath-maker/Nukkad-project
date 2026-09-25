@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { Globe, Heart, Lock, MapPin, MessageSquare, MoreHorizontal, Settings2, Trash2, UserPlus } from 'lucide-react'
+import { Globe, Heart, Lock, MapPin, MessageSquare, MoreHorizontal, Settings2, Trash2 } from 'lucide-react'
 import { getOrCreateConversationWith } from '@/services/messages.service'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -11,21 +11,19 @@ import { StartupLogo } from '@/components/startup/StartupLogo'
 import { ShareStartupButton } from '@/components/startup/ShareStartupButton'
 import { STAGE_TONE, safeHref } from '@/lib/startup-meta'
 import { toast } from '@/store/toast.store'
-import type { Startup, StartupTeamMember } from '@/types'
+import type { Startup } from '@/types'
 
 interface StartupProfileHeaderProps {
   startup: Startup
   /** Founder or admin of this startup (the server's word, from /my-membership). */
   canManage: boolean
   isFounder: boolean
-  membership?: StartupTeamMember
   /** The founder a visitor can message. Undefined when there is nobody else to contact (e.g. the viewer is the only founder). */
   contactUserId?: string
   followPending: boolean
   onFollow: () => void
   /** Opens the management page. */
   onManage: () => void
-  onJoin: () => void
   onDelete: () => void
 }
 
@@ -34,21 +32,14 @@ export function StartupProfileHeader({
   startup,
   canManage,
   isFounder,
-  membership,
   contactUserId,
   followPending,
   onFollow,
   onManage,
-  onJoin,
   onDelete,
 }: StartupProfileHeaderProps) {
   const navigate = useNavigate()
   const isFollowing = !!startup.isFollowing
-  const isActiveMember = membership?.status === 'ACTIVE'
-  const isPending = membership?.status === 'PENDING'
-  const isRejected = membership?.status === 'REJECTED'
-  // An invitation is answered in the banner above; asking to join over the top of it would just be refused.
-  const isInvited = membership?.status === 'INVITED'
   const websiteHref = safeHref(startup.website)
   const websiteLabel = startup.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')
 
@@ -137,11 +128,6 @@ export function StartupProfileHeader({
             {contactUserId && (
               <Button variant="secondary" leftIcon={<MessageSquare className="size-4" />} isLoading={contact.isPending} onClick={() => contact.mutate()}>
                 Contact
-              </Button>
-            )}
-            {!isFounder && !isActiveMember && !isInvited && (
-              <Button variant="secondary" leftIcon={<UserPlus className="size-4" />} disabled={isPending} onClick={onJoin}>
-                {isPending ? 'Request sent' : isRejected ? 'Request again' : 'Join startup'}
               </Button>
             )}
             {canManage && (

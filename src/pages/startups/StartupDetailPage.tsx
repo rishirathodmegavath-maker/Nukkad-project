@@ -8,7 +8,6 @@ import {
   getStartupMembers,
   getMyStartupMembership,
   getStartupJoinRequests,
-  getStartupRoles,
 } from '@/services/startups.service'
 import { getEventsForStartup } from '@/services/events.service'
 import { getCurrentUserId } from '@/services/users.service'
@@ -21,7 +20,6 @@ import { StartupInvitationBanner } from '@/components/startup/StartupInvitationB
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
-import { JoinStartupModal } from '@/components/domain/JoinStartupModal'
 import { DeleteStartupModal } from '@/components/startup/manage/DeleteStartupModal'
 import { managePath, type SectionKey } from '@/components/startup/manage/manage-model'
 import { StartupProfileHeader } from '@/components/startup/StartupProfileHeader'
@@ -59,7 +57,6 @@ export default function StartupDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [joinModalOpen, setJoinModalOpen] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   const tabParam = searchParams.get('tab')
@@ -114,13 +111,6 @@ export default function StartupDetailPage() {
   })
 
   const openPositions = useStartupOpenPositions(id, canManage)
-
-  // Only the join-request role picker reads these, so they are fetched when that dialog is opened.
-  const rolesQuery = useQuery({
-    queryKey: ['startup', id, 'roles'],
-    queryFn: () => getStartupRoles(id!),
-    enabled: !!id && joinModalOpen,
-  })
 
   const followMutation = useMutation({
     mutationFn: () => toggleFollowStartup(id!),
@@ -187,12 +177,10 @@ export default function StartupDetailPage() {
         startup={startup}
         canManage={canManage}
         isFounder={isFounder}
-        membership={membership}
         contactUserId={contactUserId}
         followPending={followMutation.isPending}
         onFollow={() => followMutation.mutate()}
         onManage={() => manage()}
-        onJoin={() => setJoinModalOpen(true)}
         onDelete={() => setConfirmDeleteOpen(true)}
       />
 
@@ -271,13 +259,6 @@ export default function StartupDetailPage() {
         </div>
       </div>
 
-      <JoinStartupModal
-        startupId={startup.id}
-        startupName={startup.name}
-        roles={rolesQuery.data ?? []}
-        open={joinModalOpen}
-        onClose={() => setJoinModalOpen(false)}
-      />
       {isFounder && <DeleteStartupModal startup={startup} open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} />}
     </div>
   )
