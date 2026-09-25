@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ErrorState } from '@/components/ui/EmptyState'
+import { StartupInvitationBanner } from '@/components/startup/StartupInvitationBanner'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
@@ -179,6 +180,8 @@ export default function StartupDetailPage() {
           <p className="text-sm text-fg-secondary">{startup.rejectionReason ?? 'This startup was not approved.'}</p>
         </Card>
       )}
+
+      {membership?.status === 'INVITED' && <StartupInvitationBanner startup={startup} membership={membership} />}
 
       <StartupProfileHeader
         startup={startup}

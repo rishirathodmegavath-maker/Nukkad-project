@@ -1,0 +1,15 @@
+# The signed-out pages are the only public ones; everything else needs an account, so there is nothing to gain from
+# crawling it. (The admin site sends its own noindex header.)
+User-agent: *
+Allow: /login
+Allow: /signup
+Disallow: /messages
+Disallow: /settings
+Disallow: /wallet
+Disallow: /notifications
+Disallow: /onboarding
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /auth/
+
+Sitemap: https://app.buildadda.com/sitemap.xml

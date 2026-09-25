@@ -47,6 +47,8 @@ export function StartupProfileHeader({
   const isActiveMember = membership?.status === 'ACTIVE'
   const isPending = membership?.status === 'PENDING'
   const isRejected = membership?.status === 'REJECTED'
+  // An invitation is answered in the banner above; asking to join over the top of it would just be refused.
+  const isInvited = membership?.status === 'INVITED'
   const websiteHref = safeHref(startup.website)
   const websiteLabel = startup.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')
 
@@ -137,7 +139,7 @@ export function StartupProfileHeader({
                 Contact
               </Button>
             )}
-            {!isFounder && !isActiveMember && (
+            {!isFounder && !isActiveMember && !isInvited && (
               <Button variant="secondary" leftIcon={<UserPlus className="size-4" />} disabled={isPending} onClick={onJoin}>
                 {isPending ? 'Request sent' : isRejected ? 'Request again' : 'Join startup'}
               </Button>

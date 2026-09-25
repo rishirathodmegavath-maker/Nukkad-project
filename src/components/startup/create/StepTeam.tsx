@@ -179,7 +179,7 @@ export function StepTeam({ draft, onChange }: StepTeamProps) {
             )}
           </div>
         </div>
-        <p className="mt-3 text-xs text-fg-muted">Teammates are added, and notified, as soon as your startup is created.</p>
+        <p className="mt-3 text-xs text-fg-muted">Teammates are invited as soon as your startup is created. They join once they accept.</p>
       </section>
     </div>
   )

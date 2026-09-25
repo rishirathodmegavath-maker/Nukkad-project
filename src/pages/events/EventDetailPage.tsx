@@ -39,6 +39,7 @@ import {
   isPastDate,
 } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
+import { safeHref } from '@/lib/links'
 import type { EventStartupSummary } from '@/types'
 
 export default function EventDetailPage() {
@@ -134,7 +135,10 @@ export default function EventDetailPage() {
   }
 
   const isFull = !event.isAttending && event.capacity !== undefined && event.attendeeCount >= event.capacity
-  const isPast = isPastDate(event.endAt)
+  const isPast = event.status === 'ENDED' || isPastDate(event.endAt)
+  const isLive = event.status === 'LIVE' && !isPast
+  // The organizer typed this address, so it is opened only if it really is a web address.
+  const meetingHref = event.meetingUrl ? safeHref(event.meetingUrl) : null
   const spotsLeft = event.capacity ? Math.max(0, event.capacity - (event.attendeeCount ?? 0)) : null
   const capacityPercent = event.capacity ? Math.min(100, ((event.attendeeCount ?? 0) / event.capacity) * 100) : 0
 
@@ -189,6 +193,7 @@ export default function EventDetailPage() {
                       <CheckCircle2 className="size-3.5" /> Registered
                     </span>
                   )}
+                  {isLive && <Badge tone="success" dot>Live now</Badge>}
                   {isPast && <Badge tone="neutral">Past Event</Badge>}
                 </div>
 
@@ -308,8 +313,8 @@ export default function EventDetailPage() {
             )}
 
             {/* Online Meeting URL */}
-            {event.isOnline && event.meetingUrl && (
-              <a href={event.meetingUrl} target="_blank" rel="noopener noreferrer" className="block">
+            {event.isOnline && event.meetingUrl && meetingHref && (
+              <a href={meetingHref} target="_blank" rel="noopener noreferrer" className="block">
                 <Button variant="secondary" className="w-full font-medium" leftIcon={<ExternalLink className="size-3.5" />}>
                   Join via {detectMeetingProvider(event.meetingUrl)}
                 </Button>

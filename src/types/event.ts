@@ -38,6 +38,8 @@ export interface NukkadEvent {
   capacity?: number
   attendeeCount: number
   isAttending: boolean
+  /** Server-computed from the start and end: upcoming, happening now, or over. */
+  status: EventStatus
   /** Server-computed: whether the viewer (admin, or this chapter's president) can edit/delete this event. */
   canManage: boolean
   /** Startups tagged on this event — a real stored relationship, not a text mention. */

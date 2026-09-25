@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api-client'
+import { ApiError, apiClient } from '@/lib/api-client'
 
 /** An industry derived from real sector data on startups and catalog investors — not a curated
  *  taxonomy. One entry per distinct sector spelling on BuildAdda right now. */
@@ -27,10 +27,12 @@ export async function listIndustries(params: { q?: string } = {}): Promise<Indus
   return apiClient.get<Industry[]>(`/industries${suffix}`)
 }
 
+/** Undefined when there is no such industry (a 404 — the slug matches no real sector data). Any other failure throws. */
 export async function getIndustry(slug: string): Promise<IndustryDetail | undefined> {
   try {
     return await apiClient.get<IndustryDetail>(`/industries/${encodeURIComponent(slug)}`)
-  } catch {
-    return undefined
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return undefined
+    throw error
   }
 }

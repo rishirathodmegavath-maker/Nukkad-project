@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
+import { ContentUnavailable } from '@/components/domain/ContentUnavailable'
+import { isApplicationDeadlinePassed } from '@/lib/opportunityDeadline'
 import { Modal } from '@/components/ui/Modal'
 import { formatRelativeTime } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
@@ -56,7 +58,8 @@ export default function OpportunityDetailPage() {
 
   const { data: opp, isLoading, isError, refetch } = useQuery({
     queryKey: ['opportunity', id],
-    queryFn: () => getOpportunity(id!),
+    // A 404 is an answer (nothing here for this person), not a failure, but a query may not resolve to undefined.
+    queryFn: async () => (await getOpportunity(id!)) ?? null,
     enabled: !!id,
   })
 
@@ -137,11 +140,16 @@ export default function OpportunityDetailPage() {
     )
   }
 
-  if (isError || !opp) {
+  if (isError) {
     return <ErrorState title="Couldn’t load this opportunity" onRetry={refetch} />
+  }
+  if (!opp) {
+    return <ContentUnavailable noun="opportunity" browseTo="/opportunities" browseLabel="Browse opportunities" />
   }
 
   const hasActed = usesInterest ? !!opp.hasExpressedInterest : !!opp.hasApplied
+  // Manually closed by the poster, or the last day to apply has gone by (the server refuses both).
+  const applicationsClosed = opp.closed || isApplicationDeadlinePassed(opp.applicationDeadline)
   const applicationStatus = opp.applicationStatus
   const canWithdraw = applicationStatus === 'Pending' || applicationStatus === 'Shortlisted'
 
@@ -177,7 +185,7 @@ export default function OpportunityDetailPage() {
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <Badge tone="neutral">{opp.type}</Badge>
-                {opp.closed && <Badge tone="danger">🔒 Applications closed</Badge>}
+                {applicationsClosed && <Badge tone="danger">🔒 Applications closed</Badge>}
               </div>
               <span className="text-xs text-fg-muted font-medium">{formatRelativeTime(opp.createdAt)}</span>
             </div>
@@ -303,11 +311,11 @@ export default function OpportunityDetailPage() {
           ) : usesInterest ? (
             <Button
               className="w-full"
-              disabled={hasActed || opp.closed}
+              disabled={hasActed || applicationsClosed}
               isLoading={interestMutation.isPending}
               onClick={() => interestMutation.mutate()}
             >
-              {opp.closed ? 'Closed' : hasActed ? 'Sent' : CTA_LABEL[opp.type]}
+              {applicationsClosed ? 'Closed' : hasActed ? 'Sent' : CTA_LABEL[opp.type]}
             </Button>
           ) : applicationStatus ? (
             <div className="flex flex-col gap-3">
@@ -336,8 +344,8 @@ export default function OpportunityDetailPage() {
               )}
             </div>
           ) : (
-            <Button className="w-full" disabled={opp.closed} onClick={() => setApplyModalOpen(true)}>
-              {opp.closed ? 'Applications closed' : CTA_LABEL[opp.type]}
+            <Button className="w-full" disabled={applicationsClosed} onClick={() => setApplyModalOpen(true)}>
+              {applicationsClosed ? 'Applications closed' : CTA_LABEL[opp.type]}
             </Button>
           )}
           <p className="text-xs text-fg-muted text-center mt-3 flex items-center justify-center gap-1.5">

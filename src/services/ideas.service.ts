@@ -1,4 +1,4 @@
-import { apiClient, getPage } from '@/lib/api-client'
+import { ApiError, apiClient, getPage } from '@/lib/api-client'
 import { mapExperience, mapProject, mapUser, type ExperienceDto, type ProjectDto, type UserDto } from '@/services/users.service'
 import type { ContributionArea, ExpressInterestInput, Idea, IdeaInterest, IdeaMatch, IdeaStage, MatchLabel } from '@/types'
 
@@ -68,11 +68,13 @@ export async function listIdeas(filters: IdeaFilters = {}): Promise<Idea[]> {
   return dtos.map(mapIdea)
 }
 
+/** Undefined when there is no such idea for this person (deleted, taken down, or not yet approved: a 404). Any other failure throws. */
 export async function getIdea(id: string): Promise<Idea | undefined> {
   try {
     return mapIdea(await apiClient.get<IdeaDto>(`/ideas/${id}`))
-  } catch {
-    return undefined
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return undefined
+    throw error
   }
 }
 

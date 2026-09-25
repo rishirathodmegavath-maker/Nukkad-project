@@ -282,11 +282,17 @@ export function StartupTeamTab({ startup, members, membersLoading, canManage, is
       {membership && !membership.isFounder && (
         <Card padding="sm" className="flex flex-wrap items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-2.5">
-            <Badge tone={isActiveMember ? 'success' : membership.status === 'PENDING' ? 'info' : 'danger'}>
-              {isActiveMember ? 'On the team' : membership.status === 'PENDING' ? 'Request sent' : 'Not selected'}
+            <Badge tone={isActiveMember ? 'success' : membership.status === 'PENDING' || membership.status === 'INVITED' ? 'info' : 'danger'}>
+              {isActiveMember ? 'On the team' : membership.status === 'PENDING' ? 'Request sent' : membership.status === 'INVITED' ? 'Invited' : 'Not selected'}
             </Badge>
             <p className="text-sm text-fg-muted [overflow-wrap:anywhere]">
-              {isActiveMember ? `You’re part of ${startup.name}.` : membership.status === 'PENDING' ? 'The founders will review your request.' : 'Your request wasn’t accepted.'}
+              {isActiveMember
+                ? `You’re part of ${startup.name}.`
+                : membership.status === 'PENDING'
+                  ? 'The founders will review your request.'
+                  : membership.status === 'INVITED'
+                    ? 'You’ve been invited. Accept or decline at the top of the page.'
+                    : 'Your request wasn’t accepted.'}
             </p>
           </div>
           {isActiveMember && (

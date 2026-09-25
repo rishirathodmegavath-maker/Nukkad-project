@@ -1,0 +1,14 @@
+{
+  "name": "BuildAdda",
+  "short_name": "BuildAdda",
+  "description": "Discover people, ideas, startups and opportunities. Build your next thing.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

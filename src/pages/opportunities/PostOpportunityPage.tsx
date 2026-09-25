@@ -389,6 +389,7 @@ export default function PostOpportunityPage() {
               label="Application deadline"
               hint="Optional"
               type="date"
+              min={new Date().toISOString().slice(0, 10)}
               value={applicationDeadline}
               onChange={(e) => setApplicationDeadline(e.target.value)}
             />

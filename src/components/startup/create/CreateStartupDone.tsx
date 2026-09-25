@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { buttonClasses } from '@/components/ui/button-styles'
 import { Card } from '@/components/ui/Card'
 import { EntityLogo } from '@/components/ui/EntityLogo'
-import type { Startup } from '@/types'
+import { startupVisibilityLabel, type Startup } from '@/types'
 import type { TeamRoleChoice } from '@/components/startup/create/create-startup-model'
 
 export interface CreateResult {
@@ -41,7 +41,7 @@ export function CreateStartupDone({ result }: { result: CreateResult }) {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-1.5">
           <Badge tone={startup.visibility === 'Public' ? 'success' : 'neutral'} size="md">
-            {startup.visibility}
+            {startupVisibilityLabel(startup.visibility)}
           </Badge>
           <Badge tone="neutral" size="md">
             Fundraising {startup.fundraisingVisible ? 'visible' : 'hidden'}
@@ -57,12 +57,12 @@ export function CreateStartupDone({ result }: { result: CreateResult }) {
         )}
         {team.length > 0 && failedTeam.length === 0 && (
           <Line ok>
-            {team.length} {team.length === 1 ? 'teammate' : 'teammates'} added and notified
+            {team.length} {team.length === 1 ? 'teammate' : 'teammates'} invited. They join once they accept
           </Line>
         )}
         {failedTeam.map((t) => (
           <Line key={t.name} ok={false}>
-            {t.name} couldn’t be added ({t.error}). Add them from the Team tab.
+            {t.name} couldn’t be invited ({t.error}). Invite them from the Team tab.
           </Line>
         ))}
       </ul>
