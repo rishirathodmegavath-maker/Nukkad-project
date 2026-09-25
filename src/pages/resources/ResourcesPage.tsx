@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, ChevronRight, FolderOpen, Search, X } from 'lucide-react'
+import { ArrowRight, ChevronRight, FolderOpen, GraduationCap, Search, X } from 'lucide-react'
 import { listResourceMix, listResourcesPage } from '@/services/resources.service'
 import { ResourceCard } from '@/components/domain/ResourceCard'
 import { Button } from '@/components/ui/Button'
@@ -21,7 +21,7 @@ const GRID = 'grid sm:grid-cols-2 xl:grid-cols-3 gap-5'
 /**
  * The resource library. The front page shows the shelves, a "featured" row and what's new; picking a shelf
  * (or searching) switches to a browsable, filterable, paged grid. All state lives in the URL
- * (`?category=free-learning&type=Video&q=deck&page=1`), so a shelf can be linked to and the back button works.
+ * (`?category=videos&type=Video&q=deck&page=1`), so a shelf can be linked to and the back button works.
  * Resources are curated by the BuildAdda team, so there is no upload action anywhere here.
  */
 export default function ResourcesPage() {
@@ -216,6 +216,20 @@ export default function ResourcesPage() {
       ) : (
         <>
           <section aria-label="Browse by shelf" className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {/* Not a shelf: every resource in the library is free, so this links straight to everything
+                instead of being one topical category among the real shelves below. */}
+            <Link
+              to="/resources?category=all"
+              className="group flex flex-col gap-3 rounded-xl border border-border/80 bg-surface p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md"
+            >
+              <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500">
+                <GraduationCap className="size-5" />
+              </span>
+              <span>
+                <span className="block text-sm font-bold leading-snug text-fg">Free Learning</span>
+                <span className="mt-0.5 block text-xs leading-snug text-fg-muted">Everything here is free — browse the whole library</span>
+              </span>
+            </Link>
             {RESOURCE_CATEGORIES.map((c) => {
               const Icon = c.icon
               return (

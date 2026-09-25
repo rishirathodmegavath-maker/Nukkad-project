@@ -3,6 +3,8 @@ export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' |
 
 /** The shelves of the library. Slugs match the backend's ResourceCategory. */
 export type ResourceCategory =
+  // Retired as a pickable shelf (everything in the library is free, so singling one shelf out as
+  // "free" was misleading) — kept in the type only because older resources may still carry it.
   | 'free-learning'
   | 'videos'
   | 'templates' // shown as "Pitch Decks"; the slug is unchanged so resources already filed here keep working
