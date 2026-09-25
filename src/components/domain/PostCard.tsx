@@ -11,7 +11,6 @@ import {
   MoreHorizontal,
   Trash2,
   Pencil,
-  Eye,
   EyeOff,
   ExternalLink,
   Info,
@@ -652,12 +651,6 @@ export function PostCard({ post }: { post: Post }) {
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update post'),
   })
-  const hideLikeCountMutation = useMutation({
-    mutationFn: () => feedService.toggleHideLikeCount(post.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] })
-    },
-  })
   const commentsDisabledMutation = useMutation({
     mutationFn: () => feedService.toggleCommentsDisabled(post.id),
     onSuccess: () => {
@@ -666,10 +659,6 @@ export function PostCard({ post }: { post: Post }) {
   })
 
   const isOwnPost = currentUser?.id === post.authorId
-  // Seeded platform engagement is ADDED here for display only — likesCount itself (used above for
-  // the optimistic like-toggle math) stays the real, togglable count untouched by this.
-  const displayLikesCount = post.likesCount + (post.platformEngagementCount ?? 0)
-  const showLikeCount = displayLikesCount > 0 && (!post.hideLikeCount || isOwnPost)
   const publisherLabel = publisherIdentityLabel(post.publisherIdentity)
 
   const meta = typeMeta[post.type]
@@ -744,11 +733,8 @@ export function PostCard({ post }: { post: Post }) {
               >
                 Edit
               </DropdownItem>
-              <DropdownItem
-                icon={post.hideLikeCount ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-                onClick={() => hideLikeCountMutation.mutate()}
-              >
-                {post.hideLikeCount ? 'Show like count to others' : 'Hide like count to others'}
+              <DropdownItem icon={<Users className="size-4" />} onClick={() => setLikesOpen(true)}>
+                View likers
               </DropdownItem>
               <DropdownItem
                 icon={post.commentsDisabled ? <MessageCircle className="size-4" /> : <MessageCircleOff className="size-4" />}
@@ -763,6 +749,9 @@ export function PostCard({ post }: { post: Post }) {
             </>
           ) : (
             <>
+              <DropdownItem icon={<Users className="size-4" />} onClick={() => setLikesOpen(true)}>
+                View likers
+              </DropdownItem>
               <DropdownItem icon={<ExternalLink className="size-4" />} onClick={() => navigate(`/feed/${post.id}`)}>
                 Go to post
               </DropdownItem>
@@ -836,16 +825,6 @@ export function PostCard({ post }: { post: Post }) {
           >
             <Heart className={cn('size-5 transition-transform', post.isLiked && 'fill-current scale-110')} />
           </button>
-          {showLikeCount && (
-            <button
-              type="button"
-              onClick={() => setLikesOpen(true)}
-              aria-label={`View who liked this post (${displayLikesCount})`}
-              className="-ml-1.5 h-9 min-w-6 rounded-lg px-1.5 text-sm font-semibold tabular-nums text-fg-secondary hover:text-fg hover:underline cursor-pointer transition-colors"
-            >
-              {displayLikesCount}
-            </button>
-          )}
         </div>
 
         <button

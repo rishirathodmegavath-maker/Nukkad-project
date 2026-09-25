@@ -87,7 +87,7 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
   const [visibility, setVisibility] = useState<PostVisibility>('PUBLIC')
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [authorEmail, setAuthorEmail] = useState('')
-  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('BUILDADDA')
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('ARJUN_MEHTA')
   // A suggested starting point, not hidden magic — visible and editable right here; the admin can
   // change it to anything non-negative, or clear it for none at all.
   const [platformEngagement, setPlatformEngagement] = useState('15')
@@ -242,7 +242,7 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
             </Select>
             <Input
               label="Platform engagement"
-              hint={'Added to real likes for display only — never appears in "Liked by"'}
+              hint={'Internal only — never shown to members, never a real like, never appears in "Liked by"'}
               type="number"
               min={0}
               value={platformEngagement}
