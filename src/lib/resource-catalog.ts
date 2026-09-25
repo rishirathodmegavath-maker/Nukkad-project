@@ -13,16 +13,10 @@ export interface CategoryMeta {
   gradient: string
 }
 
-/** The shelves, in the order the front page shows them. Colours are literal classes so Tailwind keeps them. */
+/** The shelves, in the order the front page shows them. Colours are literal classes so Tailwind keeps them.
+ *  Free Learning is deliberately NOT here — the whole library is free, so it isn't a topical shelf an
+ *  admin files things under; it's a fixed link to everything (see ResourcesPage's shelf grid). */
 export const RESOURCE_CATEGORIES: CategoryMeta[] = [
-  {
-    key: 'free-learning',
-    label: 'Free Learning',
-    blurb: 'Courses and free learning material',
-    icon: GraduationCap,
-    chip: 'bg-indigo-500/10 text-indigo-500',
-    gradient: 'from-indigo-500/25 via-indigo-500/10 to-sky-500/10',
-  },
   {
     key: 'videos',
     label: 'Videos',
