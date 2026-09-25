@@ -5,7 +5,9 @@ export const MEDIA_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,video/mp4
 export const FILE_ACCEPT =
   '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,application/pdf,application/msword,application/vnd.ms-powerpoint,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 export const MAX_ATTACHMENTS = 10
-/** The server rejects a bigger upload (spring.servlet.multipart.max-file-size). */
+/** A convenience check so a too-big pick is refused before it uploads — the server enforces its own limit
+ * regardless (chat: FileStorageService.MAX_CONVERSATION_ATTACHMENT_BYTES, the same 50MB; anything larger
+ * than the 100MB multipart ceiling never reaches a handler at all). */
 export const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024
 export const UNSUPPORTED_FILE_MESSAGE = 'Attach an image (PNG, JPG, WEBP, GIF), a video (MP4, WEBM, MOV), or a PDF, Word, PowerPoint or Excel file.'
 

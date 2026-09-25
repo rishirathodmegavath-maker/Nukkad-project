@@ -60,6 +60,7 @@ import { ReportModal } from '@/components/domain/ReportModal'
 import { CreateGroupModal } from '@/components/domain/CreateGroupModal'
 import { DocumentIcon } from '@/components/domain/DocumentIcon'
 import { attachmentKindOf, FILE_ACCEPT, MAX_ATTACHMENT_BYTES, UNSUPPORTED_FILE_MESSAGE } from '@/lib/attachments'
+import { isAttachmentUrlStale } from '@/lib/attachmentUrl'
 import { toast } from '@/store/toast.store'
 import { cn, formatRelativeTime, formatDateTime, formatSeenTime, pluralize } from '@/lib/utils'
 import type { AttachmentKind, Conversation, Message, User } from '@/types'
@@ -154,37 +155,121 @@ function AttachmentPreview({ message }: { message: Message }) {
   // opens for a different message — no shared/lifted state needed for what's otherwise a
   // full-screen portal.
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  // The attachment URL is presigned and expires. When it stops working the message's own URL is replaced by a
+  // freshly minted one held here (never written anywhere durable); `failedUrl` marks a URL we already know is
+  // dead, so a broken object can never send this into a refresh loop.
+  const [refreshed, setRefreshed] = useState<{ from: string; url: string; issuedAt: number | undefined } | null>(null)
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+  const refreshing = useRef(false)
   if (!attachment) return null
+
+  // An optimistic bubble shows a local blob: preview that never expires and has nothing to refresh.
+  const isLocalPreview = !!message.pending || !!message.failed
+  const serverUrl = attachment.url
+  // A newer URL arriving through the message itself (a refetch or WebSocket push) supersedes one minted here.
+  const usingRefreshedUrl = !!refreshed && refreshed.from === serverUrl
+  const current = usingRefreshedUrl ? refreshed : { url: serverUrl, issuedAt: attachment.urlIssuedAt }
+  const url = current.url
+  const unavailable = !isLocalPreview && (!url || failedUrl === url)
+
+  async function refresh(): Promise<string | null> {
+    if (refreshing.current) return null
+    refreshing.current = true
+    try {
+      const fresh = await messagesService.refreshMessageAttachment(message.conversationId, message.id)
+      if (!fresh.url) throw new Error('No URL')
+      setRefreshed({ from: serverUrl, url: fresh.url, issuedAt: fresh.urlIssuedAt })
+      setFailedUrl(null)
+      return fresh.url
+    } catch {
+      setFailedUrl(url)
+      return null
+    } finally {
+      refreshing.current = false
+    }
+  }
+
+  // An <img>/<video> that fails to load: first time, ask for a fresh URL; if even that one fails to load
+  // (or the server won't mint one — the message was unsent or hidden), stop and say so.
+  function onMediaError() {
+    if (isLocalPreview) return
+    if (usingRefreshedUrl) {
+      setFailedUrl(url)
+      return
+    }
+    void refresh()
+  }
+
+  // Before using a link that might have expired, swap in a fresh one — null means it can't be had.
+  async function freshUrlOrNull(): Promise<string | null> {
+    return isLocalPreview || !isAttachmentUrlStale(current.issuedAt) ? url : refresh()
+  }
+
+  function retry() {
+    setRefreshed(null)
+    setFailedUrl(null)
+    void refresh()
+  }
+
+  if (unavailable) {
+    return (
+      <div role="status" className="flex w-64 max-w-full items-center gap-2.5 rounded-xl border border-border-subtle bg-surface px-3.5 py-3">
+        <ImageOff className="size-5 shrink-0 text-fg-muted" aria-hidden="true" />
+        <span className="min-w-0 flex-1 text-xs text-fg-muted">This attachment isn't available right now.</span>
+        <button type="button" onClick={retry} className="shrink-0 text-xs font-medium text-brand-600 hover:text-brand-700 cursor-pointer">
+          Try again
+        </button>
+      </div>
+    )
+  }
 
   if (attachment.kind === 'image') {
     return (
       <>
         <button
           type="button"
-          onClick={() => setLightboxOpen(true)}
+          onClick={async () => {
+            if (await freshUrlOrNull()) setLightboxOpen(true)
+          }}
           className="block w-64 max-w-full overflow-hidden rounded-xl border border-border-subtle cursor-pointer"
         >
-          <img src={attachment.url} alt={attachment.fileName ?? ''} className="max-h-72 w-full object-cover" />
+          <img src={url} alt={attachment.fileName ?? ''} onError={onMediaError} className="max-h-72 w-full object-cover" />
         </button>
-        <ImageLightbox src={lightboxOpen ? attachment.url : null} alt={attachment.fileName ?? ''} onClose={() => setLightboxOpen(false)} />
+        <ImageLightbox src={lightboxOpen ? url : null} alt={attachment.fileName ?? ''} onClose={() => setLightboxOpen(false)} />
       </>
     )
   }
   if (attachment.kind === 'video') {
     return (
       <video
-        src={attachment.url}
+        src={url}
         controls
         preload="metadata"
+        onError={onMediaError}
         className="max-h-72 w-64 max-w-full rounded-xl border border-border-subtle bg-black"
       />
     )
   }
   return (
     <a
-      href={attachment.url}
+      href={url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(e) => {
+        // A recent link is used as-is (a normal link: middle-click, copy address...). Only an old one is replaced
+        // first — in a tab opened right now, inside the click, so the browser doesn't block it as a popup.
+        if (isLocalPreview || !isAttachmentUrlStale(current.issuedAt)) return
+        e.preventDefault()
+        const tab = window.open('', '_blank')
+        void refresh().then((fresh) => {
+          if (fresh && tab) {
+            tab.opener = null
+            tab.location.href = fresh
+          } else {
+            tab?.close()
+          }
+        })
+      }}
       className="flex items-center gap-2.5 w-64 max-w-full rounded-xl border border-border-subtle bg-surface px-3.5 py-3 hover:bg-surface-hover transition-colors"
     >
       <DocumentIcon fileName={attachment.fileName} className="size-6 shrink-0 text-accent-500" />

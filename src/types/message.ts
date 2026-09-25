@@ -12,11 +12,14 @@ export interface RepliedMessagePreview {
 }
 
 export interface MessageAttachment {
-  /** A presigned, time-limited URL (6h) — never a permanent link. Re-fetching the conversation always
-   * gets a fresh one; don't cache this beyond the current page load. */
+  /** A presigned, time-limited URL (1h) — never a permanent link, and never persisted (it lives only in
+   * the in-memory query cache). Empty when the server had nothing to sign for this attachment. Once it is
+   * old, ask for a fresh one (see `refreshMessageAttachment`) rather than trusting it. */
   url: string
   kind: AttachmentKind
   fileName?: string
+  /** Client-only: when (epoch ms) this URL was received, so the UI knows when to replace it. */
+  urlIssuedAt?: number
 }
 
 export interface Message {
