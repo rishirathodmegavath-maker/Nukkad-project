@@ -5,6 +5,7 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/domain/PageHeader'
+import { ChapterCoverField } from '@/components/domain/ChapterCoverField'
 import { createChapter } from '@/services/chapters.service'
 import { toast } from '@/store/toast.store'
 import { ApiError } from '@/lib/api-client'
@@ -18,6 +19,7 @@ export default function CreateChapterPage() {
   const [country, setCountry] = useState('')
   const [description, setDescription] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [isCoverUploading, setIsCoverUploading] = useState(false)
   const [nameError, setNameError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
 
@@ -102,13 +104,18 @@ export default function CreateChapterPage() {
             required
             error={descriptionError || undefined}
           />
-          <Input label="Cover image URL" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://…" />
+          <ChapterCoverField value={coverImageUrl} onChange={setCoverImageUrl} onUploadingChange={setIsCoverUploading} />
 
           <div className="flex items-center justify-end gap-3 pt-2 mt-2 border-t border-border/60">
             <Button variant="ghost" type="button" onClick={() => navigate('/chapters')}>
               Cancel
             </Button>
-            <Button type="submit" size="lg" isLoading={mutation.isPending} disabled={!name.trim() || !description.trim()}>
+            <Button
+              type="submit"
+              size="lg"
+              isLoading={mutation.isPending}
+              disabled={!name.trim() || !description.trim() || isCoverUploading}
+            >
               Create chapter
             </Button>
           </div>

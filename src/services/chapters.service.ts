@@ -75,6 +75,7 @@ export interface UpdateChapterInput {
   city?: string
   country?: string
   description?: string
+  coverImageUrl?: string
 }
 
 export async function updateChapter(id: string, input: UpdateChapterInput): Promise<Chapter> {
@@ -109,6 +110,13 @@ export async function leaveChapter(id: string): Promise<Chapter> {
 
 export async function uploadChapterCover(id: string, file: File): Promise<Chapter> {
   return mapChapter(await uploadFile<ChapterDto>(`/chapters/${id}/cover`, file))
+}
+
+/** Uploads an image and returns its URL, without needing a chapter id yet — lets the create-chapter
+ *  form (and the edit form, alongside its other deferred-until-save fields) offer an upload button. */
+export async function uploadChapterCoverImage(file: File): Promise<string> {
+  const dto = await uploadFile<{ url: string }>('/chapters/cover-images', file)
+  return dto.url
 }
 
 export async function removeChapterCover(id: string): Promise<Chapter> {
