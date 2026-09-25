@@ -276,6 +276,7 @@ export default function InvestorsListPage() {
                 value={investorType}
                 onChange={(k) => { setInvestorType(k); setCatalogPage(0) }}
                 scrollable
+                size="sm"
                 className="mb-5"
                 items={[{ key: '', label: 'All' }, ...INVESTOR_TYPES.map((t) => ({ key: t, label: t }))]}
               />
