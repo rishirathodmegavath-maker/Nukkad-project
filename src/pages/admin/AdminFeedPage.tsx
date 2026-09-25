@@ -16,7 +16,8 @@ import { Pagination } from '@/components/ui/Pagination'
 import { toast } from '@/store/toast.store'
 import { formatRelativeTime } from '@/lib/utils'
 import { typeMeta } from '@/lib/postTypeMeta'
-import type { PostType } from '@/types'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import type { PostType, PublisherIdentityKey } from '@/types'
 
 export default function AdminFeedPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -80,13 +81,18 @@ export default function AdminFeedPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <Badge tone="neutral">{typeMeta[post.type as PostType]?.label ?? 'Update'}</Badge>
+                    {post.postedAsPlatform && (
+                      <Badge tone="accent">{publisherIdentityLabel(post.publisherIdentity as PublisherIdentityKey)}</Badge>
+                    )}
                     {post.visibility === 'CONNECTIONS' && <Badge tone="neutral">Connections only</Badge>}
                     {post.removedByAdmin && <Badge tone="danger">Removed</Badge>}
                     <span className="text-xs text-fg-muted">{formatRelativeTime(post.createdAt)}</span>
                   </div>
                   <p className="text-sm text-fg-secondary line-clamp-2 max-w-xl">{post.content || <em>{post.linkUrl ? '(link only)' : '(attachment only)'}</em>}</p>
                   <p className="text-xs text-fg-muted mt-1">
-                    {post.likesCount} likes · {post.commentsCount} comments
+                    {post.likesCount} likes
+                    {!!post.platformEngagementCount && ` (+${post.platformEngagementCount} platform, shown as ${post.likesCount + post.platformEngagementCount})`}
+                    {' '}· {post.commentsCount} comments
                     {post.removalReason && <span> — removed: "{post.removalReason}"</span>}
                   </p>
                 </div>

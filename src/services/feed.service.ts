@@ -1,5 +1,15 @@
 import { apiClient, getPage, uploadFile, type Page } from '@/lib/api-client'
-import type { AttachmentKind, Post, PostAttachment, PostComment, PostLiker, PostType, PostVisibility, SavedPostsSort } from '@/types'
+import type {
+  AttachmentKind,
+  Post,
+  PostAttachment,
+  PostComment,
+  PostLiker,
+  PostType,
+  PostVisibility,
+  PublisherIdentityKey,
+  SavedPostsSort,
+} from '@/types'
 
 interface AttachmentDto {
   id: string
@@ -28,6 +38,8 @@ export interface PostDto {
   visibility: string
   linkUrl: string | null
   postedAsPlatform: boolean
+  publisherIdentity: string
+  platformEngagementCount: number
 }
 
 /** Ref to an already-uploaded, not-yet-attached file — same shape the upload endpoint returns and create-post expects. */
@@ -63,6 +75,8 @@ export function mapPost(dto: PostDto): Post {
     visibility: dto.visibility === 'CONNECTIONS' ? 'CONNECTIONS' : 'PUBLIC',
     linkUrl: dto.linkUrl ?? undefined,
     postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
+    platformEngagementCount: dto.platformEngagementCount,
   }
 }
 

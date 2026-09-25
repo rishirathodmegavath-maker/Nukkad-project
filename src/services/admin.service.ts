@@ -8,6 +8,7 @@ import type {
   OpportunityType,
   PostType,
   PostVisibility,
+  PublisherIdentityKey,
   Resource,
   ResourceCategory,
   ResourceType,
@@ -424,6 +425,9 @@ export interface AdminPostRow {
   createdAt: string
   visibility?: string
   linkUrl?: string | null
+  postedAsPlatform?: boolean
+  publisherIdentity?: string
+  platformEngagementCount?: number
 }
 
 export async function listAdminPosts(
@@ -453,6 +457,12 @@ export interface AdminCreatePostInput {
   linkUrl?: string
   /** A member to make the author. Without it the admin's own account is the author. */
   authorEmail?: string
+  /** Which BuildAdda identity to display. Only applies when authorEmail is empty (a platform post);
+   *  the server ignores it otherwise. Must be one of PUBLISHER_IDENTITIES's keys or is rejected. */
+  publisherIdentity?: PublisherIdentityKey
+  /** Seeded engagement added to real likes for display only. Only applies to a platform post; must
+   *  be 0 or more. */
+  platformEngagementCount?: number
 }
 
 /** Publishes a post from the admin panel. It's live at once, like one a member writes themselves. */
@@ -464,6 +474,8 @@ export async function createAdminPost(input: AdminCreatePostInput): Promise<Admi
     visibility: input.visibility ?? 'PUBLIC',
     linkUrl: input.linkUrl || undefined,
     authorEmail: input.authorEmail || undefined,
+    publisherIdentity: input.publisherIdentity,
+    platformEngagementCount: input.platformEngagementCount,
   })
 }
 
