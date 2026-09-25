@@ -30,6 +30,7 @@ import type { Page } from '@/lib/api-client'
 // Same asset the app's own brand mark uses (see Logo.tsx) — reused here as the public author avatar
 // for an admin-published, unattributed post, imported (not from /public) for a content-hashed URL.
 import buildAddaLogoUrl from '@/assets/logo.png'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -665,7 +666,11 @@ export function PostCard({ post }: { post: Post }) {
   })
 
   const isOwnPost = currentUser?.id === post.authorId
-  const showLikeCount = post.likesCount > 0 && (!post.hideLikeCount || isOwnPost)
+  // Seeded platform engagement is ADDED here for display only — likesCount itself (used above for
+  // the optimistic like-toggle math) stays the real, togglable count untouched by this.
+  const displayLikesCount = post.likesCount + (post.platformEngagementCount ?? 0)
+  const showLikeCount = displayLikesCount > 0 && (!post.hideLikeCount || isOwnPost)
+  const publisherLabel = publisherIdentityLabel(post.publisherIdentity)
 
   const meta = typeMeta[post.type]
   const isLong = post.content.length > CONTENT_CLAMP_CHARS
@@ -675,7 +680,7 @@ export function PostCard({ post }: { post: Post }) {
     <Card padding="none" className="overflow-hidden border border-border/80 shadow-xs rounded-xl bg-surface">
       <div className="flex items-start gap-3 px-4 sm:px-5 py-3.5">
         {post.postedAsPlatform ? (
-          <Avatar src={buildAddaLogoUrl} name="BuildAdda" size="md" />
+          <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="md" />
         ) : author ? (
           <Avatar src={author.avatarUrl} name={author.name} size="md" />
         ) : (
@@ -683,7 +688,7 @@ export function PostCard({ post }: { post: Post }) {
         )}
         <div className="min-w-0 flex-1">
           {post.postedAsPlatform ? (
-            <span className="text-sm font-bold text-fg">BuildAdda</span>
+            <span className="text-sm font-bold text-fg">{publisherLabel}</span>
           ) : author ? (
             <>
               <Link to={`/people/${author.id}`} className="text-sm font-bold text-fg hover:underline">
@@ -835,10 +840,10 @@ export function PostCard({ post }: { post: Post }) {
             <button
               type="button"
               onClick={() => setLikesOpen(true)}
-              aria-label={`View who liked this post (${post.likesCount})`}
+              aria-label={`View who liked this post (${displayLikesCount})`}
               className="-ml-1.5 h-9 min-w-6 rounded-lg px-1.5 text-sm font-semibold tabular-nums text-fg-secondary hover:text-fg hover:underline cursor-pointer transition-colors"
             >
-              {post.likesCount}
+              {displayLikesCount}
             </button>
           )}
         </div>

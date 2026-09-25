@@ -12,9 +12,10 @@ import { DocumentIcon } from '@/components/domain/DocumentIcon'
 import { attachmentKindOf, FILE_ACCEPT, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS, MEDIA_ACCEPT, UNSUPPORTED_FILE_MESSAGE } from '@/lib/attachments'
 import { normalizeLink } from '@/lib/links'
 import { generalPostKind, mainPostKinds, morePostKinds, postKind, type PostKind } from '@/lib/postTypeMeta'
+import { PUBLISHER_IDENTITIES } from '@/lib/publisher-identities'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
-import type { AttachmentKind, PostType, PostVisibility } from '@/types'
+import type { AttachmentKind, PostType, PostVisibility, PublisherIdentityKey } from '@/types'
 
 /** The server's limit on a post's text (matches CreatePostRequest.content, same as the member composer). */
 const MAX_CONTENT = 4000
@@ -86,6 +87,10 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
   const [visibility, setVisibility] = useState<PostVisibility>('PUBLIC')
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [authorEmail, setAuthorEmail] = useState('')
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('BUILDADDA')
+  // A suggested starting point, not hidden magic — visible and editable right here; the admin can
+  // change it to anything non-negative, or clear it for none at all.
+  const [platformEngagement, setPlatformEngagement] = useState('15')
   const [phase, setPhase] = useState<UploadPhase>('idle')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaInputRef = useRef<HTMLInputElement>(null)
@@ -93,6 +98,9 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
 
   const kind = type === 'text' ? generalPostKind : postKind(type)
   const canPostText = content.trim().length > 0 || pending.length > 0 || link !== null || linkDraft.trim().length > 0
+  // With an authorEmail, the post is that member's own — publisher identity/platform engagement
+  // describe how BuildAdda-as-publisher looks, so neither applies (the backend ignores them too).
+  const isPlatformPost = authorEmail.trim() === ''
 
   const postMutation = useMutation({
     mutationFn: async (linkUrl: string | null) => {
@@ -104,6 +112,8 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
         visibility,
         linkUrl: linkUrl ?? undefined,
         authorEmail: authorEmail.trim() || undefined,
+        publisherIdentity: isPlatformPost ? publisherIdentity : undefined,
+        platformEngagementCount: isPlatformPost && platformEngagement.trim() !== '' ? Number(platformEngagement) : undefined,
       }
       return createAdminPost(input)
     },
@@ -143,6 +153,10 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
         setLinkError('Enter a valid link, like https://example.com')
         return
       }
+    }
+    if (isPlatformPost && platformEngagement.trim() !== '' && (!/^\d+$/.test(platformEngagement.trim()))) {
+      toast.error('Platform engagement must be a whole number, 0 or more')
+      return
     }
     setPhase('uploading')
     postMutation.mutate(linkUrl)
@@ -211,6 +225,31 @@ export function AdminPostFormModal({ onClose }: { onClose: () => void }) {
           maxLength={255}
           onChange={(e) => setAuthorEmail(e.target.value)}
         />
+
+        {isPlatformPost && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="Publisher identity"
+              hint="Shown as the author — not a separate user, still your admin account behind it"
+              value={publisherIdentity}
+              onChange={(e) => setPublisherIdentity(e.target.value as PublisherIdentityKey)}
+            >
+              {PUBLISHER_IDENTITIES.map((i) => (
+                <option key={i.key} value={i.key}>
+                  {i.label}
+                </option>
+              ))}
+            </Select>
+            <Input
+              label="Platform engagement"
+              hint={'Added to real likes for display only — never appears in "Liked by"'}
+              type="number"
+              min={0}
+              value={platformEngagement}
+              onChange={(e) => setPlatformEngagement(e.target.value)}
+            />
+          </div>
+        )}
 
         <div role="group" aria-label="Post type" className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {mainPostKinds.map((k) => (

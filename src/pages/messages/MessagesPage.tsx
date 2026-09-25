@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 // avatar for an admin-published, unattributed post, imported (not from /public) for a content-hashed URL.
 import buildAddaLogoUrl from '@/assets/logo.png'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import {
   Send,
   MessageSquare,
@@ -117,8 +118,14 @@ function SharedPostPreview({ message, conversationId }: { message: Message; conv
         </div>
       )}
       <div className="flex items-center gap-2 px-3 pt-2.5">
-        <Avatar src={post.postedAsPlatform ? buildAddaLogoUrl : author?.avatarUrl} name={post.postedAsPlatform ? 'BuildAdda' : author?.name ?? ''} size="xs" />
-        <span className="text-xs font-semibold text-fg truncate">{post.postedAsPlatform ? 'BuildAdda' : author?.name}</span>
+        <Avatar
+          src={post.postedAsPlatform ? buildAddaLogoUrl : author?.avatarUrl}
+          name={post.postedAsPlatform ? publisherIdentityLabel(post.publisherIdentity) : (author?.name ?? '')}
+          size="xs"
+        />
+        <span className="text-xs font-semibold text-fg truncate">
+          {post.postedAsPlatform ? publisherIdentityLabel(post.publisherIdentity) : author?.name}
+        </span>
       </div>
       <p className="px-3 pb-3 pt-1 text-xs text-fg-secondary line-clamp-3">{post.content}</p>
     </Link>
