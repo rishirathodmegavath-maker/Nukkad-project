@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Lock } from 'lucide-react'
-import { AuthLayout } from './AuthLayout'
+import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { LoginLayout } from './LoginLayout'
 import { Input, PasswordInput } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { GoogleSignInButton } from '@/components/domain/GoogleSignInButton'
@@ -95,14 +95,15 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout
+    <LoginLayout
       title="Welcome back"
       subtitle="Log in to keep building on BuildAdda."
       footer={
         <>
-          New here?{' '}
-          <Link to="/signup" className="font-medium text-brand-600 hover:text-brand-700">
-            Create an account
+          New to BuildAdda?{' '}
+          <Link to="/signup" className="inline-flex items-center gap-1 font-semibold text-brand-600 hover:text-brand-700">
+            Create your free account
+            <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </>
       }
@@ -163,6 +164,6 @@ export default function LoginPage() {
         )}
         <GoogleSignInButton />
       </form>
-    </AuthLayout>
+    </LoginLayout>
   )
 }

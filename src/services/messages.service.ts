@@ -20,9 +20,20 @@ interface RepliedMessagePreviewDto {
 }
 
 interface MessageAttachmentDto {
-  url: string
+  /** Null when the server had nothing it was willing to sign for this attachment. */
+  url: string | null
   kind: string
   fileName: string | null
+}
+
+function mapAttachment(dto: MessageAttachmentDto): NonNullable<Message['attachment']> {
+  return {
+    url: dto.url ?? '',
+    kind: dto.kind.toLowerCase() as AttachmentKind,
+    fileName: dto.fileName ?? undefined,
+    // The server signs the URL as it builds this response, so "now" is when its clock starts.
+    urlIssuedAt: Date.now(),
+  }
 }
 
 export interface MessageDto {
@@ -79,9 +90,7 @@ export function mapMessage(dto: MessageDto): Message {
     content: dto.content,
     sharedPostId: dto.sharedPostId ?? undefined,
     sharedPost: dto.sharedPost ? mapPost(dto.sharedPost) : undefined,
-    attachment: dto.attachment
-      ? { url: dto.attachment.url, kind: dto.attachment.kind.toLowerCase() as AttachmentKind, fileName: dto.attachment.fileName ?? undefined }
-      : undefined,
+    attachment: dto.attachment ? mapAttachment(dto.attachment) : undefined,
     replyToMessageId: dto.replyToMessageId ?? undefined,
     replyTo: dto.replyTo
       ? { id: dto.replyTo.id, senderId: dto.replyTo.senderId, type: dto.replyTo.type as MessageType, contentSnippet: dto.replyTo.contentSnippet }
@@ -165,6 +174,15 @@ export async function sendMessage(
  * time-limited URL instead (see {@link mapMessage}'s attachment.url). */
 export async function uploadMessageAttachment(conversationId: string, file: File): Promise<ConversationAttachmentRef> {
   return uploadFile<ConversationAttachmentRef>(`/conversations/${conversationId}/attachments`, file)
+}
+
+/** A fresh presigned URL for one message's attachment, for when the URL it arrived with has expired.
+ * Takes only ids — never an object key: the server resolves the attachment itself and re-checks that the
+ * caller is in the conversation, the message is in it, and it hasn't been hidden or unsent. Rejects (404)
+ * for anything else, which the UI shows as "unavailable". */
+export async function refreshMessageAttachment(conversationId: string, messageId: string): Promise<NonNullable<Message['attachment']>> {
+  const dto = await apiClient.get<MessageAttachmentDto>(`/conversations/${conversationId}/messages/${messageId}/attachment`)
+  return mapAttachment(dto)
 }
 
 /** Updates the existing message's content in place — a new "Edited" indicator, not a new message. */
