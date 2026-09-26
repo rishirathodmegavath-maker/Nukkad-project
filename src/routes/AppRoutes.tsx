@@ -57,6 +57,12 @@ const NotificationsPage = lazyPage(() => import('@/pages/notifications/Notificat
 const MessagesPage = lazyPage(() => import('@/pages/messages/MessagesPage'))
 const ResourcesPage = lazyPage(() => import('@/pages/resources/ResourcesPage'))
 const ResourceDetailPage = lazyPage(() => import('@/pages/resources/ResourceDetailPage'))
+const StartupProgramsPage = lazyPage(() => import('@/pages/programs/StartupProgramsPage'))
+const ProgramDetailPage = lazyPage(() => import('@/pages/programs/ProgramDetailPage'))
+const ProgramApplyLandingPage = lazyPage(() => import('@/pages/programs/ProgramApplyLandingPage'))
+const ProgramApplicationWizardPage = lazyPage(() => import('@/pages/programs/ProgramApplicationWizardPage'))
+const ProgramApplicationConfirmationPage = lazyPage(() => import('@/pages/programs/ProgramApplicationConfirmationPage'))
+const MyProgramApplicationsPage = lazyPage(() => import('@/pages/programs/MyProgramApplicationsPage'))
 const GrantsListPage = lazyPage(() => import('@/pages/grants/GrantsListPage'))
 const GrantFormPage = lazyPage(() => import('@/pages/grants/GrantFormPage'))
 const GrantDetailPage = lazyPage(() => import('@/pages/grants/GrantDetailPage'))
@@ -144,10 +150,16 @@ export function AppRoutes() {
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/resources/:id" element={<ResourceDetailPage />} />
 
-            {/* Programs are curated on the Startup Programs shelf of the Resources library. */}
-            <Route path="/programs" element={<Navigate to="/resources?category=programs" replace />} />
-            <Route path="/spark" element={<Navigate to="/resources?category=programs&q=spark" replace />} />
-            <Route path="/ignite" element={<Navigate to="/resources?category=programs&q=ignite" replace />} />
+            {/* Startup Programs: a dedicated discovery + application experience, reachable from the
+                Resources shelf but no longer just a filtered resource view (see StartupProgramsPage). */}
+            <Route path="/programs" element={<StartupProgramsPage />} />
+            <Route path="/programs/mine" element={<MyProgramApplicationsPage />} />
+            <Route path="/programs/:key" element={<ProgramDetailPage />} />
+            <Route path="/programs/:key/apply" element={<ProgramApplyLandingPage />} />
+            <Route path="/programs/:key/apply/start" element={<ProgramApplicationWizardPage />} />
+            <Route path="/programs/:key/apply/confirmation" element={<ProgramApplicationConfirmationPage />} />
+            <Route path="/spark" element={<Navigate to="/programs/spark" replace />} />
+            <Route path="/ignite" element={<Navigate to="/programs/ignite" replace />} />
 
             <Route path="/grants" element={<GrantsListPage />} />
             <Route path="/grants/new" element={<GrantFormPage />} />

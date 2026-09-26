@@ -1,13 +1,18 @@
 import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapChapter, type ChapterDto } from '@/services/chapters.service'
 import { mapResource, type ResourceDto } from '@/services/resources.service'
+import { mapProgram, type ProgramDto } from '@/services/programs.service'
 import type { AttachmentRef } from '@/services/feed.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
 import type {
+  AdminProgramApplication,
   Chapter,
   GrantProviderType,
   InvestorType,
   OpportunityType,
+  Program,
+  ProgramApplicationStatus,
+  ProgramKey,
   PostType,
   PostVisibility,
   PublisherIdentityKey,
@@ -940,4 +945,31 @@ export async function listAdminInvestorImportIssues(
   params: { page?: number; size?: number } = {},
 ): Promise<Page<AdminInvestorImportIssue>> {
   return getPagedResult<AdminInvestorImportIssue>(`/admin/investor-catalog/import/${batchId}/issues`, { ...params })
+}
+
+// ---- Startup Programs: application review ----
+
+export async function listAdminProgramApplications(
+  params: { program?: string; status?: string; q?: string; page?: number; size?: number } = {},
+): Promise<Page<AdminProgramApplication>> {
+  return getPagedResult<AdminProgramApplication>('/admin/program-applications', { ...params })
+}
+
+export async function getAdminProgramApplication(id: string): Promise<AdminProgramApplication> {
+  return apiClient.get<AdminProgramApplication>(`/admin/program-applications/${id}`)
+}
+
+export async function changeProgramApplicationStatus(
+  id: string,
+  status: ProgramApplicationStatus,
+  note?: string,
+): Promise<AdminProgramApplication> {
+  return apiClient.patch<AdminProgramApplication>(`/admin/program-applications/${id}/status`, { status, note })
+}
+
+export async function updateProgramSettings(
+  key: ProgramKey,
+  input: { applicationOpen?: boolean; feeAmount?: number | null; feeCurrency?: string | null; enrollmentInfo?: string | null; selective?: boolean | null },
+): Promise<Program> {
+  return mapProgram(await apiClient.patch<ProgramDto>(`/admin/programs/${key}/settings`, input))
 }
