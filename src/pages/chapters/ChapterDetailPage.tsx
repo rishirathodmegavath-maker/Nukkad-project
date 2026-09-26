@@ -18,6 +18,8 @@ import {
   Briefcase,
   Calendar,
   FolderOpen,
+  Send,
+  MessageSquarePlus,
 } from 'lucide-react'
 import {
   getChapter,
@@ -35,11 +37,13 @@ import { listStartups } from '@/services/startups.service'
 import { listOpportunities } from '@/services/opportunities.service'
 import { listEvents } from '@/services/events.service'
 import { listResources } from '@/services/resources.service'
+import { listFeed } from '@/services/feed.service'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
+import { AvatarStack } from '@/components/ui/AvatarStack'
 import { CoverImage } from '@/components/ui/CoverImage'
 import { Tabs } from '@/components/ui/Tabs'
 import { Skeleton, CardSkeletonGrid } from '@/components/ui/Skeleton'
@@ -56,11 +60,16 @@ import { StartupCard } from '@/components/domain/StartupCard'
 import { OpportunityCard } from '@/components/domain/OpportunityCard'
 import { EventCard } from '@/components/domain/EventCard'
 import { ResourceCard } from '@/components/domain/ResourceCard'
+import { PostCard } from '@/components/domain/PostCard'
+import { CreatePostModal } from '@/components/domain/CreatePostModal'
+import { AboutChapterCard } from '@/components/domain/AboutChapterCard'
+import { QuickActionsCard } from '@/components/domain/QuickActionsCard'
+import { UpcomingEventsCard } from '@/components/domain/UpcomingEventsCard'
 import { toast } from '@/store/toast.store'
-import { pluralize, formatRelativeTime } from '@/lib/utils'
-import type { ChapterActivity } from '@/types'
+import { formatRelativeTime, cn } from '@/lib/utils'
+import type { ChapterActivity, PostType } from '@/types'
 
-type TabKey = 'members' | 'ideas' | 'startups' | 'opportunities' | 'events' | 'resources'
+type TabKey = 'feed' | 'members' | 'ideas' | 'startups' | 'opportunities' | 'events' | 'resources'
 
 /** Shared loading/error/empty/data rendering for each of the 6 tab queries below — none of them
  *  previously checked isLoading or isError at all, so a failed request silently rendered the
@@ -78,6 +87,39 @@ function TabSection<T>({
   if (query.isError) return <ErrorState title="Couldn't load this" onRetry={() => query.refetch()} />
   if (!query.data || query.data.length === 0) return <>{emptyState}</>
   return <>{children(query.data)}</>
+}
+
+/** A clickable stat pill in the chapter header — switches this page's own tab rather than
+ *  navigating away, mirroring HomePage's StatChip idiom but for in-page tabs instead of routes. */
+function StatPill({
+  active,
+  icon: Icon,
+  label,
+  value,
+  onClick,
+}: {
+  active: boolean
+  icon: (props: { className?: string }) => ReactNode
+  label: string
+  value: number
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
+        active
+          ? 'border-brand-500/40 bg-brand-500/10 text-fg-brand'
+          : 'border-border bg-surface text-fg hover:border-brand-500/40 hover:bg-brand-500/10 hover:text-fg-brand',
+      )}
+    >
+      <Icon className="size-3.5" />
+      <span className="tabular-nums">{value}</span>
+      <span className="font-medium text-fg-secondary">{label}</span>
+    </button>
+  )
 }
 
 const ACTIVITY_ICON: Record<ChapterActivity['type'], ReactNode> = {
@@ -128,8 +170,10 @@ export default function ChapterDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<TabKey>('members')
+  const [tab, setTab] = useState<TabKey>('feed')
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  // undefined initialType means a plain "Post" (no kind preselected); null means the composer is closed.
+  const [composerType, setComposerType] = useState<PostType | undefined | null>(null)
 
   const { data: chapter, isLoading, isError, refetch } = useQuery({
     queryKey: ['chapter', id],
@@ -225,10 +269,17 @@ export default function ChapterDetailPage() {
     e.target.value = ''
   }
 
+  // Not tab-gated: the header's avatar stack needs this regardless of which tab is active, and the
+  // Members tab then reuses the same cached query instead of firing a second fetch.
   const membersQuery = useQuery({
     queryKey: ['users', 'chapter', id],
     queryFn: () => listUsers({ chapterId: id }),
-    enabled: tab === 'members' && !!id,
+    enabled: !!id,
+  })
+  const feedQuery = useQuery({
+    queryKey: ['feed', 'chapter', id],
+    queryFn: () => listFeed(undefined, 20, undefined, undefined, id),
+    enabled: tab === 'feed' && !!id,
   })
   const ideasQuery = useQuery({
     queryKey: ['ideas', 'chapter', id],
@@ -348,20 +399,30 @@ export default function ChapterDetailPage() {
           <div className="max-w-2xl">
             <h1 className="text-2xl sm:text-3xl font-black text-fg tracking-tight leading-tight mb-1.5">{chapter.name}</h1>
             <p className="text-sm text-fg-muted leading-relaxed max-w-xl">{chapter.description}</p>
-            <div className="flex flex-wrap items-center gap-4 mt-4 text-xs sm:text-sm text-fg-muted font-medium">
-              <span className="flex items-center gap-1.5">
-                <Users className="size-4 text-fg-muted" /> {pluralize(chapter.memberCount ?? 0, 'member')}
-              </span>
-              {president && (
-                <Link to={`/people/${president.id}`} className="flex items-center gap-1.5 text-fg hover:underline group">
-                  <Crown className="size-4 text-amber-500 shrink-0" />
-                  <Avatar src={president.avatarUrl} name={president.name} size="xs" />
-                  <span>{president.name} (President)</span>
-                </Link>
-              )}
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <StatPill active={tab === 'members'} icon={Users} label="Members" value={chapter.memberCount ?? 0} onClick={() => setTab('members')} />
+              <StatPill active={tab === 'startups'} icon={Rocket} label="Startups" value={chapter.startupCount ?? 0} onClick={() => setTab('startups')} />
+              <StatPill active={tab === 'ideas'} icon={Lightbulb} label="Ideas" value={chapter.ideaCount ?? 0} onClick={() => setTab('ideas')} />
+              <StatPill
+                active={tab === 'opportunities'}
+                icon={Briefcase}
+                label="Opportunities"
+                value={chapter.opportunityCount ?? 0}
+                onClick={() => setTab('opportunities')}
+              />
+              <StatPill active={tab === 'events'} icon={Calendar} label="Events" value={chapter.eventCount ?? 0} onClick={() => setTab('events')} />
+              <StatPill active={tab === 'resources'} icon={FolderOpen} label="Resources" value={chapter.resourceCount ?? 0} onClick={() => setTab('resources')} />
             </div>
+            {president && (
+              <Link to={`/people/${president.id}`} className="mt-3 inline-flex items-center gap-1.5 text-sm text-fg hover:underline group">
+                <Crown className="size-4 text-amber-500 shrink-0" />
+                <Avatar src={president.avatarUrl} name={president.name} size="xs" />
+                <span>{president.name} (President)</span>
+              </Link>
+            )}
           </div>
           <div className="flex flex-col items-end gap-2 shrink-0">
+            {membersQuery.data && membersQuery.data.length > 0 && <AvatarStack people={membersQuery.data} max={5} size="xs" />}
             {isPresident && (
               <div className="flex items-center gap-2">
                 <Button variant="secondary" size="sm" leftIcon={<Pencil className="size-3.5" />} onClick={() => setEditOpen(true)}>
@@ -427,10 +488,13 @@ export default function ChapterDetailPage() {
         </Card>
       )}
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
       <Tabs
         value={tab}
         onChange={(k) => setTab(k as TabKey)}
         items={[
+          { key: 'feed', label: 'Feed' },
           { key: 'members', label: 'Members', count: chapter.memberCount ?? 0 },
           { key: 'ideas', label: 'Ideas', count: chapter.ideaCount ?? 0 },
           { key: 'startups', label: 'Startups', count: chapter.startupCount ?? 0 },
@@ -439,6 +503,67 @@ export default function ChapterDetailPage() {
           { key: 'resources', label: 'Resources', count: chapter.resourceCount ?? 0 },
         ]}
       />
+
+      {tab === 'feed' && (
+        <div className="flex flex-col gap-4">
+          {isMember && (
+            <Card className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => setComposerType(undefined)}
+                className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-surface-sunken/50 px-4 py-2.5 text-left text-sm text-fg-muted transition-colors hover:bg-surface-hover cursor-pointer"
+              >
+                <MessageSquarePlus className="size-4 shrink-0" />
+                What&apos;s happening in {chapter.name}?
+              </button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="secondary" leftIcon={<Send className="size-3.5" />} onClick={() => setComposerType(undefined)}>
+                  Post
+                </Button>
+                <Button size="sm" variant="secondary" leftIcon={<Rocket className="size-3.5" />} onClick={() => setComposerType('startup_update')}>
+                  Share Startup
+                </Button>
+                <Button size="sm" variant="secondary" leftIcon={<Lightbulb className="size-3.5" />} onClick={() => setComposerType('idea')}>
+                  Share Idea
+                </Button>
+                {canManageEvents && (
+                  <Link to={`/events/new?chapterId=${chapter.id}`}>
+                    <Button size="sm" variant="secondary" leftIcon={<Calendar className="size-3.5" />}>
+                      Create Event
+                    </Button>
+                  </Link>
+                )}
+                <Link to="/opportunities/new">
+                  <Button size="sm" variant="secondary" leftIcon={<Briefcase className="size-3.5" />}>
+                    Post Opportunity
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          )}
+
+          {feedQuery.isLoading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-xl" />
+              ))}
+            </div>
+          ) : feedQuery.isError ? (
+            <ErrorState title="Couldn't load this chapter's feed" onRetry={() => feedQuery.refetch()} />
+          ) : !feedQuery.data || feedQuery.data.length === 0 ? (
+            <EmptyState
+              title="No posts in this chapter yet"
+              description={isMember ? 'Be the first to post something here.' : 'Nothing has been posted here yet.'}
+            />
+          ) : (
+            <div className="flex flex-col gap-4">
+              {feedQuery.data.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {tab === 'members' && (
         <div className="flex flex-col gap-4">
@@ -554,15 +679,6 @@ export default function ChapterDetailPage() {
 
       {tab === 'events' && (
         <div>
-          {canManageEvents && (
-            <div className="flex justify-end mb-4">
-              <Link to={`/events/new?chapterId=${chapter.id}`}>
-                <Button size="sm" leftIcon={<Plus className="size-3.5" />}>
-                  New chapter event
-                </Button>
-              </Link>
-            </div>
-          )}
           <TabSection
             query={eventsQuery}
             emptyState={
@@ -614,6 +730,18 @@ export default function ChapterDetailPage() {
           </TabSection>
         </div>
       )}
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <AboutChapterCard chapter={chapter} president={president} canEdit={isPresident} onEdit={() => setEditOpen(true)} />
+        {isMember && (
+          <QuickActionsCard chapterId={chapter.id} canManageEvents={canManageEvents} onShareIdea={() => setComposerType('idea')} />
+        )}
+        <UpcomingEventsCard chapterId={chapter.id} onViewAll={() => setTab('events')} />
+      </div>
+      </div>
+
+      {composerType !== null && <CreatePostModal open onClose={() => setComposerType(null)} initialType={composerType} />}
 
       <input
         ref={coverInputRef}

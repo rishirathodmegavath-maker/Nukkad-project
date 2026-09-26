@@ -38,7 +38,6 @@ import { Textarea } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { DropdownMenu, DropdownItem, DropdownDivider } from '@/components/ui/DropdownMenu'
 import { ShareModal } from '@/components/domain/ShareModal'
-import { LikesModal } from '@/components/domain/LikesModal'
 import { ReportModal } from '@/components/domain/ReportModal'
 import { PostLinkCard } from '@/components/domain/PostLinkCard'
 import { HashtagText } from '@/components/domain/HashtagText'
@@ -542,7 +541,6 @@ export function PostCard({ post }: { post: Post }) {
   const [shareOpen, setShareOpen] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editContent, setEditContent] = useState(post.content)
-  const [likesOpen, setLikesOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
 
   // Optimistic like: the toggle should feel instant, not wait on a POST + a full feed refetch.
@@ -659,6 +657,12 @@ export function PostCard({ post }: { post: Post }) {
   })
 
   const isOwnPost = currentUser?.id === post.authorId
+  // Seeded platform engagement is ADDED here for display only — likesCount itself (used above for
+  // the optimistic like-toggle math) stays the real, togglable count untouched by this. Who is
+  // actually behind either number is never shown — there's no "view likers" UI at all, so the
+  // seeded portion of a platform post's count can never be traced back to a fake identity.
+  const displayLikesCount = post.likesCount + (post.platformEngagementCount ?? 0)
+  const showLikeCount = displayLikesCount > 0 && (!post.hideLikeCount || isOwnPost)
   const publisherLabel = publisherIdentityLabel(post.publisherIdentity)
 
   const meta = typeMeta[post.type]
@@ -733,9 +737,6 @@ export function PostCard({ post }: { post: Post }) {
               >
                 Edit
               </DropdownItem>
-              <DropdownItem icon={<Users className="size-4" />} onClick={() => setLikesOpen(true)}>
-                View likers
-              </DropdownItem>
               <DropdownItem
                 icon={post.commentsDisabled ? <MessageCircle className="size-4" /> : <MessageCircleOff className="size-4" />}
                 onClick={() => commentsDisabledMutation.mutate()}
@@ -749,9 +750,6 @@ export function PostCard({ post }: { post: Post }) {
             </>
           ) : (
             <>
-              <DropdownItem icon={<Users className="size-4" />} onClick={() => setLikesOpen(true)}>
-                View likers
-              </DropdownItem>
               <DropdownItem icon={<ExternalLink className="size-4" />} onClick={() => navigate(`/feed/${post.id}`)}>
                 Go to post
               </DropdownItem>
@@ -825,6 +823,9 @@ export function PostCard({ post }: { post: Post }) {
           >
             <Heart className={cn('size-5 transition-transform', post.isLiked && 'fill-current scale-110')} />
           </button>
+          {showLikeCount && (
+            <span className="-ml-1.5 text-sm font-semibold tabular-nums text-fg-secondary">{displayLikesCount}</span>
+          )}
         </div>
 
         <button
@@ -861,8 +862,6 @@ export function PostCard({ post }: { post: Post }) {
       {commentsOpen && <CommentsSection post={post} />}
 
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} post={post} />
-
-      <LikesModal postId={post.id} open={likesOpen} onClose={() => setLikesOpen(false)} />
 
       <ReportModal open={reportOpen} onClose={() => setReportOpen(false)} reportedUserId={post.authorId} postId={post.id} />
 

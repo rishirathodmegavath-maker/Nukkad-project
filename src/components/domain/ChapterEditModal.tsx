@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { TagInput } from '@/components/ui/TagInput'
 import { ChapterCoverField } from '@/components/domain/ChapterCoverField'
 import { updateChapter } from '@/services/chapters.service'
 import { toast } from '@/store/toast.store'
@@ -16,10 +17,23 @@ export function ChapterEditModal({ open, onClose, chapter }: { open: boolean; on
   const [description, setDescription] = useState(chapter.description)
   const [coverImageUrl, setCoverImageUrl] = useState(chapter.coverImageUrl ?? '')
   const [coverUploading, setCoverUploading] = useState(false)
+  const [institution, setInstitution] = useState(chapter.institution ?? '')
+  const [type, setType] = useState(chapter.type ?? '')
+  const [focusAreas, setFocusAreas] = useState<string[]>(chapter.focusAreas ?? [])
 
   const mutation = useMutation({
     // An empty string clears the cover; `undefined` would mean "leave it as it is".
-    mutationFn: () => updateChapter(chapter.id, { name, city, country, description, coverImageUrl: coverImageUrl.trim() }),
+    mutationFn: () =>
+      updateChapter(chapter.id, {
+        name,
+        city,
+        country,
+        description,
+        coverImageUrl: coverImageUrl.trim(),
+        institution: institution.trim(),
+        type: type.trim(),
+        focusAreas,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chapter', chapter.id] })
       queryClient.invalidateQueries({ queryKey: ['chapters'] })
@@ -37,6 +51,15 @@ export function ChapterEditModal({ open, onClose, chapter }: { open: boolean; on
           <Input label="Country" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. India" />
         </div>
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Input label="Institution" hint="Optional" value={institution} onChange={(e) => setInstitution(e.target.value)} placeholder="e.g. IIT Mandi" />
+          <Input label="Type" hint="Optional" value={type} onChange={(e) => setType(e.target.value)} placeholder="e.g. University Chapter" />
+        </div>
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-fg-secondary">Focus areas</p>
+          <TagInput value={focusAreas} onChange={setFocusAreas} placeholder="Add a focus area and press Enter…" maxLength={50} />
+        </div>
 
         <ChapterCoverField value={coverImageUrl} onChange={setCoverImageUrl} onUploadingChange={setCoverUploading} />
 

@@ -16,6 +16,9 @@ export interface Chapter {
   description: string
   coverImageUrl: string
   presidentUserId?: string
+  institution?: string
+  type?: string
+  focusAreas?: string[]
   /** Embedded id arrays (mock era). The real backend exposes counts instead — see
    *  memberCount/ideaCount/startupCount/opportunityCount. */
   memberIds?: string[]
