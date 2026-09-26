@@ -19,6 +19,8 @@ const AdminIdeasPage = lazyPage(() => import('@/pages/admin/AdminIdeasPage'))
 const AdminGrantsPage = lazyPage(() => import('@/pages/admin/AdminGrantsPage'))
 const AdminResourcesPage = lazyPage(() => import('@/pages/admin/AdminResourcesPage'))
 const AdminChaptersPage = lazyPage(() => import('@/pages/admin/AdminChaptersPage'))
+const AdminProgramApplicationsPage = lazyPage(() => import('@/pages/admin/AdminProgramApplicationsPage'))
+const AdminProgramApplicationDetailPage = lazyPage(() => import('@/pages/admin/AdminProgramApplicationDetailPage'))
 const AdminFeedPage = lazyPage(() => import('@/pages/admin/AdminFeedPage'))
 const AdminInvestorActivationsPage = lazyPage(() => import('@/pages/admin/AdminInvestorActivationsPage'))
 const AdminInvestorCatalogPage = lazyPage(() => import('@/pages/admin/AdminInvestorCatalogPage'))
@@ -58,6 +60,8 @@ export function AdminPortalRoutes() {
               <Route path="grants" element={<AdminGrantsPage />} />
               <Route path="resources" element={<AdminResourcesPage />} />
               <Route path="chapters" element={<AdminChaptersPage />} />
+              <Route path="program-applications" element={<AdminProgramApplicationsPage />} />
+              <Route path="program-applications/:id" element={<AdminProgramApplicationDetailPage />} />
               <Route path="feed" element={<AdminFeedPage />} />
               <Route path="investor-activations" element={<AdminInvestorActivationsPage />} />
               <Route path="investor-catalog" element={<AdminInvestorCatalogPage />} />

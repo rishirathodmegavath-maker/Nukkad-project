@@ -232,10 +232,13 @@ export default function ResourcesPage() {
             </Link>
             {RESOURCE_CATEGORIES.map((c) => {
               const Icon = c.icon
+              // Startup Programs is a dedicated discovery + application experience, not a
+              // filterable resource shelf — see StartupProgramsPage.
+              const to = c.key === 'programs' ? '/programs' : `/resources?category=${c.key}`
               return (
                 <Link
                   key={c.key}
-                  to={`/resources?category=${c.key}`}
+                  to={to}
                   className="group flex flex-col gap-3 rounded-xl border border-border/80 bg-surface p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md"
                 >
                   <span className={cn('flex size-10 items-center justify-center rounded-xl', c.chip)}>
