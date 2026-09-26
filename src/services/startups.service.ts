@@ -1,6 +1,7 @@
 import { apiClient, getPage, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
 import type {
+  PublisherIdentityKey,
   Startup,
   StartupJoinRequest,
   StartupMaterial,
@@ -57,6 +58,8 @@ interface StartupDto {
   profileCompletionPercent: number
   moderationStatus: string
   rejectionReason: string | null
+  postedAsPlatform: boolean
+  publisherIdentity: string
   createdAt: string
   updatedAt: string
 }
@@ -95,6 +98,8 @@ function mapStartup(dto: StartupDto): Startup {
     profileCompletionPercent: dto.profileCompletionPercent,
     moderationStatus: dto.moderationStatus as Startup['moderationStatus'],
     rejectionReason: dto.rejectionReason ?? undefined,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     createdAt: dto.createdAt,
   }
 }

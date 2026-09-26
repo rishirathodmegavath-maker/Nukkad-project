@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/EmptyState'
 import { RESOURCE_TYPES, categoryMeta, fileExtension, formatDuration, hostedKind, youtubeId } from '@/lib/resource-catalog'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { cn, formatRelativeTime, resolveResourceHref } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { Resource } from '@/types'
@@ -159,6 +160,7 @@ export default function ResourceDetailPage() {
             </div>
             <h1 className="text-2xl font-black leading-snug tracking-tight text-fg sm:text-3xl">{resource.title}</h1>
             {resource.provider && <p className="mt-1 text-sm font-medium text-fg-muted">{resource.provider}</p>}
+            <p className="mt-1 text-xs text-fg-muted">Curated by {publisherIdentityLabel(resource.publisherIdentity)}</p>
             {resource.description && (
               <p className="mt-4 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-fg-secondary sm:text-base">{resource.description}</p>
             )}

@@ -1,10 +1,14 @@
 import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
 import { mapResource, type ResourceDto } from '@/services/resources.service'
+import { mapEvent, type EventDto } from '@/services/events.service'
+import { mapIdea, type IdeaDto } from '@/services/ideas.service'
 import type { AttachmentRef } from '@/services/feed.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
 import type {
   GrantProviderType,
+  Idea,
   InvestorType,
+  NukkadEvent,
   OpportunityType,
   PostType,
   PostVisibility,
@@ -87,6 +91,8 @@ export interface AdminIdeaRow {
   stage: string
   category: string | null
   creatorId: string
+  postedAsPlatform: boolean
+  publisherIdentity: PublisherIdentityKey
   startupId: string | null
   interestCount: number
   removedByAdmin: boolean
@@ -108,6 +114,34 @@ export async function setIdeaRemoved(id: string, removed: boolean, reason?: stri
 
 export async function reviewIdeaModeration(id: string, approved: boolean, reason?: string): Promise<AdminIdeaRow> {
   return apiClient.patch<AdminIdeaRow>(`/admin/ideas/${id}/moderation`, { approved, reason })
+}
+
+export interface AdminCreateIdeaInput {
+  title: string
+  problem: string
+  solution: string
+  targetCustomer?: string
+  stage: string
+  category?: string
+  tags?: string[]
+  helpNeeded?: string[]
+  /** A member to attribute the idea to. Without it the admin's own account is the creator, and
+   *  publisherIdentity picks which platform identity to display instead — ignored when set. */
+  creatorEmail?: string
+  publisherIdentity?: PublisherIdentityKey
+}
+
+/** Publishes an idea from the admin panel. It's live at once (approved), not sent through the
+ *  pending-review queue a member's own idea enters. */
+export async function createAdminIdea(input: AdminCreateIdeaInput): Promise<Idea> {
+  const dto = await apiClient.post<IdeaDto>('/admin/ideas', {
+    ...input,
+    targetCustomer: input.targetCustomer || undefined,
+    category: input.category || undefined,
+    creatorEmail: input.creatorEmail || undefined,
+    publisherIdentity: input.creatorEmail ? undefined : input.publisherIdentity,
+  })
+  return mapIdea(dto)
 }
 
 export interface AdminStartupRow {
@@ -156,8 +190,10 @@ export interface AdminCreateStartupInput {
   otherTraction?: string
   visibility?: StartupVisibility
   fundraisingVisible?: boolean
-  /** A member to make the founder. Without it the admin's own account owns the startup. */
+  /** A member to make the founder. Without it the admin's own account owns the startup, and
+   *  publisherIdentity picks which platform identity to display instead — ignored when set. */
   founderEmail?: string
+  publisherIdentity?: PublisherIdentityKey
 }
 
 /** Adds a startup from the admin panel — every field a member can set when registering their own is
@@ -182,6 +218,7 @@ export async function createAdminStartup(input: AdminCreateStartupInput): Promis
     growth: input.growth || undefined,
     otherTraction: input.otherTraction || undefined,
     founderEmail: input.founderEmail || undefined,
+    publisherIdentity: input.founderEmail ? undefined : input.publisherIdentity,
   })
 }
 
@@ -202,6 +239,8 @@ export interface AdminOpportunityRow {
   rejectionReason: string | null
   organizationName: string
   postedByUserId: string
+  postedAsPlatform: boolean
+  publisherIdentity: PublisherIdentityKey
   applicantCount: number
   createdAt: string
 }
@@ -234,8 +273,10 @@ export interface AdminPostOpportunityInput {
   equity?: string
   experienceLevel?: string
   applicationDeadline?: string
-  /** A member to attribute the posting to. Without it the admin's own account is the poster. */
+  /** A member to attribute the posting to. Without it the admin's own account is the poster, and
+   *  `publisherIdentity` picks which platform identity to display instead — ignored when set. */
   postedByEmail?: string
+  publisherIdentity?: PublisherIdentityKey
 }
 
 /** Posts an opportunity from the admin panel. It's live at once, not sent through the pending-review
@@ -250,6 +291,7 @@ export async function createAdminOpportunity(input: AdminPostOpportunityInput): 
     experienceLevel: input.experienceLevel || undefined,
     applicationDeadline: input.applicationDeadline || undefined,
     postedByEmail: input.postedByEmail || undefined,
+    publisherIdentity: input.postedByEmail ? undefined : input.publisherIdentity,
   })
 }
 
@@ -324,8 +366,10 @@ export interface AdminCreateGrantInput {
   eligibleStages?: string[]
   deadline?: string
   applicationUrl: string
-  /** A member to attribute the listing to. Without it the admin's own account is the creator. */
+  /** A member to attribute the listing to. Without it the admin's own account is the creator, and
+   *  publisherIdentity picks which curator identity to display instead — ignored when set. */
   createdByEmail?: string
+  publisherIdentity?: PublisherIdentityKey
 }
 
 /** Publishes a grant listing from the admin panel. It's live at once, not sent through the
@@ -338,6 +382,7 @@ export async function createAdminGrant(input: AdminCreateGrantInput): Promise<Ad
     eligibilityCriteria: input.eligibilityCriteria || undefined,
     deadline: input.deadline || undefined,
     createdByEmail: input.createdByEmail || undefined,
+    publisherIdentity: input.createdByEmail ? undefined : input.publisherIdentity,
   })
 }
 
@@ -540,6 +585,8 @@ export interface AdminCreateResourceInput {
   thumbnail?: File
   chapterId?: string
   tags: string[]
+  /** Which identity to credit as the curator — never the `provider` field above. Defaults to plain BuildAdda. */
+  publisherIdentity?: PublisherIdentityKey
 }
 
 export async function createAdminResource(input: AdminCreateResourceInput): Promise<Resource> {
@@ -558,6 +605,7 @@ export async function createAdminResource(input: AdminCreateResourceInput): Prom
       url: input.url,
       chapterId: input.chapterId,
       tags: input.tags.join(','),
+      publisherIdentity: input.publisherIdentity,
     },
     'POST',
     { thumbnail: input.thumbnail },
@@ -602,6 +650,40 @@ export async function listAdminResourceChapters(): Promise<{ id: string; name: s
 
 export async function deleteAdminResource(id: string): Promise<void> {
   await apiClient.delete(`/admin/resources/${id}`)
+}
+
+export interface AdminCreateEventInput {
+  title: string
+  description?: string
+  chapterId?: string
+  startAt: string
+  endAt: string
+  online: boolean
+  location?: string
+  meetingUrl?: string
+  coverImageUrl?: string
+  capacity?: number
+  /** A member to attribute the event to. Without it the admin's own account is the organizer, and
+   *  publisherIdentity picks which platform identity to display instead — ignored when set. */
+  organizerEmail?: string
+  publisherIdentity?: PublisherIdentityKey
+}
+
+/** Publishes an event from the admin panel. Reading/RSVPing/editing it afterwards all continue
+ *  through the existing member-facing /api/events endpoints — an admin token just cannot list
+ *  them itself (member-scoped only), which is why this admin surface is create-only. */
+export async function createAdminEvent(input: AdminCreateEventInput): Promise<NukkadEvent> {
+  const dto = await apiClient.post<EventDto>('/admin/events', {
+    ...input,
+    description: input.description || undefined,
+    chapterId: input.chapterId || undefined,
+    location: input.location || undefined,
+    meetingUrl: input.meetingUrl || undefined,
+    coverImageUrl: input.coverImageUrl || undefined,
+    organizerEmail: input.organizerEmail || undefined,
+    publisherIdentity: input.organizerEmail ? undefined : input.publisherIdentity,
+  })
+  return mapEvent(dto)
 }
 
 /** All-or-nothing on the backend: if any id doesn't exist, none of them are deleted. `apiClient.delete`

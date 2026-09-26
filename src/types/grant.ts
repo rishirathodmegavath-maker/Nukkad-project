@@ -1,3 +1,5 @@
+import type { PublisherIdentityKey } from './publishing'
+
 export type GrantProviderType = 'Government' | 'Accelerator' | 'Corporate' | 'Foundation' | 'Other'
 
 export interface Grant {
@@ -16,6 +18,11 @@ export interface Grant {
   deadline?: string
   applicationUrl: string
   createdByUserId: string
+  /** True for a grant an admin published unattributed to any member — display `publisherIdentity`
+   *  as the public curator instead of the underlying admin account. Never the grant `provider` (a
+   *  government body or VC) — see GrantDetailPage's "Curated by" badge. */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
   removedByAdmin?: boolean
   removalReason?: string
   moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'

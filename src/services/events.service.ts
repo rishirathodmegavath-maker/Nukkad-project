@@ -1,6 +1,6 @@
 import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
-import type { EventStartupSummary, EventStatus, NukkadEvent, StartupEventSummary, User } from '@/types'
+import type { EventStartupSummary, EventStatus, NukkadEvent, PublisherIdentityKey, StartupEventSummary, User } from '@/types'
 
 export interface EventFilters {
   chapterId?: string
@@ -32,13 +32,15 @@ interface EventStartupSummaryDto {
   canUnlink: boolean
 }
 
-interface EventDto {
+export interface EventDto {
   id: string
   title: string
   description: string | null
   chapterId: string | null
   chapterName: string | null
   organizerUserId: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
   startAt: string
   endAt: string
   online: boolean
@@ -62,7 +64,7 @@ function statusFromDates(startAt: string, endAt: string): EventStatus {
   return now > new Date(endAt).getTime() ? 'ENDED' : 'LIVE'
 }
 
-function mapEvent(dto: EventDto): NukkadEvent {
+export function mapEvent(dto: EventDto): NukkadEvent {
   return {
     id: dto.id,
     title: dto.title,
@@ -70,6 +72,8 @@ function mapEvent(dto: EventDto): NukkadEvent {
     chapterId: dto.chapterId ?? undefined,
     chapterName: dto.chapterName ?? undefined,
     organizerUserId: dto.organizerUserId,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     startAt: dto.startAt,
     endAt: dto.endAt,
     isOnline: dto.online,

@@ -1,4 +1,5 @@
 import type { Experience, User, UserProject } from './user'
+import type { PublisherIdentityKey } from './publishing'
 
 export type IdeaStage = 'Concept' | 'Validating' | 'Building' | 'Launched'
 
@@ -48,6 +49,10 @@ export interface Idea {
   category: string
   tags: string[]
   creatorId: string
+  /** True for an idea an admin published unattributed to any member — display `publisherIdentity`
+   *  as the public creator instead of the underlying admin account (see IdeaDetailPage). */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
   chapterId?: string
   /** Embedded per-interest detail (mock era). The real backend exposes this via
    *  a separate `getIdeaMembers()` call instead — see `interestCount` for a cheap

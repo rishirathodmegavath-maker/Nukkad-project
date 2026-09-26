@@ -1,4 +1,5 @@
 import type { Experience, User, UserProject } from './user'
+import type { PublisherIdentityKey } from './publishing'
 
 export type OpportunityType =
   | 'Full-time'
@@ -33,6 +34,11 @@ export interface Opportunity {
    *  opportunity is still the explicit action that does that — it's informational for candidates. */
   applicationDeadline?: string
   postedByUserId: string
+  /** True for an opportunity an admin published unattributed to any member — display
+   *  `publisherIdentity` as the public poster instead of the underlying admin account (same idea as
+   *  Post — see PostCard.tsx / OpportunityDetailPage's "Posted by" card). */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
   /** Embedded (mock era). The real backend exposes viewer-relative state/counts instead. */
   applicantIds?: string[]
   interestedIds?: string[]

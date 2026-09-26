@@ -10,6 +10,7 @@ import { ModerationBadge } from '@/components/domain/ModerationBadge'
 import { StartupLogo } from '@/components/startup/StartupLogo'
 import { ShareStartupButton } from '@/components/startup/ShareStartupButton'
 import { STAGE_TONE, safeHref } from '@/lib/startup-meta'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { toast } from '@/store/toast.store'
 import type { Startup } from '@/types'
 
@@ -83,6 +84,11 @@ export function StartupProfileHeader({
                 </Badge>
               )}
               <ModerationBadge status={startup.moderationStatus} />
+              {startup.postedAsPlatform && (
+                <Badge tone="accent" size="md">
+                  Curated by {publisherIdentityLabel(startup.publisherIdentity)}
+                </Badge>
+              )}
             </div>
 
             {(startup.location.trim() || websiteLabel) && (

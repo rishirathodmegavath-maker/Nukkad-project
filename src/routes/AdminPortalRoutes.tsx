@@ -18,6 +18,7 @@ const AdminStartupsPage = lazyPage(() => import('@/pages/admin/AdminStartupsPage
 const AdminIdeasPage = lazyPage(() => import('@/pages/admin/AdminIdeasPage'))
 const AdminGrantsPage = lazyPage(() => import('@/pages/admin/AdminGrantsPage'))
 const AdminResourcesPage = lazyPage(() => import('@/pages/admin/AdminResourcesPage'))
+const AdminEventsPage = lazyPage(() => import('@/pages/admin/AdminEventsPage'))
 const AdminFeedPage = lazyPage(() => import('@/pages/admin/AdminFeedPage'))
 const AdminInvestorActivationsPage = lazyPage(() => import('@/pages/admin/AdminInvestorActivationsPage'))
 const AdminInvestorCatalogPage = lazyPage(() => import('@/pages/admin/AdminInvestorCatalogPage'))
@@ -56,6 +57,7 @@ export function AdminPortalRoutes() {
               <Route path="opportunities" element={<AdminOpportunitiesPage />} />
               <Route path="grants" element={<AdminGrantsPage />} />
               <Route path="resources" element={<AdminResourcesPage />} />
+              <Route path="events" element={<AdminEventsPage />} />
               <Route path="feed" element={<AdminFeedPage />} />
               <Route path="investor-activations" element={<AdminInvestorActivationsPage />} />
               <Route path="investor-catalog" element={<AdminInvestorCatalogPage />} />

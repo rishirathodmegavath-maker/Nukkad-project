@@ -1,6 +1,6 @@
 import { ApiError, apiClient, getPage } from '@/lib/api-client'
 import { mapExperience, mapProject, mapUser, type ExperienceDto, type ProjectDto, type UserDto } from '@/services/users.service'
-import type { ContributionArea, ExpressInterestInput, Idea, IdeaInterest, IdeaMatch, IdeaStage, MatchLabel } from '@/types'
+import type { ContributionArea, ExpressInterestInput, Idea, IdeaInterest, IdeaMatch, IdeaStage, MatchLabel, PublisherIdentityKey } from '@/types'
 
 export interface IdeaFilters {
   query?: string
@@ -12,7 +12,7 @@ export interface IdeaFilters {
   size?: number
 }
 
-interface IdeaDto {
+export interface IdeaDto {
   id: string
   title: string
   problem: string
@@ -21,6 +21,8 @@ interface IdeaDto {
   stage: string
   category: string | null
   creatorId: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
   chapterId: string | null
   startupId: string | null
   tags: string[]
@@ -33,7 +35,7 @@ interface IdeaDto {
   updatedAt: string
 }
 
-function mapIdea(dto: IdeaDto): Idea {
+export function mapIdea(dto: IdeaDto): Idea {
   return {
     id: dto.id,
     title: dto.title,
@@ -45,6 +47,8 @@ function mapIdea(dto: IdeaDto): Idea {
     category: dto.category ?? '',
     tags: dto.tags,
     creatorId: dto.creatorId,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     chapterId: dto.chapterId ?? undefined,
     interestCount: dto.interestCount,
     teamUserIds: dto.teamMemberIds,

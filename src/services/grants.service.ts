@@ -1,5 +1,5 @@
 import { apiClient, getPage } from '@/lib/api-client'
-import type { CreateGrantInput, Grant, GrantProviderType } from '@/types'
+import type { CreateGrantInput, Grant, GrantProviderType, PublisherIdentityKey } from '@/types'
 
 export interface GrantFilters {
   query?: string
@@ -23,6 +23,8 @@ interface GrantDto {
   deadline: string | null
   applicationUrl: string
   createdByUserId: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
   removedByAdmin: boolean
   removalReason: string | null
   moderationStatus: string
@@ -46,6 +48,8 @@ function mapGrant(dto: GrantDto): Grant {
     deadline: dto.deadline ?? undefined,
     applicationUrl: dto.applicationUrl,
     createdByUserId: dto.createdByUserId,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     removedByAdmin: dto.removedByAdmin,
     removalReason: dto.removalReason ?? undefined,
     moderationStatus: dto.moderationStatus as Grant['moderationStatus'],

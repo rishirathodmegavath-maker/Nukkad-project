@@ -9,6 +9,7 @@ import type {
   OpportunityMatch,
   OpportunityType,
   PostOpportunityInput,
+  PublisherIdentityKey,
   WorkMode,
 } from '@/types'
 
@@ -38,6 +39,8 @@ interface OpportunityDto {
   experienceLevel: string | null
   applicationDeadline: string | null
   postedByUserId: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
   chapterId: string | null
   requirements: string[]
   requiredSkills: string[]
@@ -72,6 +75,8 @@ function mapOpportunity(dto: OpportunityDto): Opportunity {
     experienceLevel: dto.experienceLevel ?? undefined,
     applicationDeadline: dto.applicationDeadline ?? undefined,
     postedByUserId: dto.postedByUserId,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     hasApplied: dto.hasApplied,
     hasExpressedInterest: dto.hasExpressedInterest,
     applicationStatus: (dto.applicationStatus as ApplicationStatus | null) ?? undefined,

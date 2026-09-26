@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
 import { PillTabs } from '@/components/ui/Tabs'
 import { RESOURCE_CATEGORIES, RESOURCE_TYPE_ORDER, isCategory, youtubeId } from '@/lib/resource-catalog'
+import { PUBLISHER_IDENTITIES } from '@/lib/publisher-identities'
 import { toast } from '@/store/toast.store'
-import type { Resource, ResourceCategory, ResourceType } from '@/types'
+import type { PublisherIdentityKey, Resource, ResourceCategory, ResourceType } from '@/types'
 
 /** Mirrors the backend's allow-list (FileStorageService.RESOURCE_CONTENT_TYPES). The server is the real gate. */
 const ACCEPTED_FILES = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.mov'
@@ -45,6 +46,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
   const [removeThumbnail, setRemoveThumbnail] = useState(false)
   const [chapterId, setChapterId] = useState(resource?.chapterId ?? '')
   const [tags, setTags] = useState<string[]>(resource?.tags ?? [])
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>(resource?.publisherIdentity ?? 'BUILDADDA')
 
   const { data: chapters } = useQuery({ queryKey: ['admin', 'resource-chapters'], queryFn: listAdminResourceChapters })
 
@@ -67,6 +69,7 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
           thumbnail: thumbnail ?? undefined,
           chapterId: chapterId || undefined,
           tags,
+          publisherIdentity,
         })
       }
       const updated = await updateAdminResource(resource.id, {
@@ -245,6 +248,21 @@ export function AdminResourceFormModal({ onClose, resource }: { onClose: () => v
           <p className="mb-1.5 text-sm font-medium text-fg">Tags</p>
           <TagInput value={tags} onChange={setTags} placeholder="Add a tag and press Enter…" maxLength={50} />
         </div>
+
+        {!editing && (
+          <Select
+            label="Publisher identity"
+            hint={'Shown as "Curated by" — never the provider field above, still your admin account behind it'}
+            value={publisherIdentity}
+            onChange={(e) => setPublisherIdentity(e.target.value as PublisherIdentityKey)}
+          >
+            {PUBLISHER_IDENTITIES.map((i) => (
+              <option key={i.key} value={i.key}>
+                {i.label}
+              </option>
+            ))}
+          </Select>
+        )}
       </div>
     </Modal>
   )
