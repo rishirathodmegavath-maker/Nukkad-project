@@ -4,7 +4,6 @@ import type {
   Post,
   PostAttachment,
   PostComment,
-  PostLiker,
   PostType,
   PostVisibility,
   PublisherIdentityKey,
@@ -243,8 +242,4 @@ export async function addComment(postId: string, content: string, parentCommentI
 
 export async function deleteComment(postId: string, commentId: string): Promise<void> {
   await apiClient.delete<void>(`/feed/${postId}/comments/${commentId}`)
-}
-
-export async function listLikers(postId: string, page = 0, size = 50): Promise<Page<PostLiker>> {
-  return apiClient.get<Page<PostLiker>>(`/feed/${postId}/likes?page=${page}&size=${size}`)
 }

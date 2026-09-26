@@ -84,8 +84,3 @@ export interface PostComment {
   replyCount: number
   createdAt: string
 }
-
-export interface PostLiker {
-  userId: string
-  createdAt: string
-}

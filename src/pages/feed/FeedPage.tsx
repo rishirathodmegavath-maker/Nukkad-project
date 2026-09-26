@@ -162,7 +162,7 @@ function SavedPostsTab() {
   })
 
   // Sort/filter changes start a fresh accumulation at page 0 rather than mixing pages built under a
-  // different sort/filter — same idea as LikesModal resetting its own accumulated list.
+  // different sort/filter.
   useEffect(() => {
     setPage(0)
     setPosts([])
