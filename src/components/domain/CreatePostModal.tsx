@@ -69,7 +69,10 @@ function KindTile({ kind, selected, onSelect }: { kind: PostKind; selected: bool
 export function CreatePostModal({ open, onClose, initialType }: { open: boolean; onClose: () => void; initialType?: PostType }) {
   const queryClient = useQueryClient()
   const [type, setType] = useState<PostType>(initialType ?? 'text')
-  const [showMore, setShowMore] = useState(false)
+  // Starts expanded when initialType is one of the "More options" tiles (e.g. a chapter page's
+  // "Share Startup" quick action), so that tile shows as selected right away instead of looking
+  // like nothing was picked.
+  const [showMore, setShowMore] = useState(() => !!initialType && morePostKinds.some((k) => k.key === initialType))
   const [content, setContent] = useState('')
   const [pending, setPending] = useState<PendingFile[]>([])
   const [link, setLink] = useState<string | null>(null)

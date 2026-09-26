@@ -21,6 +21,7 @@ interface AttachmentDto {
 export interface PostDto {
   id: string
   authorId: string
+  chapterId: string | null
   type: string
   content: string
   relatedId: string | null
@@ -57,6 +58,7 @@ export function mapPost(dto: PostDto): Post {
   return {
     id: dto.id,
     authorId: dto.authorId,
+    chapterId: dto.chapterId ?? undefined,
     type: dto.type as PostType,
     content: dto.content,
     relatedId: dto.relatedId ?? undefined,
@@ -80,9 +82,10 @@ export function mapPost(dto: PostDto): Post {
   }
 }
 
-/** `tag` (a hashtag without the "#") keeps only posts that use it. */
-export async function listFeed(authorId?: string, size?: number, type?: PostType, tag?: string): Promise<Post[]> {
-  const dtos = await getPage<PostDto>('/feed', { authorId, size, type, tag })
+/** `tag` (a hashtag without the "#") keeps only posts that use it. `chapterId` keeps only posts
+ *  whose author's own chapter (at the time of posting) was this one — used by a chapter's Feed tab. */
+export async function listFeed(authorId?: string, size?: number, type?: PostType, tag?: string, chapterId?: string): Promise<Post[]> {
+  const dtos = await getPage<PostDto>('/feed', { authorId, size, type, tag, chapterId })
   return dtos.map(mapPost)
 }
 

@@ -32,6 +32,9 @@ export interface PostAttachment {
 export interface Post {
   id: string
   authorId: string
+  /** The author's own chapter at the time of posting, if they were in one — lets a chapter's Feed
+   *  tab show only its own members' posts. Derived server-side, never client-supplied. */
+  chapterId?: string
   type: PostType
   content: string
   relatedId?: string

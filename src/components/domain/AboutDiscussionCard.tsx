@@ -1,24 +1,20 @@
 import { Link } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, Clock3, Eye, MessageCircle, Users } from 'lucide-react'
-import type { Discussion } from '@/types'
+import type { Discussion, User } from '@/types'
 import { listDiscussionParticipants, toggleFollowDiscussion } from '@/services/discussions.service'
+import { getUser } from '@/services/users.service'
 import { discussionTopicMeta } from '@/lib/discussionTopicMeta'
 import { useUser } from '@/hooks/useUser'
 import { formatRelativeTime } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
+import { AvatarStack } from '@/components/ui/AvatarStack'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { toast } from '@/store/toast.store'
 
 const MAX_SHOWN_AVATARS = 6
-
-function ParticipantAvatar({ userId }: { userId: string }) {
-  const { data: user } = useUser(userId)
-  if (!user) return <Skeleton className="size-8 shrink-0 rounded-full ring-2 ring-surface" />
-  return <Avatar src={user.avatarUrl} name={user.name} size="sm" className="ring-2 ring-surface" />
-}
 
 function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
@@ -55,8 +51,13 @@ export function AboutDiscussionCard({ discussion }: { discussion: Discussion }) 
     onError: (err) => toast.error(err instanceof Error ? err.message : 'Could not update follow'),
   })
 
-  const shown = (participantIds ?? []).slice(0, MAX_SHOWN_AVATARS)
-  const extra = discussion.participantCount - shown.length
+  const shownIds = (participantIds ?? []).slice(0, MAX_SHOWN_AVATARS)
+  const shownUsers = useQueries({
+    queries: shownIds.map((id) => ({ queryKey: ['user', id], queryFn: () => getUser(id), staleTime: 60_000 })),
+  })
+    .map((q) => q.data)
+    .filter((u): u is User => !!u)
+  const extra = discussion.participantCount - shownIds.length
 
   return (
     <Card className="flex flex-col gap-4">
@@ -85,13 +86,9 @@ export function AboutDiscussionCard({ discussion }: { discussion: Discussion }) 
         <StatRow icon={<Users className="size-3.5" />} label="Participants" value={discussion.participantCount} />
       </div>
 
-      {shown.length > 0 && (
+      {shownUsers.length > 0 && (
         <div className="flex items-center gap-2 border-t border-border/60 pt-3">
-          <div className="flex -space-x-2">
-            {shown.map((id) => (
-              <ParticipantAvatar key={id} userId={id} />
-            ))}
-          </div>
+          <AvatarStack people={shownUsers} size="sm" max={MAX_SHOWN_AVATARS} />
           {extra > 0 && <span className="text-xs font-medium text-fg-muted">+{extra} more</span>}
         </div>
       )}

@@ -10,6 +10,9 @@ interface ChapterDto {
   description: string | null
   coverImageUrl: string | null
   presidentUserId: string | null
+  institution: string | null
+  type: string | null
+  focusAreas: string[] | null
   memberCount: number
   ideaCount: number
   startupCount: number
@@ -29,6 +32,9 @@ function mapChapter(dto: ChapterDto): Chapter {
     description: dto.description ?? '',
     coverImageUrl: dto.coverImageUrl ?? '',
     presidentUserId: dto.presidentUserId ?? undefined,
+    institution: dto.institution ?? undefined,
+    type: dto.type ?? undefined,
+    focusAreas: dto.focusAreas ?? undefined,
     memberCount: dto.memberCount,
     ideaCount: dto.ideaCount,
     startupCount: dto.startupCount,
@@ -76,6 +82,9 @@ export interface UpdateChapterInput {
   country?: string
   description?: string
   coverImageUrl?: string
+  institution?: string
+  type?: string
+  focusAreas?: string[]
 }
 
 export async function updateChapter(id: string, input: UpdateChapterInput): Promise<Chapter> {

@@ -159,6 +159,16 @@ export const mainPostKinds: PostKind[] = [
 /** Behind "More options". */
 export const morePostKinds: PostKind[] = [
   {
+    key: 'startup_update',
+    label: 'Startup update',
+    blurb: 'Share progress on your startup',
+    filterLabel: 'Startup updates',
+    placeholder: 'What happened with your startup? Share a milestone, a metric, or news.',
+    emptyHint: 'startup updates',
+    icon: Rocket,
+    tone: 'bg-orange-600/10 text-orange-600',
+  },
+  {
     key: 'resource',
     label: 'Resource',
     blurb: 'Share something useful',
