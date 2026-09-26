@@ -17,13 +17,16 @@ interface ChapterCoverFieldProps {
   onChange: (url: string) => void
   /** Lets the form hold its Save/Create button until an upload has finished, so a cover is never silently dropped. */
   onUploadingChange?: (uploading: boolean) => void
+  /** Defaults to the member-facing upload endpoint; the admin form passes its own admin-scoped one,
+   *  since an admin-portal token can't call the member endpoint. */
+  uploadFn?: (file: File) => Promise<string>
 }
 
 /**
  * The cover picture of a chapter: upload a file, or paste a link to one. Either way the form ends up with a
  * URL, so a cover can be chosen while the chapter is still being written.
  */
-export function ChapterCoverField({ value, onChange, onUploadingChange }: ChapterCoverFieldProps) {
+export function ChapterCoverField({ value, onChange, onUploadingChange, uploadFn = uploadChapterCoverImage }: ChapterCoverFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const labelId = useId()
   const [phase, setPhase] = useState<UploadPhase>('idle')
@@ -44,7 +47,7 @@ export function ChapterCoverField({ value, onChange, onUploadingChange }: Chapte
     setPhase('uploading')
     onUploadingChange?.(true)
     try {
-      onChange(await uploadChapterCoverImage(file))
+      onChange(await uploadFn(file))
       setPhase('done')
       window.setTimeout(() => setPhase('idle'), 1200)
     } catch (err) {

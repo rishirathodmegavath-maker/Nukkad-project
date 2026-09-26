@@ -37,7 +37,9 @@ export function AboutChapterCard({
   onEdit: () => void
 }) {
   const location = [chapter.city, chapter.country].filter(Boolean).join(', ')
-  const founded = new Date(chapter.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  // A real founding date if the chapter has one (backfilled by an admin, or set by its own
+  // president) — otherwise fall back to when the record itself was created.
+  const founded = new Date(chapter.foundedAt ?? chapter.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
 
   return (
     <Card className="flex flex-col gap-4">

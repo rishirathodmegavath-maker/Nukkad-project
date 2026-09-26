@@ -20,6 +20,7 @@ import {
   FolderOpen,
   Send,
   MessageSquarePlus,
+  MessagesSquare,
 } from 'lucide-react'
 import {
   getChapter,
@@ -44,6 +45,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { AvatarStack } from '@/components/ui/AvatarStack'
+import { EntityLogo } from '@/components/ui/EntityLogo'
 import { CoverImage } from '@/components/ui/CoverImage'
 import { Tabs } from '@/components/ui/Tabs'
 import { Skeleton, CardSkeletonGrid } from '@/components/ui/Skeleton'
@@ -360,6 +362,12 @@ export default function ChapterDetailPage() {
 
           <UploadSpinnerOverlay phase={isPresident ? coverPhase : 'idle'} />
 
+          {chapter.logoUrl && (
+            <div className="absolute bottom-0 left-4 sm:left-6 translate-y-1/2 z-10 rounded-2xl bg-surface p-1 shadow-md">
+              <EntityLogo src={chapter.logoUrl} name={chapter.name} size="xl" />
+            </div>
+          )}
+
           {isPresident && (
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
               {chapter.coverImageUrl ? (
@@ -395,7 +403,7 @@ export default function ChapterDetailPage() {
             </div>
           )}
         </div>
-        <div className="p-6 sm:p-7 flex flex-wrap items-start justify-between gap-4">
+        <div className={cn('p-6 sm:p-7 flex flex-wrap items-start justify-between gap-4', chapter.logoUrl && 'pt-12 sm:pt-14')}>
           <div className="max-w-2xl">
             <h1 className="text-2xl sm:text-3xl font-black text-fg tracking-tight leading-tight mb-1.5">{chapter.name}</h1>
             <p className="text-sm text-fg-muted leading-relaxed max-w-xl">{chapter.description}</p>
@@ -403,15 +411,8 @@ export default function ChapterDetailPage() {
               <StatPill active={tab === 'members'} icon={Users} label="Members" value={chapter.memberCount ?? 0} onClick={() => setTab('members')} />
               <StatPill active={tab === 'startups'} icon={Rocket} label="Startups" value={chapter.startupCount ?? 0} onClick={() => setTab('startups')} />
               <StatPill active={tab === 'ideas'} icon={Lightbulb} label="Ideas" value={chapter.ideaCount ?? 0} onClick={() => setTab('ideas')} />
-              <StatPill
-                active={tab === 'opportunities'}
-                icon={Briefcase}
-                label="Opportunities"
-                value={chapter.opportunityCount ?? 0}
-                onClick={() => setTab('opportunities')}
-              />
               <StatPill active={tab === 'events'} icon={Calendar} label="Events" value={chapter.eventCount ?? 0} onClick={() => setTab('events')} />
-              <StatPill active={tab === 'resources'} icon={FolderOpen} label="Resources" value={chapter.resourceCount ?? 0} onClick={() => setTab('resources')} />
+              <StatPill active={tab === 'feed'} icon={MessagesSquare} label="Discussions" value={chapter.discussionCount ?? 0} onClick={() => setTab('feed')} />
             </div>
             {president && (
               <Link to={`/people/${president.id}`} className="mt-3 inline-flex items-center gap-1.5 text-sm text-fg hover:underline group">
