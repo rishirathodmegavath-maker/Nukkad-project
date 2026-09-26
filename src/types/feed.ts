@@ -1,3 +1,5 @@
+import type { PublisherIdentityKey } from './publishing'
+
 export type PostType =
   | 'text'
   | 'startup_update'
@@ -61,14 +63,6 @@ export interface Post {
    *  `likesCount` itself always stays the real, togglable count. */
   platformEngagementCount?: number
 }
-
-/** Matches the backend's Post.PublisherIdentity enum constants exactly — see lib/publisher-identities.ts
- *  for display labels. A fixed, closed set; never free text. */
-export type PublisherIdentityKey =
-  | 'ARJUN_MEHTA'
-  | 'KARAN_SHAH'
-  | 'NEEL_KAPOOR'
-  | 'VIKRAM_RAO'
 
 export type SavedPostsSort = 'newestSaved' | 'oldestSaved' | 'newestPost' | 'oldestPost'
 

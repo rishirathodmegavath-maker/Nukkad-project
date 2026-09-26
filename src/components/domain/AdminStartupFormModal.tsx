@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
 import { LogoPicker } from '@/components/startup/create/LogoPicker'
 import type { LogoDraft } from '@/components/startup/create/create-startup-model'
+import { PUBLISHER_IDENTITIES } from '@/lib/publisher-identities'
 import { toast } from '@/store/toast.store'
-import type { StartupStage, StartupVisibility } from '@/types'
+import type { PublisherIdentityKey, StartupStage, StartupVisibility } from '@/types'
 
 const STAGES: StartupStage[] = ['Idea', 'MVP', 'Early Traction', 'Growth', 'Scaling']
 const VISIBILITIES: StartupVisibility[] = ['Public', 'Nukkad Members']
@@ -53,6 +54,7 @@ export function AdminStartupFormModal({ onClose }: { onClose: () => void }) {
   const [visibility, setVisibility] = useState<StartupVisibility>('Public')
   const [fundraisingVisible, setFundraisingVisible] = useState(true)
   const [founderEmail, setFounderEmail] = useState('')
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('BUILDADDA')
 
   // The admin token can't call the member chapters API, so the chapter picker uses the admin chapter list.
   const { data: chapters } = useQuery({ queryKey: ['admin', 'resource-chapters'], queryFn: listAdminResourceChapters })
@@ -81,6 +83,7 @@ export function AdminStartupFormModal({ onClose }: { onClose: () => void }) {
         fundraisingVisible,
         chapterId,
         founderEmail: founderEmail.trim(),
+        publisherIdentity,
       })
       // Same shape as the member create-startup flow: the startup exists either way once this
       // resolves, so a logo failure here is reported softly rather than treated as the create failing.
@@ -205,6 +208,21 @@ export function AdminStartupFormModal({ onClose }: { onClose: () => void }) {
           maxLength={255}
           onChange={(e) => setFounderEmail(e.target.value)}
         />
+
+        {!founderEmail.trim() && (
+          <Select
+            label="Publisher identity"
+            hint={'Shown as "Curated by" on the profile — not a separate user, still your admin account behind it'}
+            value={publisherIdentity}
+            onChange={(e) => setPublisherIdentity(e.target.value as PublisherIdentityKey)}
+          >
+            {PUBLISHER_IDENTITIES.map((i) => (
+              <option key={i.key} value={i.key}>
+                {i.label}
+              </option>
+            ))}
+          </Select>
+        )}
       </div>
     </Modal>
   )

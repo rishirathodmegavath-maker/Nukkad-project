@@ -1,4 +1,5 @@
 import type { User } from './user'
+import type { PublisherIdentityKey } from './publishing'
 
 export type StartupStage = 'Idea' | 'MVP' | 'Early Traction' | 'Growth' | 'Scaling'
 
@@ -151,5 +152,10 @@ export interface Startup {
    *  before that changed; those stay hidden from everyone but their founders/admins and platform admins. */
   moderationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED'
   rejectionReason?: string
+  /** True for a startup an admin added unattributed to any member — no separate "creator" field
+   *  exists (ownership lives entirely in the real FOUNDER team member row, which this never
+   *  changes); this only adds a "Curated by X" display identity on top (see StartupProfileHeader). */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
   createdAt: string
 }

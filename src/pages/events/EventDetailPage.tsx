@@ -40,6 +40,8 @@ import {
 } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import { safeHref } from '@/lib/links'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import buildAddaLogoUrl from '@/assets/logo.png'
 import type { EventStartupSummary } from '@/types'
 
 export default function EventDetailPage() {
@@ -63,7 +65,8 @@ export default function EventDetailPage() {
     enabled: !!id,
   })
 
-  const { data: organizer } = useUser(event?.organizerUserId)
+  const { data: organizer } = useUser(event?.postedAsPlatform ? undefined : event?.organizerUserId)
+  const publisherLabel = publisherIdentityLabel(event?.publisherIdentity)
 
   const invalidateEvent = () => {
     queryClient.invalidateQueries({ queryKey: ['event', id] })
@@ -374,31 +377,41 @@ export default function EventDetailPage() {
           </Card>
 
           {/* Organizer Card */}
-          {organizer && (
+          {event.postedAsPlatform ? (
             <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
               <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Organized by</h2>
-              <Link to={`/people/${organizer.id}`} className="flex items-center gap-3 group">
-                <Avatar src={organizer.avatarUrl} name={organizer.name} size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-fg group-hover:underline truncate">{organizer.name}</p>
-                  <p className="text-xs text-fg-muted truncate">{organizer.headline || organizer.role || 'Event Host'}</p>
-                  {organizer.location && <p className="text-xs text-fg-muted truncate mt-0.5">{organizer.location}</p>}
-                </div>
-              </Link>
-
-              {currentUser && currentUser.id !== organizer.id && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  leftIcon={<MessageSquare className="size-3.5" />}
-                  isLoading={messageMutation.isPending}
-                  onClick={() => messageMutation.mutate()}
-                  className="w-full mt-1"
-                >
-                  Message Host
-                </Button>
-              )}
+              <div className="flex items-center gap-3">
+                <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="md" />
+                <p className="text-sm font-bold text-fg truncate">{publisherLabel}</p>
+              </div>
             </Card>
+          ) : (
+            organizer && (
+              <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+                <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Organized by</h2>
+                <Link to={`/people/${organizer.id}`} className="flex items-center gap-3 group">
+                  <Avatar src={organizer.avatarUrl} name={organizer.name} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-fg group-hover:underline truncate">{organizer.name}</p>
+                    <p className="text-xs text-fg-muted truncate">{organizer.headline || organizer.role || 'Event Host'}</p>
+                    {organizer.location && <p className="text-xs text-fg-muted truncate mt-0.5">{organizer.location}</p>}
+                  </div>
+                </Link>
+
+                {currentUser && currentUser.id !== organizer.id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    leftIcon={<MessageSquare className="size-3.5" />}
+                    isLoading={messageMutation.isPending}
+                    onClick={() => messageMutation.mutate()}
+                    className="w-full mt-1"
+                  >
+                    Message Host
+                  </Button>
+                )}
+              </Card>
+            )
           )}
 
           {event.startups.length > 0 && (

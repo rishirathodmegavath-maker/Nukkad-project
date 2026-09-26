@@ -1,5 +1,5 @@
 import { apiClient, getPage, type Page } from '@/lib/api-client'
-import type { AttachmentKind, Discussion, DiscussionComment, DiscussionSort, DiscussionStats, PostAttachment, PostVisibility, TopicCount } from '@/types'
+import type { AttachmentKind, Discussion, DiscussionComment, DiscussionSort, DiscussionStats, PostAttachment, PostVisibility, PublisherIdentityKey, TopicCount } from '@/types'
 import type { AttachmentRef } from './feed.service'
 
 interface AttachmentDto {
@@ -33,6 +33,8 @@ interface DiscussionDto {
   removalReason: string | null
   createdAt: string
   lastActivityAt: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
 }
 
 interface DiscussionCommentDto {
@@ -76,6 +78,8 @@ function mapDiscussion(dto: DiscussionDto): Discussion {
     removalReason: dto.removalReason ?? undefined,
     createdAt: dto.createdAt,
     lastActivityAt: dto.lastActivityAt,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
   }
 }
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, ExternalLink, Pencil, Trash2, ChevronRight, CalendarClock, IndianRupee } from 'lucide-react'
 import { getGrant, deleteGrant } from '@/services/grants.service'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -110,7 +111,10 @@ export default function GrantDetailPage() {
               )}
             </div>
 
-            <p className="text-sm text-fg-muted font-medium mb-3">{grant.provider}</p>
+            <p className={`text-sm text-fg-muted font-medium ${grant.postedAsPlatform ? 'mb-1' : 'mb-3'}`}>{grant.provider}</p>
+            {grant.postedAsPlatform && (
+              <p className="text-xs text-fg-muted mb-3">Curated by {publisherIdentityLabel(grant.publisherIdentity)}</p>
+            )}
 
             {grant.description && <p className="text-sm sm:text-base text-fg-secondary leading-relaxed whitespace-pre-line">{grant.description}</p>}
 

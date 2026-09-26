@@ -5,8 +5,9 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
+import { PUBLISHER_IDENTITIES } from '@/lib/publisher-identities'
 import { toast } from '@/store/toast.store'
-import type { OpportunityType, WorkMode } from '@/types'
+import type { OpportunityType, PublisherIdentityKey, WorkMode } from '@/types'
 
 const TYPES: OpportunityType[] = ['Full-time', 'Internship', 'Founding Role', 'Co-founder', 'Startup Project', 'AI/ML Role', 'Campus']
 const WORK_MODES: WorkMode[] = ['Remote', 'Hybrid', 'In-person']
@@ -35,6 +36,7 @@ export function AdminOpportunityFormModal({ onClose }: { onClose: () => void }) 
   const [experienceLevel, setExperienceLevel] = useState('')
   const [applicationDeadline, setApplicationDeadline] = useState('')
   const [postedByEmail, setPostedByEmail] = useState('')
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('BUILDADDA')
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -53,6 +55,7 @@ export function AdminOpportunityFormModal({ onClose }: { onClose: () => void }) 
         experienceLevel: experienceLevel.trim(),
         applicationDeadline: applicationDeadline ? new Date(applicationDeadline).toISOString() : undefined,
         postedByEmail: postedByEmail.trim(),
+        publisherIdentity,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'opportunities'] })
@@ -154,6 +157,21 @@ export function AdminOpportunityFormModal({ onClose }: { onClose: () => void }) 
           maxLength={255}
           onChange={(e) => setPostedByEmail(e.target.value)}
         />
+
+        {!postedByEmail.trim() && (
+          <Select
+            label="Publisher identity"
+            hint="Shown as the poster — not a separate user, still your admin account behind it"
+            value={publisherIdentity}
+            onChange={(e) => setPublisherIdentity(e.target.value as PublisherIdentityKey)}
+          >
+            {PUBLISHER_IDENTITIES.map((i) => (
+              <option key={i.key} value={i.key}>
+                {i.label}
+              </option>
+            ))}
+          </Select>
+        )}
       </div>
     </Modal>
   )

@@ -1,4 +1,5 @@
 import type { PostAttachment, PostVisibility } from './feed'
+import type { PublisherIdentityKey } from './publishing'
 
 /**
  * A discussion — a Post of type 'discussion' underneath, but with the real forum data Post never
@@ -36,6 +37,10 @@ export interface Discussion {
   createdAt: string
   /** The later of the discussion's own createdAt and its most recent reply's createdAt. */
   lastActivityAt: string
+  /** True for a discussion an admin published unattributed to any member — display `publisherIdentity`
+   *  as the public author instead of the underlying admin account (same idea as Post — see PostCard.tsx). */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
 }
 
 export interface DiscussionComment {

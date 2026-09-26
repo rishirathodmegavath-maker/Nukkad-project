@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Lightbulb, ExternalLink } from 'lucide-react'
+import { Lightbulb, ExternalLink, Plus } from 'lucide-react'
 import { listAdminIdeas, reviewIdeaModeration, setIdeaRemoved } from '@/services/admin.service'
 import { memberAppUrl } from '@/lib/portal'
 import type { ModerationStatus } from '@/types/admin'
 import { SearchFilterBar } from '@/components/domain/SearchFilterBar'
 import { AdminRemoveContentModal } from '@/components/domain/AdminRemoveContentModal'
 import { AdminReviewContentModal } from '@/components/domain/AdminReviewContentModal'
+import { AdminIdeaFormModal } from '@/components/domain/AdminIdeaFormModal'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -33,6 +35,7 @@ export default function AdminIdeasPage() {
   const [page, setPage] = useState(Number(searchParams.get('page') ?? 0))
   const [target, setTarget] = useState<{ id: string; label: string; removed: boolean } | null>(null)
   const [reviewing, setReviewing] = useState<{ id: string; label: string; approving: boolean } | null>(null)
+  const [adding, setAdding] = useState(false)
   const queryClient = useQueryClient()
   const filters = useMemo(
     () => ({ q: q || undefined, includeRemoved, status: (status || undefined) as ModerationStatus | undefined, page, size: 20 }),
@@ -94,6 +97,9 @@ export default function AdminIdeasPage() {
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </Select>
+        <Button className="sm:ml-auto" leftIcon={<Plus className="size-4" />} onClick={() => setAdding(true)}>
+          Post idea
+        </Button>
       </div>
 
       {isLoading ? (
@@ -121,6 +127,7 @@ export default function AdminIdeasPage() {
                     <tr key={idea.id} className="border-b border-border/60 last:border-0 hover:bg-surface-hover transition-colors">
                       <td className="px-4 py-3 font-medium text-fg truncate max-w-sm">
                         {idea.title}
+                        {idea.postedAsPlatform && <Badge tone="accent" className="ml-2">{publisherIdentityLabel(idea.publisherIdentity)}</Badge>}
                         {idea.startupId && <Badge tone="success" className="ml-2">Converted</Badge>}
                         {idea.removedByAdmin && <Badge tone="danger" className="ml-2">Removed</Badge>}
                         {moderationBadge(idea.moderationStatus)}
@@ -183,6 +190,8 @@ export default function AdminIdeasPage() {
           onConfirm={(reason) => reviewMutation.mutate(reason)}
         />
       )}
+
+      {adding && <AdminIdeaFormModal onClose={() => setAdding(false)} />}
     </div>
   )
 }

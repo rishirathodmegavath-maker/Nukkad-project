@@ -14,6 +14,8 @@ import type { Discussion, DiscussionComment, PostComment } from '@/types'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { splitDiscussionContent } from '@/lib/discussionContent'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import buildAddaLogoUrl from '@/assets/logo.png'
 import { formatRelativeTime, cn } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -376,11 +378,20 @@ export default function DiscussionDetailPage() {
 }
 
 function DiscussionAuthorLine({ discussion }: { discussion: Discussion }) {
-  const { data: author } = useUser(discussion.authorId)
+  const { data: author } = useUser(discussion.postedAsPlatform ? undefined : discussion.authorId)
+  const publisherLabel = publisherIdentityLabel(discussion.publisherIdentity)
   return (
     <p className="mt-2 flex items-center gap-2 text-sm text-fg-muted">
-      {author ? <Avatar src={author.avatarUrl} name={author.name} size="xs" /> : <Skeleton className="size-6 rounded-full" />}
-      {author ? (
+      {discussion.postedAsPlatform ? (
+        <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="xs" />
+      ) : author ? (
+        <Avatar src={author.avatarUrl} name={author.name} size="xs" />
+      ) : (
+        <Skeleton className="size-6 rounded-full" />
+      )}
+      {discussion.postedAsPlatform ? (
+        <span className="font-semibold text-fg">{publisherLabel}</span>
+      ) : author ? (
         <Link to={`/people/${author.id}`} className="font-semibold text-fg hover:underline">
           {author.name}
         </Link>

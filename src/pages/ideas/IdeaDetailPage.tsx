@@ -29,6 +29,8 @@ import { ExpressInterestModal } from '@/components/domain/ExpressInterestModal'
 import { IdeaEditModal } from '@/components/domain/IdeaEditModal'
 import { MatchReasons } from '@/components/domain/MatchReasons'
 import { formatRelativeTime } from '@/lib/utils'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import buildAddaLogoUrl from '@/assets/logo.png'
 import { toast } from '@/store/toast.store'
 import type { Idea, IdeaInterestStatus } from '@/types'
 
@@ -97,7 +99,8 @@ export default function IdeaDetailPage() {
     enabled: !!id,
   })
 
-  const { data: creator } = useUser(idea?.creatorId)
+  const { data: creator } = useUser(idea?.postedAsPlatform ? undefined : idea?.creatorId)
+  const publisherLabel = publisherIdentityLabel(idea?.publisherIdentity)
 
   const { data: members } = useQuery({
     queryKey: ['idea', id, 'members'],
@@ -450,31 +453,41 @@ export default function IdeaDetailPage() {
           </p>
         </Card>
 
-        {creator && !isCreator && (
+        {idea.postedAsPlatform ? (
           <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
             <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Pitched by</h2>
-            <Link to={`/people/${creator.id}`} className="flex items-center gap-3 group">
-              <Avatar src={creator.avatarUrl} name={creator.name} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-fg group-hover:underline truncate">{creator.name}</p>
-                <p className="text-xs text-fg-muted truncate">{creator.headline || creator.role || 'Idea Creator'}</p>
-                {creator.location && <p className="text-xs text-fg-muted truncate mt-0.5">{creator.location}</p>}
-              </div>
-            </Link>
-
-            {currentUser && currentUser.id !== creator.id && (
-              <Button
-                size="sm"
-                variant="outline"
-                leftIcon={<MessageSquare className="size-3.5" />}
-                isLoading={messageMutation.isPending}
-                onClick={() => messageMutation.mutate()}
-                className="w-full mt-1"
-              >
-                Message Creator
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="md" />
+              <p className="text-sm font-bold text-fg truncate">{publisherLabel}</p>
+            </div>
           </Card>
+        ) : (
+          creator && !isCreator && (
+            <Card className="rounded-xl border border-border/80 shadow-xs bg-surface flex flex-col gap-3">
+              <h2 className="font-bold text-xs uppercase tracking-wider text-fg-muted">Pitched by</h2>
+              <Link to={`/people/${creator.id}`} className="flex items-center gap-3 group">
+                <Avatar src={creator.avatarUrl} name={creator.name} size="md" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-fg group-hover:underline truncate">{creator.name}</p>
+                  <p className="text-xs text-fg-muted truncate">{creator.headline || creator.role || 'Idea Creator'}</p>
+                  {creator.location && <p className="text-xs text-fg-muted truncate mt-0.5">{creator.location}</p>}
+                </div>
+              </Link>
+
+              {currentUser && currentUser.id !== creator.id && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<MessageSquare className="size-3.5" />}
+                  isLoading={messageMutation.isPending}
+                  onClick={() => messageMutation.mutate()}
+                  className="w-full mt-1"
+                >
+                  Message Creator
+                </Button>
+              )}
+            </Card>
+          )
         )}
 
         <Card className="rounded-xl border border-border/80 shadow-xs bg-surface">

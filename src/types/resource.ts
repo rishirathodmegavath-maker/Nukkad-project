@@ -1,3 +1,5 @@
+import type { PublisherIdentityKey } from './publishing'
+
 /** The format of a resource. (Which shelf it sits on is its `category`, below.) */
 export type ResourceType = 'Document' | 'Link' | 'Video' | 'Note' | 'Template' | 'Article' | 'Guide' | 'Course' | 'Tool' | 'Deck'
 
@@ -30,6 +32,10 @@ export interface Resource {
   featured: boolean
   url: string
   uploaderUserId: string
+  /** Which public identity to credit as this resource's curator — every resource is admin-curated,
+   *  so this is always meaningful. Never the `provider` field above (see ResourceDetailPage's
+   *  "Curated by" line). */
+  publisherIdentity?: PublisherIdentityKey
   chapterId?: string
   chapterName?: string
   tags: string[]

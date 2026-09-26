@@ -18,6 +18,8 @@ import { ErrorState } from '@/components/ui/EmptyState'
 import { ContentUnavailable } from '@/components/domain/ContentUnavailable'
 import { isApplicationDeadlinePassed } from '@/lib/opportunityDeadline'
 import { Modal } from '@/components/ui/Modal'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import buildAddaLogoUrl from '@/assets/logo.png'
 import { formatRelativeTime } from '@/lib/utils'
 import { toast } from '@/store/toast.store'
 import type { ApplicationStatus, Startup } from '@/types'
@@ -63,7 +65,8 @@ export default function OpportunityDetailPage() {
     enabled: !!id,
   })
 
-  const { data: poster } = useUser(opp?.postedByUserId)
+  const { data: poster } = useUser(opp?.postedAsPlatform ? undefined : opp?.postedByUserId)
+  const publisherLabel = publisherIdentityLabel(opp?.publisherIdentity)
   const { data: currentUser } = useCurrentUser()
 
   const { data: startup } = useQuery({
@@ -355,22 +358,32 @@ export default function OpportunityDetailPage() {
           </p>
         </Card>
 
-        {poster && (
+        {opp.postedAsPlatform ? (
           <Card>
             <h2 className="font-semibold text-fg mb-3">Posted by</h2>
-            <div className="flex items-center justify-between gap-2.5">
-              <Link to={`/people/${poster.id}`} className="flex items-center gap-2.5 min-w-0">
-                <Avatar src={poster.avatarUrl} name={poster.name} size="md" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-fg truncate">{poster.name}</p>
-                  <p className="text-xs text-fg-muted truncate">{poster.headline}</p>
-                </div>
-              </Link>
-              <div className="shrink-0">
-                <ConnectAction user={poster} />
-              </div>
+            <div className="flex items-center gap-2.5">
+              <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="md" />
+              <p className="text-sm font-medium text-fg truncate">{publisherLabel}</p>
             </div>
           </Card>
+        ) : (
+          poster && (
+            <Card>
+              <h2 className="font-semibold text-fg mb-3">Posted by</h2>
+              <div className="flex items-center justify-between gap-2.5">
+                <Link to={`/people/${poster.id}`} className="flex items-center gap-2.5 min-w-0">
+                  <Avatar src={poster.avatarUrl} name={poster.name} size="md" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-fg truncate">{poster.name}</p>
+                    <p className="text-xs text-fg-muted truncate">{poster.headline}</p>
+                  </div>
+                </Link>
+                <div className="shrink-0">
+                  <ConnectAction user={poster} />
+                </div>
+              </div>
+            </Card>
+          )
         )}
 
         {opp.startupId && startup && (

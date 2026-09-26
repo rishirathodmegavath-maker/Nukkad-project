@@ -40,6 +40,7 @@ const ADMIN_NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
       { to: '/admin/opportunities', label: 'Opportunities' },
       { to: '/admin/grants', label: 'Grants' },
       { to: '/admin/resources', label: 'Resources' },
+      { to: '/admin/events', label: 'Events' },
       { to: '/admin/feed', label: 'Feed' },
     ],
   },

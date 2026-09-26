@@ -5,6 +5,8 @@ import type { Discussion } from '@/types'
 import { listDiscussionParticipants, toggleFollowDiscussion } from '@/services/discussions.service'
 import { discussionTopicMeta } from '@/lib/discussionTopicMeta'
 import { useUser } from '@/hooks/useUser'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
+import buildAddaLogoUrl from '@/assets/logo.png'
 import { formatRelativeTime } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { Avatar } from '@/components/ui/Avatar'
@@ -40,7 +42,8 @@ function StatRow({ icon, label, value }: { icon: React.ReactNode; label: string;
  */
 export function AboutDiscussionCard({ discussion }: { discussion: Discussion }) {
   const queryClient = useQueryClient()
-  const { data: author } = useUser(discussion.authorId)
+  const { data: author } = useUser(discussion.postedAsPlatform ? undefined : discussion.authorId)
+  const publisherLabel = publisherIdentityLabel(discussion.publisherIdentity)
   const meta = discussionTopicMeta(discussion.topic)
   const { data: participantIds } = useQuery({
     queryKey: ['discussions', discussion.id, 'participants'],
@@ -63,10 +66,18 @@ export function AboutDiscussionCard({ discussion }: { discussion: Discussion }) 
       <h2 className="text-sm font-bold text-fg">About this Discussion</h2>
 
       <div className="flex items-center gap-3">
-        {author ? <Avatar src={author.avatarUrl} name={author.name} size="sm" /> : <Skeleton className="size-8 rounded-full" />}
+        {discussion.postedAsPlatform ? (
+          <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="sm" />
+        ) : author ? (
+          <Avatar src={author.avatarUrl} name={author.name} size="sm" />
+        ) : (
+          <Skeleton className="size-8 rounded-full" />
+        )}
         <div className="min-w-0">
           <p className="text-xs text-fg-muted">Started by</p>
-          {author ? (
+          {discussion.postedAsPlatform ? (
+            <span className="text-sm font-semibold text-fg">{publisherLabel}</span>
+          ) : author ? (
             <Link to={`/people/${author.id}`} className="text-sm font-semibold text-fg hover:underline">
               {author.name}
             </Link>

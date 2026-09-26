@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { VoteControl } from '@/components/domain/VoteControl'
 import { castVote } from '@/services/discussions.service'
 import { useUser } from '@/hooks/useUser'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { formatRelativeTime } from '@/lib/utils'
 import { formatCompactNumber } from '@/lib/startup-meta'
 import { splitDiscussionContent } from '@/lib/discussionContent'
@@ -25,7 +26,8 @@ import { toast } from '@/store/toast.store'
  */
 export function DiscussionCard({ discussion }: { discussion: Discussion }) {
   const queryClient = useQueryClient()
-  const { data: author } = useUser(discussion.authorId)
+  const { data: author } = useUser(discussion.postedAsPlatform ? undefined : discussion.authorId)
+  const publisherLabel = publisherIdentityLabel(discussion.publisherIdentity)
   const { title, preview } = splitDiscussionContent(discussion.content)
   const replyLabel = discussion.commentsCount === 0 ? 'No replies yet' : discussion.commentsCount === 1 ? '1 reply' : `${discussion.commentsCount} replies`
 
@@ -78,7 +80,9 @@ export function DiscussionCard({ discussion }: { discussion: Discussion }) {
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2.5 text-xs text-fg-muted">
           <span className="flex min-w-0 items-center gap-1.5">
-            {author ? (
+            {discussion.postedAsPlatform ? (
+              <span className="truncate font-semibold text-fg-secondary">{publisherLabel}</span>
+            ) : author ? (
               <span className="truncate font-semibold text-fg-secondary">{author.name}</span>
             ) : (
               <Skeleton className="h-3.5 w-20" />

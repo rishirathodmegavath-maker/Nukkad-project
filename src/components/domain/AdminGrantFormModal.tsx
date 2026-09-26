@@ -5,8 +5,9 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { TagInput } from '@/components/ui/TagInput'
+import { PUBLISHER_IDENTITIES } from '@/lib/publisher-identities'
 import { toast } from '@/store/toast.store'
-import type { GrantProviderType } from '@/types'
+import type { GrantProviderType, PublisherIdentityKey } from '@/types'
 
 const PROVIDER_TYPES: GrantProviderType[] = ['Government', 'Accelerator', 'Corporate', 'Foundation', 'Other']
 const STAGES = ['Idea', 'MVP', 'Early Traction', 'Growth', 'Scaling']
@@ -31,6 +32,7 @@ export function AdminGrantFormModal({ onClose }: { onClose: () => void }) {
   const [deadline, setDeadline] = useState('')
   const [applicationUrl, setApplicationUrl] = useState('')
   const [createdByEmail, setCreatedByEmail] = useState('')
+  const [publisherIdentity, setPublisherIdentity] = useState<PublisherIdentityKey>('BUILDADDA')
 
   function toggleStage(stage: string) {
     setEligibleStages((prev) => (prev.includes(stage) ? prev.filter((s) => s !== stage) : [...prev, stage]))
@@ -50,6 +52,7 @@ export function AdminGrantFormModal({ onClose }: { onClose: () => void }) {
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
         applicationUrl: applicationUrl.trim(),
         createdByEmail: createdByEmail.trim(),
+        publisherIdentity,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'grants'] })
@@ -153,6 +156,21 @@ export function AdminGrantFormModal({ onClose }: { onClose: () => void }) {
           maxLength={255}
           onChange={(e) => setCreatedByEmail(e.target.value)}
         />
+
+        {!createdByEmail.trim() && (
+          <Select
+            label="Publisher identity"
+            hint={'Shown as "Curated by" — never the grant provider, still your admin account behind it'}
+            value={publisherIdentity}
+            onChange={(e) => setPublisherIdentity(e.target.value as PublisherIdentityKey)}
+          >
+            {PUBLISHER_IDENTITIES.map((i) => (
+              <option key={i.key} value={i.key}>
+                {i.label}
+              </option>
+            ))}
+          </Select>
+        )}
       </div>
     </Modal>
   )

@@ -1,3 +1,5 @@
+import type { PublisherIdentityKey } from './publishing'
+
 export interface EventStartupSummary {
   id: string
   name: string
@@ -29,6 +31,11 @@ export interface NukkadEvent {
   chapterId?: string
   chapterName?: string
   organizerUserId: string
+  /** True for an event an admin published unattributed to any member — display `publisherIdentity`
+   *  as the public organizer instead of the underlying admin account (see EventDetailPage's
+   *  "Organized by" block). */
+  postedAsPlatform: boolean
+  publisherIdentity?: PublisherIdentityKey
   startAt: string
   endAt: string
   location: string

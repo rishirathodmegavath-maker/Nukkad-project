@@ -1,5 +1,5 @@
 import { apiClient, downloadFile, getPage, getPagedResult, type Page } from '@/lib/api-client'
-import type { Resource, ResourceCategory, ResourceType } from '@/types'
+import type { PublisherIdentityKey, Resource, ResourceCategory, ResourceType } from '@/types'
 
 export interface ResourceFilters {
   query?: string
@@ -24,6 +24,7 @@ export interface ResourceDto {
   featured: boolean
   url: string
   uploaderUserId: string
+  publisherIdentity: string
   chapterId: string | null
   chapterName: string | null
   tags: string[]
@@ -47,6 +48,7 @@ export function mapResource(dto: ResourceDto): Resource {
     featured: dto.featured,
     url: dto.url,
     uploaderUserId: dto.uploaderUserId,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     chapterId: dto.chapterId ?? undefined,
     chapterName: dto.chapterName ?? undefined,
     tags: dto.tags,
