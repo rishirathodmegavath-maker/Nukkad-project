@@ -2,14 +2,16 @@ import { apiClient, getPage, uploadFile } from '@/lib/api-client'
 import { mapUser, type UserDto } from '@/services/users.service'
 import type { Chapter, ChapterActivity, User } from '@/types'
 
-interface ChapterDto {
+export interface ChapterDto {
   id: string
   name: string
   city: string | null
   country: string | null
   description: string | null
   coverImageUrl: string | null
+  logoUrl: string | null
   presidentUserId: string | null
+  foundedAt: string | null
   institution: string | null
   type: string | null
   focusAreas: string[] | null
@@ -19,11 +21,12 @@ interface ChapterDto {
   opportunityCount: number
   eventCount: number
   resourceCount: number
+  discussionCount: number
   createdAt: string
   updatedAt: string
 }
 
-function mapChapter(dto: ChapterDto): Chapter {
+export function mapChapter(dto: ChapterDto): Chapter {
   return {
     id: dto.id,
     name: dto.name,
@@ -31,7 +34,9 @@ function mapChapter(dto: ChapterDto): Chapter {
     country: dto.country ?? '',
     description: dto.description ?? '',
     coverImageUrl: dto.coverImageUrl ?? '',
+    logoUrl: dto.logoUrl ?? undefined,
     presidentUserId: dto.presidentUserId ?? undefined,
+    foundedAt: dto.foundedAt ?? undefined,
     institution: dto.institution ?? undefined,
     type: dto.type ?? undefined,
     focusAreas: dto.focusAreas ?? undefined,
@@ -41,6 +46,7 @@ function mapChapter(dto: ChapterDto): Chapter {
     opportunityCount: dto.opportunityCount,
     eventCount: dto.eventCount,
     resourceCount: dto.resourceCount,
+    discussionCount: dto.discussionCount,
     createdAt: dto.createdAt,
   }
 }
@@ -82,6 +88,8 @@ export interface UpdateChapterInput {
   country?: string
   description?: string
   coverImageUrl?: string
+  logoUrl?: string
+  foundedAt?: string
   institution?: string
   type?: string
   focusAreas?: string[]
@@ -125,6 +133,12 @@ export async function uploadChapterCover(id: string, file: File): Promise<Chapte
  *  form (and the edit form, alongside its other deferred-until-save fields) offer an upload button. */
 export async function uploadChapterCoverImage(file: File): Promise<string> {
   const dto = await uploadFile<{ url: string }>('/chapters/cover-images', file)
+  return dto.url
+}
+
+/** Same shape as {@link uploadChapterCoverImage} — a small square logo, distinct from the wide cover banner. */
+export async function uploadChapterLogoImage(file: File): Promise<string> {
+  const dto = await uploadFile<{ url: string }>('/chapters/logo-images', file)
   return dto.url
 }
 

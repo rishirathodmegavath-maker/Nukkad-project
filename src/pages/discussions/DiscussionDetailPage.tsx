@@ -11,6 +11,10 @@ import {
 } from '@/services/discussions.service'
 import { toggleLike as feedToggleLike, toggleSave as feedToggleSave, listReplies } from '@/services/feed.service'
 import type { Discussion, DiscussionComment, PostComment } from '@/types'
+// Same asset the app's own brand mark uses (see Logo.tsx) — the public author avatar for an
+// admin-published, unattributed discussion, matching PostCard.tsx's own platform-identity branch.
+import buildAddaLogoUrl from '@/assets/logo.png'
+import { publisherIdentityLabel } from '@/lib/publisher-identities'
 import { useUser } from '@/hooks/useUser'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { splitDiscussionContent } from '@/lib/discussionContent'
@@ -376,11 +380,23 @@ export default function DiscussionDetailPage() {
 }
 
 function DiscussionAuthorLine({ discussion }: { discussion: Discussion }) {
-  const { data: author } = useUser(discussion.authorId)
+  // A platform discussion's authorId is a confidential admin account, so there's nothing to fetch
+  // for it — matching PostCard.tsx's own platform-identity branch exactly.
+  const { data: author } = useUser(discussion.postedAsPlatform ? undefined : discussion.authorId)
+  const publisherLabel = publisherIdentityLabel(discussion.publisherIdentity)
+
   return (
     <p className="mt-2 flex items-center gap-2 text-sm text-fg-muted">
-      {author ? <Avatar src={author.avatarUrl} name={author.name} size="xs" /> : <Skeleton className="size-6 rounded-full" />}
-      {author ? (
+      {discussion.postedAsPlatform ? (
+        <Avatar src={buildAddaLogoUrl} name={publisherLabel} size="xs" />
+      ) : author ? (
+        <Avatar src={author.avatarUrl} name={author.name} size="xs" />
+      ) : (
+        <Skeleton className="size-6 rounded-full" />
+      )}
+      {discussion.postedAsPlatform ? (
+        <span className="font-semibold text-fg">{publisherLabel}</span>
+      ) : author ? (
         <Link to={`/people/${author.id}`} className="font-semibold text-fg hover:underline">
           {author.name}
         </Link>

@@ -1,5 +1,15 @@
 import { apiClient, getPage, type Page } from '@/lib/api-client'
-import type { AttachmentKind, Discussion, DiscussionComment, DiscussionSort, DiscussionStats, PostAttachment, PostVisibility, TopicCount } from '@/types'
+import type {
+  AttachmentKind,
+  Discussion,
+  DiscussionComment,
+  DiscussionSort,
+  DiscussionStats,
+  PostAttachment,
+  PostVisibility,
+  PublisherIdentityKey,
+  TopicCount,
+} from '@/types'
 import type { AttachmentRef } from './feed.service'
 
 interface AttachmentDto {
@@ -12,6 +22,8 @@ interface AttachmentDto {
 interface DiscussionDto {
   id: string
   authorId: string
+  postedAsPlatform: boolean
+  publisherIdentity: string
   content: string
   visibility: string
   linkUrl: string | null
@@ -55,6 +67,8 @@ function mapDiscussion(dto: DiscussionDto): Discussion {
   return {
     id: dto.id,
     authorId: dto.authorId,
+    postedAsPlatform: dto.postedAsPlatform,
+    publisherIdentity: dto.publisherIdentity as PublisherIdentityKey,
     content: dto.content,
     visibility: (dto.visibility === 'CONNECTIONS' ? 'CONNECTIONS' : 'PUBLIC') as PostVisibility,
     linkUrl: dto.linkUrl ?? undefined,

@@ -1,4 +1,4 @@
-import type { PostAttachment, PostVisibility } from './feed'
+import type { PostAttachment, PostVisibility, PublisherIdentityKey } from './feed'
 
 /**
  * A discussion — a Post of type 'discussion' underneath, but with the real forum data Post never
@@ -9,6 +9,12 @@ import type { PostAttachment, PostVisibility } from './feed'
 export interface Discussion {
   id: string
   authorId: string
+  /** True for an admin-published discussion left unattributed to any member — show
+   *  `publisherIdentity` as the public author instead of the underlying admin account. Never true
+   *  for a normal member's own discussion, which always shows their real profile name. */
+  postedAsPlatform: boolean
+  /** Which publisher identity to display; only meaningful when postedAsPlatform is true. */
+  publisherIdentity: PublisherIdentityKey
   content: string
   visibility: PostVisibility
   linkUrl?: string

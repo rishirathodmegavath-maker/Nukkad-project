@@ -1,8 +1,10 @@
 import { apiClient, getPagedResult, uploadFile, type Page } from '@/lib/api-client'
+import { mapChapter, type ChapterDto } from '@/services/chapters.service'
 import { mapResource, type ResourceDto } from '@/services/resources.service'
 import type { AttachmentRef } from '@/services/feed.service'
 import type { AccountStatus, AdminActivity, AdminAuditLog, AdminDashboard, AdminReport, AdminUser, ModerationStatus, ReportStatus } from '@/types/admin'
 import type {
+  Chapter,
   GrantProviderType,
   InvestorType,
   OpportunityType,
@@ -610,6 +612,65 @@ export async function deleteAdminResource(id: string): Promise<void> {
 export async function bulkDeleteAdminResources(ids: string[]): Promise<void> {
   const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&')
   await apiClient.delete(`/admin/resources?${query}`)
+}
+
+// ---- Chapters (admin creation: the admin token can't call the member chapters API, so this has its
+//      own list/create/update surface — see ChapterService.createChapterAsAdmin's own doc comment) ----
+
+export async function listAdminChapters(params: { q?: string; page?: number; size?: number } = {}): Promise<Page<Chapter>> {
+  const result = await getPagedResult<ChapterDto>('/admin/chapters', { ...params })
+  return { ...result, content: result.content.map(mapChapter) }
+}
+
+export async function getAdminChapter(id: string): Promise<Chapter> {
+  return mapChapter(await apiClient.get<ChapterDto>(`/admin/chapters/${id}`))
+}
+
+/** Same shape as the member-facing pre-upload endpoints — the admin token can't call those either. */
+export async function uploadAdminChapterCoverImage(file: File): Promise<string> {
+  const dto = await uploadFile<{ url: string }>('/admin/chapters/cover-images', file)
+  return dto.url
+}
+
+export async function uploadAdminChapterLogoImage(file: File): Promise<string> {
+  const dto = await uploadFile<{ url: string }>('/admin/chapters/logo-images', file)
+  return dto.url
+}
+
+export interface AdminCreateChapterInput {
+  name: string
+  description: string
+  city?: string
+  country?: string
+  coverImageUrl?: string
+  logoUrl?: string
+  foundedAt?: string
+  institution?: string
+  type?: string
+  focusAreas?: string[]
+  /** Must be an existing, active member — the admin account is never installed as president. */
+  presidentEmail: string
+}
+
+export async function createAdminChapter(input: AdminCreateChapterInput): Promise<Chapter> {
+  return mapChapter(await apiClient.post<ChapterDto>('/admin/chapters', input))
+}
+
+export interface AdminUpdateChapterInput {
+  name?: string
+  description?: string
+  city?: string
+  country?: string
+  coverImageUrl?: string
+  logoUrl?: string
+  foundedAt?: string
+  institution?: string
+  type?: string
+  focusAreas?: string[]
+}
+
+export async function updateAdminChapter(id: string, input: AdminUpdateChapterInput): Promise<Chapter> {
+  return mapChapter(await apiClient.put<ChapterDto>(`/admin/chapters/${id}`, input))
 }
 
 // ---- Investor Discovery catalog (admin-managed: this is the ONLY place these are created, edited or retired —

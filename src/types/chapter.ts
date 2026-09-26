@@ -15,7 +15,11 @@ export interface Chapter {
   country: string
   description: string
   coverImageUrl: string
+  logoUrl?: string
   presidentUserId?: string
+  /** The chapter's real founding date, if known — distinct from `createdAt` (when the record was
+   *  added), since an admin backfilling a long-running chapter needs to set the real date. */
+  foundedAt?: string
   institution?: string
   type?: string
   focusAreas?: string[]
@@ -31,5 +35,6 @@ export interface Chapter {
   opportunityCount?: number
   eventCount?: number
   resourceCount?: number
+  discussionCount?: number
   createdAt: string
 }
